@@ -11,7 +11,7 @@
     lat: number;
     lon: number;
   }
-
+// test
   interface ColumnData {
     name: string;
     sampleValues: string[];
