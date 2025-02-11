@@ -3,7 +3,7 @@
  */
 
 // Types for our data at different stages
-export interface CsvData {
+export interface ParcedDataState {
 	headers: string[];
 	rows: Record<string, string>[];
 }
@@ -28,38 +28,38 @@ export interface MappedData {
 }
 
 // Primary state using $state rune
-export type Stage = 'empty' | 'csv' | 'transformed' | 'mapped';
-export let stage = $state<Stage>('empty');
-export let data = $state<CsvData | TransformedData | MappedData | null>(null);
+export type StateStage = 'empty' | 'parsed' | 'transformed' | 'mapped';
+export let stateStage = $state<StateStage>('empty');
+export let data = $state<ParcedDataState | TransformedData | MappedData | null>(null);
 export let errors = $state<string[]>([]);
 
 // Derived state using $derived rune
-export const isCsvLoaded = $derived(stage === 'csv');
-export const isTransformed = $derived(stage === 'transformed');
-export const isMapped = $derived(stage === 'mapped');
+export const isParced = $derived(stateStage === 'parsed');
+export const isTransformed = $derived(stateStage === 'transformed');
+export const isMapped = $derived(stateStage === 'mapped');
 
 // State modification functions
 export function loadCsv(headers: string[], rows: Record<string, string>[]) {
 	data = { headers, rows };
-	stage = 'csv';
+	stateStage = 'parsed';
 	errors = [];
 }
 
 export function transform() {
-	if (stage !== 'csv' || !data) {
+	if (stateStage !== 'parsed' || !data) {
 		errors = ['Cannot transform: No CSV data loaded'];
 		return;
 	}
 
-	const csvData = data as CsvData;
+	const ParcedDataState = data as ParcedDataState;
 	const validations: Record<
 		string,
 		{ type: string; invalidRows: number[]; sampleValues: string[] }
 	> = {};
 
 	// Validate and convert types for each column
-	csvData.headers.forEach((header) => {
-		const values = csvData.rows.map((row) => row[header]);
+	ParcedDataState.headers.forEach((header) => {
+		const values = ParcedDataState.rows.map((row) => row[header]);
 		const type = inferType(values);
 		const invalidRows = findInvalidRows(values, type);
 
@@ -72,8 +72,8 @@ export function transform() {
 
 	// Convert to transformed data
 	data = {
-		headers: csvData.headers,
-		rows: csvData.rows.map((row) => {
+		headers: ParcedDataState.headers,
+		rows: ParcedDataState.rows.map((row) => {
 			const converted: Record<string, any> = {};
 			for (const [key, value] of Object.entries(row)) {
 				converted[key] = convertValue(value, validations[key].type);
@@ -83,11 +83,11 @@ export function transform() {
 		validations
 	};
 
-	stage = 'transformed';
+	stateStage = 'transformed';
 }
 
 export function mapColumns(mappings: Record<string, string>) {
-	if (stage !== 'transformed' || !data) {
+	if (stateStage !== 'transformed' || !data) {
 		errors = ['Cannot map: Data must be transformed first'];
 		return;
 	}
@@ -106,7 +106,7 @@ export function mapColumns(mappings: Record<string, string>) {
 		mappings
 	};
 
-	stage = 'mapped';
+	stateStage = 'mapped';
 }
 
 // Helper functions

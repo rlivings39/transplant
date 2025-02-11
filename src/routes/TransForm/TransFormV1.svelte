@@ -871,7 +871,7 @@
   
       // Store the CSV data and columns in sessionStorage
       try {
-        sessionStorage.setItem('csvData', JSON.stringify(transformedData));
+        sessionStorage.setItem('ParcedDataState', JSON.stringify(transformedData));
         sessionStorage.setItem(
           'csvColumns',
           JSON.stringify(validationState.columns.map((col) => col.name))
