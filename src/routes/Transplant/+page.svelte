@@ -10,17 +10,17 @@
 	// Derived state as per MEMORY[5330af14]
 	let isParced = $derived(stage === 'csv');
 
-	function handleCsvLoaded(event) {
-		const { data: ParcedDataState, errors: csvErrors } = event.detail;
-		data = ParcedDataState;
-		errors = csvErrors;
+	function handleParsedData(event) {
+		const { data: parsedData, errors: parseErrors } = event.detail;
+		data = parsedData;
+		errors = parseErrors;
 	}
 </script>
 
 <button onclick={() => 'transformed'}>Next Header</button>
 <br />
 <div>
-	<CsvImporter on:csvLoaded={handleCsvLoaded} />
+	<CsvImporter on:parsedData={handleParsedData} />
 
 	{#if errors.length > 0}
 		<div class="error">
