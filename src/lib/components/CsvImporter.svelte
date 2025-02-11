@@ -1,6 +1,7 @@
 <script>
 	import Papa from 'papaparse';
 	import { createEventDispatcher } from 'svelte';
+	import { setParsed } from '$lib/state/data';
 
 	const dispatch = createEventDispatcher();
 
@@ -14,13 +15,14 @@
 		Papa.parse(file, {
 			header: true, // As per MEMORY[f8603e5b]
 			complete: (results) => {
-				// Don't transform data yet, just parse it
-				dispatch('csvLoaded', {
+				setParsed(Object.keys(results.data[0]), results.data);
+				// Dispatch with consistent naming
+				dispatch('parsedData', {
 					data: results.data,
 					errors: results.errors,
 					meta: results.meta
 				});
-				stage = 'csv';
+				stage = 'parsed';
 			},
 			error: (error) => {
 				dispatch('error', error);

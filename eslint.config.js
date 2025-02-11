@@ -21,6 +21,7 @@ export default [
 				extraFileExtensions: ['.svelte']
 			}
 		},
+
 		rules: {
 			// TypeScript rules
 			'@typescript-eslint/no-explicit-any': 'warn',

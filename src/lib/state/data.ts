@@ -39,7 +39,7 @@ export const isTransformed = $derived(stateStage === 'transformed');
 export const isMapped = $derived(stateStage === 'mapped');
 
 // State modification functions
-export function loadCsv(headers: string[], rows: Record<string, string>[]) {
+export function setParced(headers: string[], rows: Record<string, string>[]) {
 	data = { headers, rows };
 	stateStage = 'parsed';
 	errors = [];
