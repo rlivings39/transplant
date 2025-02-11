@@ -8,11 +8,11 @@
 	let errors = $state([]);
 
 	// Derived state as per MEMORY[5330af14]
-	let isParced = $derived(stage === 'csv');
+	let isParsed = $derived(stage === 'csv');
 
 	function handleCsvLoaded(event) {
-		const { data: ParcedDataState, errors: csvErrors } = event.detail;
-		data = ParcedDataState;
+		const { data: ParsedDataState, errors: csvErrors } = event.detail;
+		data = ParsedDataState;
 		errors = csvErrors;
 	}
 </script>
@@ -30,7 +30,7 @@
 		</div>
 	{/if}
 
-	{#if isParced}
+	{#if isParsed}
 		<ImportTable tableData={data} />
 	{/if}
 </div>

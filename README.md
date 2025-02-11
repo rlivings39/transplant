@@ -47,7 +47,7 @@ Transplant uses Svelte 5's runes for state management:
 
 ```typescript
 // Primary States
-const ParcedDataState = $state<ParcedDataState | null>(null);
+const ParsedDataState = $state<ParsedDataState | null>(null);
 const transformedData = $state<TransformedData | null>(null);
 
 // Derived States

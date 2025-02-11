@@ -3,7 +3,7 @@
  */
 
 // Types for our data at different stages
-export interface ParcedDataState {
+export interface ParsedDataState {
 	headers: string[];
 	rows: Record<string, string>[];
 }
@@ -30,11 +30,11 @@ export interface MappedData {
 // Primary state using $state rune
 export type StateStage = 'empty' | 'parsed' | 'transformed' | 'mapped';
 export let stateStage = $state<StateStage>('empty');
-export let data = $state<ParcedDataState | TransformedData | MappedData | null>(null);
+export let data = $state<ParsedDataState | TransformedData | MappedData | null>(null);
 export let errors = $state<string[]>([]);
 
 // Derived state using $derived rune
-export const isParced = $derived(stateStage === 'parsed');
+export const isParsed = $derived(stateStage === 'parsed');
 export const isTransformed = $derived(stateStage === 'transformed');
 export const isMapped = $derived(stateStage === 'mapped');
 
@@ -51,15 +51,15 @@ export function transform() {
 		return;
 	}
 
-	const ParcedDataState = data as ParcedDataState;
+	const ParsedDataState = data as ParsedDataState;
 	const validations: Record<
 		string,
 		{ type: string; invalidRows: number[]; sampleValues: string[] }
 	> = {};
 
 	// Validate and convert types for each column
-	ParcedDataState.headers.forEach((header) => {
-		const values = ParcedDataState.rows.map((row) => row[header]);
+	ParsedDataState.headers.forEach((header) => {
+		const values = ParsedDataState.rows.map((row) => row[header]);
 		const type = inferType(values);
 		const invalidRows = findInvalidRows(values, type);
 
@@ -72,8 +72,8 @@ export function transform() {
 
 	// Convert to transformed data
 	data = {
-		headers: ParcedDataState.headers,
-		rows: ParcedDataState.rows.map((row) => {
+		headers: ParsedDataState.headers,
+		rows: ParsedDataState.rows.map((row) => {
 			const converted: Record<string, any> = {};
 			for (const [key, value] of Object.entries(row)) {
 				converted[key] = convertValue(value, validations[key].type);

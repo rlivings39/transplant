@@ -12,7 +12,7 @@ Transplant uses a unified state management approach with three core states:
 
    - Raw data from uploaded CSV files
    - Managed by `loadCsv()` function
-   - Type: `ParcedDataState`
+   - Type: `ParsedDataState`
 
 2. **Transformed State**
 
@@ -31,12 +31,12 @@ Transplant uses a unified state management approach with three core states:
 
 ```typescript
 // Primary States using $state
-const ParcedDataState = $state<ParcedDataState | null>(null);
+const ParsedDataState = $state<ParsedDataState | null>(null);
 const transformedData = $state<TransformedData | null>(null);
 const mappedData = $state<MappedData | null>(null);
 
 // Derived States using $derived
-const isParced = $derived(ParcedDataState !== null);
+const isParsed = $derived(ParsedDataState !== null);
 const isTransformed = $derived(transformedData !== null);
 const isMapped = $derived(mappedData !== null);
 ```
