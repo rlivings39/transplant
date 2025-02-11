@@ -17,7 +17,6 @@
 
 - **Node.js**
 
-
 ## Database
 
 - **PostgreSQL**

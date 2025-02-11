@@ -895,7 +895,7 @@
       <input
         type="file"
         accept=".csv"
-        on:change={handleFileSelect}
+        onchange={handleFileSelect}
         bind:this={fileInput}
         class="block w-full text-sm text-gray-500
           file:mr-4 file:py-2 file:px-4
@@ -932,7 +932,7 @@
                   <select
                     class="type-select"
                     value={column.suggestedType}
-                    on:change={(e) => {
+                    onchange={(e) => {
                       const value = e.currentTarget.value;
                       if (
                         value === 'string' ||
@@ -1150,7 +1150,7 @@
         <div class="mt-4 space-x-4">
           <button
             class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
-            on:click={() => {
+            onclick={() => {
               // Get all the transformed values (green text) from the table
               const columnsWithTransformed = validationState.columns.map((col) => {
                 // Find all transformed values for this column
@@ -1179,7 +1179,7 @@
           </button>
           <button
             class="bg-green-500 hover:bg-green-600 text-white font-bold py-2 px-4 rounded"
-            on:click={handlePushToTransplant}
+            onclick={handlePushToTransplant}
           >
             Push to TransPlant
           </button>

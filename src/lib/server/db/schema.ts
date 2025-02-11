@@ -1,12 +1,12 @@
 /**
  * Database Schema Definition
- * 
+ *
  * This file defines the database schema using Drizzle ORM.
  * It matches the Supabase structure exactly to ensure compatibility.
  * Each table includes timestamps, audit fields, and proper relationships.
  */
 
-import { type BaseColumns } from './types';
+import { type BaseColumns } from './dbTypes';
 
 import {
 	pgTable,
