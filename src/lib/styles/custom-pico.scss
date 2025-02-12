@@ -16,39 +16,37 @@
 h1 {
 	// color: red
 }
+table {
+	position: relative;
+	width: 100%;
+	border-collapse: separate;
+	border-spacing: 0;
+	border: 0.05px solid #ffffff;
+}
 
-/* Default to left align */
 th,
 td {
 	position: relative;
-
 	max-width: 12rem;
 	overflow: hidden;
 	text-overflow: ellipsis;
 	white-space: nowrap;
 	vertical-align: top;
-	text-align: left; /* Left-align all text by default */
-}
+	padding: 2px;
+	border: 0.05px solid #ffffff !important; // White border
+	background-color: var(--pico-background-color);
 
-td {
 	&:hover {
 		background-color: rgba(255, 255, 255, 0.1);
-		font-color: #ffffff;
-	}
-
-	&:hover::after {
-		content: attr(title);
-		position: absolute;
-		bottom: 100%;
-		left: 0;
-		background: rgba(0, 0, 0, 0.8);
-		color: white;
-		padding: 5px;
-		border-radius: 3px;
-		white-space: nowrap;
-		z-index: 1;
 	}
 }
+// td {
+// 	// border: var(--table-border) !important;  // Use our variable with !important
+//     // text-align: left;
+//     border: 0.5px solid
+//     // padding: 8px !important; // Added !important to override Pico's calc(var(--pico-spacing) / 2)
+// }
+
 @keyframes flash {
 	0% {
 		background-color: transparent;
@@ -71,33 +69,32 @@ th.numeric {
 	text-align: right; /* Right-align only numeric cells */
 }
 
-table {
-	width: 100%;
-	border-collapse: collapse;
-}
 td {
-	border: 1px solid #ddd;
+	border: 0.04px solid #ddd !important;
 	padding: 8px;
 	text-align: left;
 }
 
-/* Table Styles */
 table {
 	position: relative;
 	width: 100%;
 	overflow-x: auto;
 	// Remove the max-height property
 	// max-height: 90vh;
-	border-top: 1px solid #ffffff;
-	border-bottom: 1px solid #ffffff;
+	border-top: 0.05px solid #ffffff;
+	// border-collapse: separate;  // This is key - allows borders to be distinct
+	border-bottom: 0.05px solid #ffffff;
+	// border-spacing: 0;         // Remove gaps between cells
 }
 
-/* Table Head Styles */
 thead {
 	position: sticky;
 	top: 0;
 	z-index: 3;
 	background-color: var(--background-color, #13171f);
+	&:hover {
+		background-color: rgba(255, 255, 255, 0.1);
+	}
 }
 
 /* Sticky First Column */
@@ -106,9 +103,9 @@ td:first-child {
 	left: 0;
 	z-index: 1;
 	background-color: var(--pico-background-color);
-	&:hover {
-		background-color: rgba(255, 255, 255, 0.1);
-	}
+	// &:hover {
+	// 	background-color: rgba(255, 255, 255, 0.1);
+	// }
 }
 
 th:first-child {
@@ -116,9 +113,9 @@ th:first-child {
 	left: 0;
 	z-index: 2;
 	background-color: var(--pico-background-color);
-	&:hover {
-		background-color: rgba(255, 255, 255, 0.1);
-	}
+	// &:hover {
+	// 	background-color: rgba(255, 255, 255, 0.1);
+	// }
 }
 
 /* Intersection cell (top-left) */
@@ -204,6 +201,7 @@ button.sort-button {
 	}
 }
 
+// 🏄🏼‍♀️️🏄🏼‍♀️️🏄🏼‍♀️️🏄🏼‍♀️️🏄🏼‍♀️️🏄🏼‍♀️️🏄🏼‍♀️️🏄🏼‍♀️️🏄🏼‍♀️️🏄🏼‍♀️️🏄🏼‍♀️️🏄🏼‍♀️️🏄🏼‍♀️️🏄🏼‍♀️️🏄🏼‍♀️️🏄🏼‍♀️️🏄🏼‍♀️️🏄🏼‍♀️️🏄🏼‍♀️️🏄🏼‍♀️️🏄🏼‍♀️️🏄🏼‍♀️️🏄🏼‍♀️️🏄🏼‍♀️️🏄🏼‍♀️️🏄🏼‍♀️️🏄🏼‍♀️️🏄🏼‍♀️️🏄🏼‍♀️️🏄🏼‍♀️️🏄🏼‍♀️️🏄🏼‍♀️🏄🏼‍♀️️🏄🏼‍♀️️🏄🏼‍♀️️🏄🏼‍♀️️🏄🏼‍♀️️🏄🏼‍♀️️🏄🏼‍♀️️🏄🏼‍♀️️🏄🏼‍♀️️🏄🏼‍♀️️🏄🏼‍♀️️🏄🏼‍♀️️🏄🏼‍♀️️🏄🏼‍♀️️🏄🏼‍♀️️️🏄🏼‍♀️️🏄🏼‍♀️️🏄🏼‍♀️️🏄🏼‍♀️️🏄🏼‍♀️️🏄🏼‍♀️️🏄🏼‍♀️️🏄🏼‍♀️️
 /* Responsive Adjustment */
 @media (max-width: 768px) {
 	th,
