@@ -16,92 +16,67 @@
 	--bright-border: 1px solid #ffffff;
 }
 
-h1 {
-	// color: red
-}
+
 table {
 	font-family: 'Roboto Mono', monospace;
-    font-size: 14px;
-    line-height: 1.5;
+    font-size: 10px;
+    line-height: 1;
 	position: relative;
 	width: 100%;
 	border-collapse: separate;
 	border-spacing: 0;
 	border: 0.05px solid #ffffff;
+	
 }
 
 th,
 td {
 	position: relative;
-	max-width: 12rem;
+	max-width: 7rem;
 	overflow: hidden;
-	text-overflow: ellipsis;
+	// text-overflow: ellipsis;
 	white-space: nowrap;
 	vertical-align: top;
-	padding: 2px;
-	border: 0.05px solid #ffffff !important; // White border
+	padding: 1px;
 	background-color: var(--pico-background-color);
+	border: 0.5px solid var(--color-grey); 
 
 	&:hover {
 		background-color: rgb(55, 55, 55);
 	}
 }
-// td {
-// 	// border: var(--table-border) !important;  // Use our variable with !important
-//     // text-align: left;
-//     border: 0.5px solid
-//     // padding: 8px !important; // Added !important to override Pico's calc(var(--pico-spacing) / 2)
-// }
 
-@keyframes flash {
-	0% {
-		background-color: transparent;
-	}
-	50% {
-		background-color: rgba(255, 255, 255, 0.5);
-	}
-	100% {
-		background-color: transparent;
-	}
-}
 
-.flash {
-	animation: flash 0.5s;
-}
-
-/* Specific alignment for numeric content */
 table.numeric,
 td.numeric,
 th.numeric {
 	text-align: right !important; /* Right-align only numeric cells */
 }
 
+table th {
+	padding-left: 0.4rem;
+  }
+  
+
 td {
-	border: 0.04px solid #ddd !important;
 	padding: 8px;
-	text-align: left;
 }
 
 table {
 	position: relative;
 	width: 100%;
-	// overflow-x: auto;
-	// Remove the max-height property
-	// max-height: 90vh;
-	// border-top: 0.05px solid #ffffff;
-	// border-collapse: separate;  // This is key - allows borders to be distinct
-	// border-bottom: 0.05px solid #ffffff;
-	// border-spacing: 0;         // Remove gaps between cells
 }
 
 thead {
 	position: sticky;
 	// top: 0;
+	line-height: 2;
 	z-index: 3;
-	background-color: var(--background-color, #13171f);
-	// &:hover {
-	// 	background-color: rgba(255, 255, 255, 1);
-	// }
+
+}
+
+thead th {
+	border-bottom: var(--bright-border); // Add the border to individual header cells
 }
 
 /* Sticky First Column */
@@ -109,32 +84,25 @@ td:first-child {
 	position: sticky;
 	// left: 0;
 	z-index: 1;
-	background-color: var(--pico-background-color);
-	// &:hover {
-	// 	background-color: rgba(255, 255, 255, 1);
-	// }
+	
 }
 
 th:first-child {
 	position: sticky;
-	left: 0;
 	z-index: 2;
-	background-color: var(--pico-background-color);
-	// &:hover {
-	// 	background-color: rgba(255, 255, 255, 0.1);
-	// }
 }
+
 
 /* Intersection cell (top-left) */
 thead th:first-child {
 	z-index: 4;
-	background-color: var(--background-color, #13171f);
+	background-color: var(--background-color, #172b18);
 }
 
 /* Regular header cells */
 thead th {
 	z-index: 3;
-	background-color: var(--background-color, #13171f);
+	background-color: var(--background-color, #172b18);
 }
 
 /* Sticky First Column */
@@ -148,9 +116,7 @@ td:first-child {
 		background-color: rgb(55, 55, 55);
 	}
 }
-input:not([type='checkbox']):not([type='radio']):not([type='range']):not([type='file']):not(
-		[type='color']
-	):not([type='submit']):not([type='reset']),
+
 select,
 textarea {
 	max-width: var(--input-max-width);
@@ -165,49 +131,6 @@ button,
 	width: auto;
 }
 
-button.sort-button {
-	--pico-padding: 0;
-	--pico-background-color: transparent;
-	--pico-color: inherit;
-	--pico-border-width: 0;
-	--pico-font-size: 0.875rem;
-	min-width: auto;
-	height: auto;
-	padding: 0.25rem;
-	margin: 0;
-	box-shadow: none;
-	border: none;
-
-	&:hover,
-	&:active,
-	&:focus {
-		--pico-background-color: transparent;
-		--pico-color: inherit;
-	}
-
-	span {
-		display: inline-block;
-		width: 1em;
-		height: 1em;
-		line-height: 1;
-		text-align: center;
-		font-size: 1.2em;
-	}
-
-	.text-purple {
-		color: var(--color-purple);
-		text-shadow:
-			-1px -1px 0 var(--color-purple),
-			1px -1px 0 var(--color-purple),
-			-1px 1px 0 var(--color-purple),
-			1px 1px 0 var(--color-purple);
-	}
-
-	.text-grey {
-		color: var(--color-grey);
-	}
-}
-
 // 🏄🏼‍♀️️🏄🏼‍♀️️🏄🏼‍♀️️🏄🏼‍♀️️🏄🏼‍♀️️🏄🏼‍♀️️🏄🏼‍♀️️🏄🏼‍♀️️🏄🏼‍♀️️🏄🏼‍♀️️🏄🏼‍♀️️🏄🏼‍♀️️🏄🏼‍♀️️🏄🏼‍♀️️🏄🏼‍♀️️🏄🏼‍♀️️🏄🏼‍♀️️🏄🏼‍♀️️🏄🏼‍♀️️🏄🏼‍♀️️🏄🏼‍♀️️🏄🏼‍♀️️🏄🏼‍♀️️🏄🏼‍♀️️🏄🏼‍♀️️🏄🏼‍♀️️🏄🏼‍♀️️🏄🏼‍♀️️🏄🏼‍♀️️🏄🏼‍♀️️🏄🏼‍♀️️🏄🏼‍♀️🏄🏼‍♀️️🏄🏼‍♀️️🏄🏼‍♀️️🏄🏼‍♀️️🏄🏼‍♀️️🏄🏼‍♀️️🏄🏼‍♀️️🏄🏼‍♀️️🏄🏼‍♀️️🏄🏼‍♀️️🏄🏼‍♀️️🏄🏼‍♀️️🏄🏼‍♀️️🏄🏼‍♀️️🏄🏼‍♀️️️🏄🏼‍♀️️🏄🏼‍♀️️🏄🏼‍♀️️🏄🏼‍♀️️🏄🏼‍♀️️🏄🏼‍♀️️🏄🏼‍♀️️🏄🏼‍♀️️
 /* Responsive Adjustment */
 @media (max-width: 768px) {
@@ -218,188 +141,30 @@ button.sort-button {
 	}
 }
 
-table,
-input,
-select,
-textarea,
-button,
-[type='button'],
-[type='submit'],
-[type='reset'],
-[type='checkbox'],
-[type='radio'] {
-	border: var(--bright-border);
-}
-
-.pagination-controls {
-	display: flex;
-	justify-content: center;
-	align-items: center;
-	// margin-top: 1rem;
-}
-
-.back-button,
-.next-button {
-	margin: 0 0.5rem;
-}
-
-thead tr {
-	border-bottom: 1px; // Remove the default bottom border
-}
-
-thead th {
-	border-bottom: var(--bright-border); // Add the border to individual header cells
-	position: relative; // Ensure the border is on top
-	z-index: 3; // Higher z-index to place it above other elements
-}
-
-/* Add these styles to the existing file */
-
-.table-container {
-	overflow: auto;
-	max-height: 80vh; // Adjust this value as needed
-	position: relative;
-}
-
-table {
-	border-collapse: separate;
-	border-spacing: 0;
-}
-
 thead th {
 	position: sticky;
 	top: 0;
 	z-index: 2;
-	background-color: var(--pico-background-color);
 }
 
-td:first-child,
-th:first-child {
-	position: sticky;
-	left: 0;
-	z-index: 1;
-	background-color: var(--pico-background-color);
-}
+// 📱️📱️📱️📱️📱️📱️📱️📱️📱️📱️📱️📱️📱️📱️📱️📱️📱️📱️📱️📱️📱️📱️📱️📱️📱️📱️📱️📱️📱️📱️📱️📱️📱️📱️📱️📱️📱️📱️📱️📱️📱️📱️📱️📱️📱️📱️📱️📱️📱️📱️📱️📱️📱️📱️📱️
 
-thead th:first-child {
-	z-index: 3;
-}
+@media (max-width: 480px) {
+	
+	
 
-z
-/* Ensure borders are visible */
-th, td {
-	border: 1px solid var(--pico-border-color);
-}
 
-.table-wrapper {
-	position: relative;
-	height: 100vh;
-	display: flex;
-	flex-direction: column;
-	overflow: hidden;
-}
-
-.fixed-header {
-	position: sticky;
-	top: 0;
-	z-index: 3;
-	background-color: var(--pico-background-color);
-}
-
-.search-container {
-	padding: 10px;
-	border-bottom: var(--bright-border);
-}
-
-.table-container {
-	flex-grow: 1;
-	overflow-y: auto;
-	position: relative;
-}
-
-table {
-	width: 100%;
-	border-collapse: separate;
-	border-spacing: 0;
-}
-
-thead {
-	background-color: var(--pico-background-color);
-}
-
-thead tr:first-child th {
-	border-top: var(--bright-border);
-}
-
-th,
-td {
-	padding: 8px;
-	border: 1px solid var(--pico-border-color);
-}
-
-th:first-child,
-td:first-child {
-	position: sticky;
-	left: 0;
-	z-index: 2;
-	background-color: var(--pico-background-color);
-}
-
-thead th:first-child {
-	z-index: 3;
-}
-
-.custom-table {
-	--table-border-color: var(--pico-border-color, #ccc);
-
-	.header-container,
-	.table-body-container {
-		table {
-			table-layout: fixed;
-			width: 100%;
-		}
+	table {
+	  width: 100%;
+	  overflow-x: auto;
+	  display: block;
 	}
-
-	.header-container {
+  
+	thead {
 		position: sticky;
 		top: 0;
-		z-index: 3;
+		z-index: 2;
 		background-color: var(--pico-background-color);
-	}
+	  }
 
-	.header-container table {
-		border-collapse: separate;
-		border-spacing: 0;
-	}
-
-	.header-container thead {
-		border-bottom: 2px solid var(--table-border-color);
-	}
-
-	th,
-	td {
-		padding: 8px;
-		border: none;
-		overflow: hidden;
-		text-overflow: ellipsis;
-		white-space: nowrap;
-	}
-
-	// Force thead to match tbody layout
-	.header-container th {
-		font-weight: bold;
-		text-align: left; // Adjust if you want different alignment
-		width: auto; // Let the width be determined by tbody
-	}
-
-	.table-body-container td {
-		width: auto; // This allows the content to determine the width
-	}
-
-	// Ensure the first row of tbody aligns with thead
-	.table-body-container table {
-		margin-top: -2px; // Compensate for thead border
-	}
-
-	// ... rest of your existing styles ...
-}
+  }

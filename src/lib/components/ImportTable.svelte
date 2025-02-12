@@ -5,6 +5,7 @@
 	export let data: Record<string, string>[] = [];
 </script>
 
+
 <table>
 	{#if data.length > 0}
 		<thead>

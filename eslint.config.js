@@ -19,6 +19,12 @@ export default [
 				sourceType: 'module',
 				ecmaVersion: 2020,
 				extraFileExtensions: ['.svelte']
+			},
+			globals: {
+				window: true,
+				document: true,
+				Event: true,
+				HTMLInputElement: true
 			}
 		},
 
