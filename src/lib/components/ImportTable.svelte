@@ -1,10 +1,35 @@
 <script lang="ts">
-	// import '$lib/styles/tables.css';
+	const { data, columnTypes } = $props<{
+		data: Record<string, string>[];
+		columnTypes: Record<string, string>;
+	}>();
 
+	let filteredData = $derived(
+		data.map((row) => {
+			return Object.fromEntries(
+				Object.entries(row).map(([key, value]) => [
+					key,
+					isMatchingType(value, columnTypes[key]) ? value : '-'
+				])
+			);
+		})
+	);
 
-	export let data: Record<string, string>[] = [];
+	function isMatchingType(value: string, type: string): boolean {
+		switch (type) {
+			case 'number':
+				return !isNaN(Number(value));
+			case 'date':
+				return !isNaN(Date.parse(value));
+			case 'email':
+				return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value);
+			case 'url':
+				return /^https?:\/\/\S+$/.test(value);
+			default:
+				return true;
+		}
+	}
 </script>
-
 
 <table>
 	{#if data.length > 0}
@@ -26,4 +51,3 @@
 		</tbody>
 	{/if}
 </table>
-
