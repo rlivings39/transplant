@@ -13,6 +13,10 @@
 	--bright-border: 1px solid #ffffff;
 }
 
+h1 {
+	// color: red
+}
+
 /* Default to left align */
 th,
 td {
@@ -29,6 +33,7 @@ td {
 td {
 	&:hover {
 		background-color: rgba(255, 255, 255, 0.1);
+		font-color: #ffffff;
 	}
 
 	&:hover::after {
@@ -66,6 +71,16 @@ th.numeric {
 	text-align: right; /* Right-align only numeric cells */
 }
 
+table {
+	width: 100%;
+	border-collapse: collapse;
+}
+td {
+	border: 1px solid #ddd;
+	padding: 8px;
+	text-align: left;
+}
+
 /* Table Styles */
 table {
 	position: relative;
@@ -81,7 +96,40 @@ table {
 thead {
 	position: sticky;
 	top: 0;
+	z-index: 3;
+	background-color: var(--background-color, #13171f);
+}
+
+/* Sticky First Column */
+td:first-child {
+	position: sticky;
+	left: 0;
+	z-index: 1;
+	background-color: var(--pico-background-color);
+	&:hover {
+		background-color: rgba(255, 255, 255, 0.1);
+	}
+}
+
+th:first-child {
+	position: sticky;
+	left: 0;
 	z-index: 2;
+	background-color: var(--pico-background-color);
+	&:hover {
+		background-color: rgba(255, 255, 255, 0.1);
+	}
+}
+
+/* Intersection cell (top-left) */
+thead th:first-child {
+	z-index: 4;
+	background-color: var(--background-color, #13171f);
+}
+
+/* Regular header cells */
+thead th {
+	z-index: 3;
 	background-color: var(--background-color, #13171f);
 }
 

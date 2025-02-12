@@ -1,5 +1,5 @@
 <script lang="ts">
-	import '$lib/styles/custom-pico.scss';
+	// import '$lib/styles/custom-pico.scss';
 
 	let headers: string[] = [];
 	let types: string[] = [];

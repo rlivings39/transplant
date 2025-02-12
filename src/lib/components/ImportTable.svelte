@@ -1,5 +1,6 @@
 <script lang="ts">
-	export let data: Record<string, string>[] = [];
+// import '$lib/styles/tables.css';
+export let data: Record<string, string>[] = [];
 </script>
 
 <table>
@@ -24,7 +25,8 @@
 </table>
 
 <style>
-	table {
+	
+	/* table {
 		width: 100%;
 		border-collapse: collapse;
 	}
@@ -33,5 +35,5 @@
 		border: 1px solid #ddd;
 		padding: 8px;
 		text-align: left;
-	}
+	} */
 </style>
