@@ -6,13 +6,12 @@
 
 
 :root {
-	--pico-font-family: Poppins;
+	--pico-font-family: 'Roboto Mono', Consolas, Monaco, 'Courier New', monospace;
 	--color-purple: #5f10b3;
 	--color-grey: #1f2937;
 	--color-white: #e0e0e0 --input-max-width: 28rem;
 	--button-max-width: 28rem;
-	--input-max-width: 28rem;
-
+	--column-width: 7rem;
 	--bright-border: 1px solid #ffffff;
 }
 
@@ -31,12 +30,14 @@ table {
 
 th,
 td {
-	position: relative;
-	max-width: 7rem;
+	// position: relative;
+	width: var(--column-width);
+	min-width: var(--column-width);
+	max-width: var(--column-width);
 	overflow: hidden;
 	// text-overflow: ellipsis;
 	white-space: nowrap;
-	vertical-align: top;
+	// vertical-align: top;
 	padding: 1px;
 	background-color: var(--pico-background-color);
 	border: 0.5px solid var(--color-grey); 
@@ -117,10 +118,24 @@ td:first-child {
 	}
 }
 
-select,
-textarea {
-	max-width: var(--input-max-width);
-	width: 100%;
+.dropdown-row {
+	display: grid;
+	grid-auto-flow: column;
+	grid-auto-columns: var(--column-width);
+	gap: 0px;
+	padding: 1px;
+}
+select {
+	width: calc(var(--column-width) - 4px);
+	background-color: var(--color-grey);
+	margin-bottom: 3px;
+	font-size: 0.6rem;
+	/* appearance: none; */
+	background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='white' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
+	// background-position: right 0.2rem right 0.2rem;
+	background-size: 1.2em;
+	padding: 0.2rem 0.2rem 0.2rem 0.2rem;
+	color: var(--color-white);
 }
 
 button,
@@ -158,6 +173,9 @@ thead th {
 	  width: 100%;
 	  overflow-x: auto;
 	  display: block;
+	  margin-left: -1rem;
+	  margin-right: -1rem;
+	  width: calc(100% + 2rem);
 	}
   
 	thead {
@@ -167,4 +185,10 @@ thead th {
 		background-color: var(--pico-background-color);
 	  }
 
+	  td {
+		// position: relative;
+		width: 7rem;
+		min-width: 7rem;
+		max-width: 7rem;
+	  }
   }

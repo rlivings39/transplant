@@ -4,15 +4,15 @@
 </script>
 
 <br />
-<nav class="bg-gray-800 p-4">
-	<div class="container mx-auto">
-		<a href="/" class="text-white mr-4">Home</a>
-		<a href="/Transplant" class="text-white">Transplant</a>
+<nav >
+	<div class="container-fluid p-1">
+		<a href="/">Home</a>
+		<a href="/Transplant">Transplant</a>
 		<br />
 		<br />
 	</div>
 </nav>
 
-<main class="container mx-auto p-4">
+<main class="container-fluid p-1">
 	<slot />
 </main>
