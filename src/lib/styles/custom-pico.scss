@@ -2,6 +2,9 @@
 	$theme-color: 'violet'
 );
 
+@import url('https://fonts.googleapis.com/css2?family=Roboto+Mono:wght@400;500&display=swap');
+
+
 :root {
 	--pico-font-family: Poppins;
 	--color-purple: #5f10b3;
@@ -17,6 +20,9 @@ h1 {
 	// color: red
 }
 table {
+	font-family: 'Roboto Mono', monospace;
+    font-size: 14px;
+    line-height: 1.5;
 	position: relative;
 	width: 100%;
 	border-collapse: separate;
@@ -37,7 +43,7 @@ td {
 	background-color: var(--pico-background-color);
 
 	&:hover {
-		background-color: rgba(255, 255, 255, 0.1);
+		background-color: rgb(55, 55, 55);
 	}
 }
 // td {
@@ -64,9 +70,10 @@ td {
 }
 
 /* Specific alignment for numeric content */
+table.numeric,
 td.numeric,
 th.numeric {
-	text-align: right; /* Right-align only numeric cells */
+	text-align: right !important; /* Right-align only numeric cells */
 }
 
 td {
@@ -78,33 +85,33 @@ td {
 table {
 	position: relative;
 	width: 100%;
-	overflow-x: auto;
+	// overflow-x: auto;
 	// Remove the max-height property
 	// max-height: 90vh;
-	border-top: 0.05px solid #ffffff;
+	// border-top: 0.05px solid #ffffff;
 	// border-collapse: separate;  // This is key - allows borders to be distinct
-	border-bottom: 0.05px solid #ffffff;
+	// border-bottom: 0.05px solid #ffffff;
 	// border-spacing: 0;         // Remove gaps between cells
 }
 
 thead {
 	position: sticky;
-	top: 0;
+	// top: 0;
 	z-index: 3;
 	background-color: var(--background-color, #13171f);
-	&:hover {
-		background-color: rgba(255, 255, 255, 0.1);
-	}
+	// &:hover {
+	// 	background-color: rgba(255, 255, 255, 1);
+	// }
 }
 
 /* Sticky First Column */
 td:first-child {
 	position: sticky;
-	left: 0;
+	// left: 0;
 	z-index: 1;
 	background-color: var(--pico-background-color);
 	// &:hover {
-	// 	background-color: rgba(255, 255, 255, 0.1);
+	// 	background-color: rgba(255, 255, 255, 1);
 	// }
 }
 
@@ -138,7 +145,7 @@ td:first-child {
 	z-index: 1;
 	background-color: var(--pico-background-color);
 	&:hover {
-		background-color: rgba(255, 255, 255, 0.1);
+		background-color: rgb(55, 55, 55);
 	}
 }
 input:not([type='checkbox']):not([type='radio']):not([type='range']):not([type='file']):not(

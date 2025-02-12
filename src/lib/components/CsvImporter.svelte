@@ -4,6 +4,12 @@
 
 	let { onParsed } = $props();
 
+	function parseNumber(value: string) {
+		// Remove commas and parse as number
+		const cleaned = value.replace(/,/g, '');
+		return isNaN(Number(cleaned)) ? value : Number(cleaned);
+	}
+
 	// eslint-disable-next-line @typescript-eslint/no-explicit-any
 	function handleFileSelect(event: any) {
 		const file = event.target?.files?.[0];
@@ -11,6 +17,8 @@
 
 		Papa.parse(file, {
 			header: true,
+			dynamicTyping: true,
+			transform: parseNumber, // Add this line
 			complete: (results) => {
 				logger.info('CSV Parsing Complete', {
 					data: results.data,

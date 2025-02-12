@@ -1,6 +1,8 @@
 <script lang="ts">
-// import '$lib/styles/tables.css';
-export let data: Record<string, string>[] = [];
+	// import '$lib/styles/tables.css';
+
+
+	export let data: Record<string, string>[] = [];
 </script>
 
 <table>
@@ -16,7 +18,7 @@ export let data: Record<string, string>[] = [];
 			{#each data as row}
 				<tr>
 					{#each Object.keys(row) as key}
-						<td>{row[key]}</td>
+						<td class={typeof row[key] === 'number' ? 'numeric' : ''}>{row[key]}</td>
 					{/each}
 				</tr>
 			{/each}
@@ -24,16 +26,3 @@ export let data: Record<string, string>[] = [];
 	{/if}
 </table>
 
-<style>
-	
-	/* table {
-		width: 100%;
-		border-collapse: collapse;
-	}
-	th,
-	td {
-		border: 1px solid #ddd;
-		padding: 8px;
-		text-align: left;
-	} */
-</style>
