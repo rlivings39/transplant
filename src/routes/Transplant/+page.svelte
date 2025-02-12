@@ -2,6 +2,8 @@
 	import ImportTable from '$lib/components/ImportTable.svelte';
 	import CsvImporter from '$lib/components/CsvImporter.svelte';
 	import TransformedHeader from '$lib/components/TransformedHeader.svelte';
+	import { logger } from '$lib/utils/logger';
+
 
 	type CsvRow = Record<string, string>;
 	type ParseError = { message: string };
@@ -13,6 +15,11 @@
 		const targetFields = ['land_name', 'crop_name', 'planted', 'planting_date', 'hectares', 'notes'];
 
 	function handleParsedData(parsedData: CsvRow[], parseErrors: ParseError[]) {
+		logger.info('CSV Data Parsed', { 
+			rowCount: parsedData.length,
+			sampleRow: parsedData[0],
+			columns: parsedData[0] ? Object.keys(parsedData[0]) : []
+		});
 		data = parsedData;
 		errors = parseErrors;
 	}
@@ -20,29 +27,16 @@
 
 
 <div class="container">
-
-{#if data.length > 0}
-		<TransformedHeader 
-			headers={Object.keys(data[0])} 
-			{targetFields} 
-		/>
-		<ImportTable {data} />
-	{/if}
-
-<div class="container">
 	<h1>TransPlant CSV Import</h1>
 	<CsvImporter onParsed={handleParsedData} />
 
 	{#if errors.length > 0}
-		<div class="error-container" style="margin: 1rem 0; padding: 1rem; background: #ffebee; border-radius: 0.25rem;">
-			<h4 style="margin: 0 0 0.5rem 0; color: #c62828;">CSV Parse Errors:</h4>
-			<ul style="margin: 0; padding-left: 1.5rem;">
-				{#each errors as error}
-					<li style="color: #c62828;">{error.message}</li>
-				{/each}
-			</ul>
-		</div>
-	{/if}
+	<p style="color: #c62828">
+		{#each errors as error}
+			{error.message}
+		{/each}
+	</p>
+{/if}
 
 	{#if data.length > 0}
 			<TransformedHeader 
@@ -52,4 +46,4 @@
 			<ImportTable {data} />
 	{/if}
 </div>
-</div>
+
