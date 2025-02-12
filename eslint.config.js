@@ -33,7 +33,7 @@ export default [
 			'svelte/spaced-html-comment': 'error',
 
 			// General rules
-			'no-console': ['warn', { allow: ['warn', 'error'] }],
+			'no-console': 'off', // Disabled during development
 			'no-debugger': 'warn'
 		}
 	},

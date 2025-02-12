@@ -1,36 +1,30 @@
-<script>
+<script lang="ts">
 	import Papa from 'papaparse';
-	import { createEventDispatcher } from 'svelte';
-	import { setParsed } from '$lib/state/data';
+	import { logger } from '$lib/utils/logger';
 
-	const dispatch = createEventDispatcher();
+	let { onParsed } = $props();
 
-	// Use $state for stage management as per MEMORY[a895e3cf]
-	let stage = $state('empty');
-
-	async function handleFileSelect(event) {
-		const file = event.target.files[0];
+	// eslint-disable-next-line @typescript-eslint/no-explicit-any
+	function handleFileSelect(event: any) {
+		const file = event.target?.files?.[0];
 		if (!file) return;
 
 		Papa.parse(file, {
-			header: true, // As per MEMORY[f8603e5b]
+			header: true,
 			complete: (results) => {
-				setParsed(Object.keys(results.data[0]), results.data);
-				// Dispatch with consistent naming
-				dispatch('parsedData', {
+				logger.info('CSV Parsing Complete', {
 					data: results.data,
-					errors: results.errors,
-					meta: results.meta
+					fileName: file.name
 				});
-				stage = 'parsed';
-			},
-			error: (error) => {
-				dispatch('error', error);
+
+				if (results.errors?.length) {
+					logger.error('CSV Parse Errors', results.errors);
+				}
+
+				onParsed(results.data, results.errors || []);
 			}
 		});
 	}
 </script>
 
-<div>
-	<input type="file" accept=".csv" onchange={handleFileSelect} style="margin-bottom: 1rem;" />
-</div>
+<input type="file" accept=".csv" onchange={handleFileSelect} />

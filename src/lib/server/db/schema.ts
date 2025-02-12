@@ -7,6 +7,7 @@
  */
 
 import { type BaseColumns } from './dbTypes';
+import { type PgTable } from 'drizzle-orm/pg-core';
 
 import {
 	pgTable,
@@ -42,7 +43,7 @@ const baseColumns = {
  * - polygon_id → Polygons
  * - project_id → Projects
  */
-export const land = pgTable('land', {
+export const land: PgTable = pgTable('land', {
 	land_id: text('land_id').primaryKey(),
 	land_name: text('land_name').notNull(),
 	hectares: numeric('hectares'),
@@ -129,7 +130,7 @@ export const organizations = pgTable('Organizations', {
  * Stores geographical data for land parcels
  * Linked to Land table
  */
-export const polygons = pgTable('Polygons', {
+export const polygons: PgTable = pgTable('Polygons', {
 	polygon_id: text('polygon_id').primaryKey(),
 	land_id: text('land_id').references(() => land.land_id),
 	geojson: json('geojson'),

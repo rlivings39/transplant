@@ -1,27 +1,37 @@
-<script>
-	export let tableData = [];
-
-	// Function to render table rows
-	function renderRows() {
-		return tableData
-			.map((row) => {
-				return `<tr>${Object.values(row)
-					.map((value) => `<td>${value}</td>`)
-					.join('')}</tr>`;
-			})
-			.join('');
-	}
+<script lang="ts">
+	export let data: Record<string, string>[] = [];
 </script>
 
 <table>
-	<thead>
-		<tr>
-			<th>Column 1</th>
-			<th>Column 2</th>
-			<!-- Add more columns as needed -->
-		</tr>
-	</thead>
-	<tbody>
-		{@html renderRows()}
-	</tbody>
+	{#if data.length > 0}
+		<thead>
+			<tr>
+				{#each Object.keys(data[0]) as header}
+					<th>{header}</th>
+				{/each}
+			</tr>
+		</thead>
+		<tbody>
+			{#each data as row}
+				<tr>
+					{#each Object.keys(row) as key}
+						<td>{row[key]}</td>
+					{/each}
+				</tr>
+			{/each}
+		</tbody>
+	{/if}
 </table>
+
+<style>
+	table {
+		width: 100%;
+		border-collapse: collapse;
+	}
+	th,
+	td {
+		border: 1px solid #ddd;
+		padding: 8px;
+		text-align: left;
+	}
+</style>
