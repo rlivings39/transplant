@@ -3,7 +3,7 @@
 		data: Record<string, string>[];
 		columnTypes: Record<string, string>;
 	}>();
-let filteredData = $derived(
+	let filteredData = $derived(
 		data.map((row) => {
 			return Object.fromEntries(
 				Object.entries(row).map(([key, value]) => [
@@ -19,7 +19,18 @@ let filteredData = $derived(
 			case 'number':
 				return !isNaN(Number(value));
 			case 'date':
-				return !isNaN(Date.parse(value));
+				// First check if it matches common date formats (YYYY-MM-DD, MM/DD/YYYY, DD/MM/YYYY)
+				const dateRegex = /^(?:\d{4}-\d{2}-\d{2}|\d{1,2}[\/.-]\d{1,2}[\/.-]\d{2,4})$/;
+				if (!dateRegex.test(value)) return false;
+
+				// Then verify it's a valid date (not like 2023-13-45)
+				const date = new Date(value);
+				return (
+					date instanceof Date &&
+					!isNaN(date.getTime()) &&
+					date.getFullYear() >= 1900 &&
+					date.getFullYear() <= 2100
+				);
 			case 'email':
 				return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value);
 			case 'url':
