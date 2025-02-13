@@ -2,108 +2,131 @@
 
 ## Overview
 
-This document provides instructions for implementing a dynamic table with multiple headers, each representing a different stage of data processing.
+This document provides guidance on implementing a dynamic table for managing multi-stage data processing within the Transplant App.
 
 ## Table Structure
 
-1. **Headers**: Each header represents a different component or stage in your data pipeline. These stages are `csv`, `transformed`, `mapped`, as defined in your state management. There are also headers components to toggle off irrelevant attributes and sort columns and filter.
+1. **Headers**:
 
-2. **Components Above Headers**: Above each `<thead>`, you can have dropdowns and toggles. These components will allow you to transform data types, sort columns, and map them to the database.
+   - Each header represents a different stage in the data pipeline: `csv`, `transformed`, and `mapped`.
+   - Additional controls are included for toggling irrelevant attributes, sorting, and filtering columns.
 
-3. **Dynamic Table**: The table should be dynamic, allowing for various actions on the data before pushing it to the database and recalling it for further modifications.
+2. **Components Above Headers**:
+
+   - Dropdowns and toggles allow users to transform data types, sort columns, and map them to the database schema.
+
+3. **Dynamic Table**:
+   - The table updates dynamically based on user interactions before data is pushed to the database.
 
 ## Implementation Steps
 
-1. **Define Table Headers**:
+### 1. Define Table Headers
 
-   - **CSV Header**: Display the raw CSV headers.
-   - **Transformed Header**: Display headers after data transformation.
-   - **Mapped Header**: Display headers mapped to the database schema.
+- **CSV Header**: Displays raw CSV headers.
+- **Transformed Header**: Displays headers post-transformation.
+- **Mapped Header**: Displays headers mapped to the database schema.
 
-2. **Create Components Above Headers**:
+### 2. Create Components Above Headers
 
-   - **Dropdowns**: For selecting data types or transformation options.
-   - **Toggles**: For enabling/disabling certain features or sorting.
+- **Dropdowns**: Enable selection of data types and transformation options.
+- **Toggles**: Allow users to enable/disable features and sorting.
 
-3. **State Management**:
+### 3. State Management
 
-   - Use the `$state` and `$derived` runes to manage the current stage and data.
-   - Utilize the existing functions (`loadCsv`, `transform`, `mapColumns`) to handle data transitions between stages.
+- Use `$state` and `$derived` runes to track current data processing stage.
+- Implement functions like `loadCsv`, `transform`, and `mapColumns` for transitioning between stages.
 
-4. **UI Integration**:
-   - Implement the table in your Svelte components, utilizing the state from `data.ts`.
-   - Ensure that the UI updates dynamically based on the current stage.
+### 4. UI Integration
+
+- Implement the table in Svelte, ensuring it dynamically updates based on state.
+- Connect UI elements to state from `data.ts` to maintain responsiveness.
 
 ## Organizing Table and Headers
 
-### Approach 1: Single Route File with Headers as Components
+### Approach 1: Single Route File with Header Components
 
-- **Structure**:
+**Structure:**
 
-  - Use a single route file, e.g., `+page.svelte`, to manage the overall page.
-  - Create separate component files for each header type in the `src/lib/components` directory.
+- A single route file (`+page.svelte`) manages the overall page.
+- Separate components for each header type in `src/lib/components`.
 
-- **Pros**:
+**Pros:**
 
-  - **Modularity**: Each header is encapsulated in its own component, making it easier to manage and update independently.
-  - **Reusability**: Headers can be reused across different tables or pages if needed.
-  - **Simplified Routing**: Only one route file to manage, reducing complexity in routing logic.
+- **Modularity**: Headers are independent, making updates easier.
+- **Reusability**: Components can be reused across different tables/pages.
+- **Simplified Routing**: A single route file reduces complexity.
 
-- **Cons**:
-  - **Component Overhead**: May introduce additional complexity if there are too many small components.
-  - **Inter-Component Communication**: Managing state and data flow between the main page and components might require additional effort.
+**Cons:**
 
-### Approach 2: New File for Each Table/Header Combo
+- **Component Overhead**: Multiple small components may introduce complexity.
+- **Inter-Component Communication**: State flow between the page and components needs careful handling.
 
-- **Structure**:
+### Approach 2: Separate Files for Each Table/Header Combo
 
-  - Create separate files for each table/header combination, possibly including both the table and its headers in the same file.
+**Structure:**
 
-- **Pros**:
+- Each table/header combination is defined in its own file.
 
-  - **Isolation**: Each table/header combo is self-contained, reducing dependencies.
-  - **Customization**: Easier to customize each table/header combo specifically for its use case.
+**Pros:**
 
-- **Cons**:
-  - **Duplication**: Potential for code duplication if similar logic is repeated across files.
-  - **Maintenance**: More files to manage, which can become cumbersome as the project grows.
+- **Isolation**: Reduces dependencies between components.
+- **Customization**: Each table can have tailored logic.
 
-### Approach 3: Component for the Table and Routes for Each Header
+**Cons:**
 
-- **Structure**:
+- **Duplication**: Similar logic may be repeated across files.
+- **Maintenance**: Managing many files can become cumbersome.
 
-  - Create a component for the table itself, and have different routes for each header type.
+### Approach 3: Table as a Component with Routes for Each Header
 
-- **Pros**:
+**Structure:**
 
-  - **Separation of Concerns**: Clearly separates the table logic from the header logic.
-  - **Dynamic Routing**: Allows for dynamic loading and rendering of headers based on the route.
+- A shared table component, with separate routes for headers.
 
-- **Cons**:
-  - **Complex Routing**: Requires more complex routing logic to handle different headers.
-  - **State Management**: Managing shared state between routes and components can be challenging.
+**Pros:**
 
-### Recommendation
+- **Separation of Concerns**: Distinct separation of table logic and headers.
+- **Dynamic Routing**: Supports conditional header rendering.
 
-Given the requirements and complexity, **Approach 1** is recommended. It provides modularity and reusability without overly complicating the routing logic. Headers' logic can be encapsulated in components, and the overall page managed in a single route file.
+**Cons:**
+
+- **Complex Routing**: Requires robust routing logic.
+- **State Management**: Shared state handling between routes and components can be challenging.
+
+### Recommended Approach
+
+**Approach 1** (Single Route with Header Components) is recommended for its balance between modularity and simplicity. This structure ensures:
+
+- Clear separation of concerns.
+- Easier state management.
+- Enhanced reusability.
 
 ## Reducing Complexity with Components
 
-To manage complexity, especially in large Svelte files, consider using the following strategies:
+### Best Practices:
 
-- **Componentization**: Break down complex files into smaller, reusable components. For example, you can create separate components for each header type and the main table. This modular approach makes it easier to manage and update the code.
+1. **Componentization**:
 
-- **Three Headers per Route**: You can have three headers per route on the same table, with each header being its own component. This way, headers are not nested within the table but have their own relationship to it, simplifying the structure.
+   - Separate headers and tables into modular components.
+   - Keep UI logic separate from business logic.
 
-- **Separation of Concerns**: Move data processing and business logic into separate utility functions or services. This separation ensures that UI components focus solely on rendering and user interaction, making the codebase more maintainable.
+2. **Three Headers per Route**:
 
-- **Centralized State Management**: Use a centralized state management solution or context to manage application state, reducing the need for multiple state variables scattered throughout the code.
+   - Implement each header as its own component.
+   - Maintain a direct relationship between headers and the table, avoiding deep nesting.
 
-Implementing these strategies will help in managing complexity, improving code readability, and enhancing maintainability. This approach aligns with the recommended strategy of using components for headers and maintaining a clear separation between UI and logic.
+3. **Separation of Concerns**:
 
-## Additional Notes
+   - Move data processing logic to utility functions.
+   - UI components should focus on rendering and interaction.
 
-- Consider adding error handling and validation to ensure data integrity throughout the stages.
-- Keep the user interface intuitive and responsive for better user experience.
+4. **Centralized State Management**:
+   - Use a unified state management approach to minimize redundant state variables.
 
-Feel free to expand this document with more details as you progress with the implementation.
+## Additional Considerations
+
+- Implement error handling and validation to ensure data integrity.
+- Keep UI intuitive and responsive for a better user experience.
+- Allow users to interactively adjust and map columns before data is stored.
+
+By following these strategies, the table implementation will be modular, efficient, and maintainable, aligning with the goals of the Transplant App.
