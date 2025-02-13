@@ -10,16 +10,16 @@
 		"strict": true,
 		"outDir": "./dist",
 		"rootDir": "./",
-		"baseUrl": "./",
+		// "baseUrl": "./",
 		"skipLibCheck": true,
 		"types": ["node", "vite/client"], // Add Node.js types and vite/client
 		"resolveJsonModule": true,
 		"forceConsistentCasingInFileNames": true,
 		"sourceMap": true,
-		"paths": {
-			"$lib": ["./src/lib"],
-			"$lib/*": ["./src/lib/*"]
-		}
+		// "paths": {
+		// 	"$lib": ["./src/lib"],
+		// 	"$lib/*": ["./src/lib/*"]
+		// }
 	},
 	"include": ["src/**/*.ts", "src/**/*.svelte"],
 	"exclude": ["node_modules"]
