@@ -12,7 +12,10 @@ const config = {
 		alias: {
 			$lib: 'src/lib'
 		  },
-		adapter: adapter()
+		adapter: adapter({
+			edge: false,
+			split: false
+		})
 	}
 };
 
