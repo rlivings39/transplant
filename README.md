@@ -4,11 +4,24 @@ A modern data pipeline for managing agricultural planting data, built with Svelt
 
 ## Features
 
-- **CSV Data Import**: Easily import planting data from CSV files
-- **Data Validation**: Robust validation with TypeScript and business rules
-- **Database Integration**: Seamless PostgreSQL integration via Drizzle ORM
-- **Modern UI**: Clean, accessible interface built with Svelte 5 and Pico CSS
-- **Type Safety**: Full TypeScript support throughout the application
+- **CSV Data Import**: Upload and process raw data stored as JSON in a submission log
+- **Data Transformation**: Users select column types (GPS, number, date) and apply validation
+- **Schema Mapping**: Drag-and-drop UI to map transformed data to relational tables
+- **Deduplication Logic**: Prevents duplicate entries by using a user-defined key (e.g., `land_name`)
+- **Database Integration**: Normalized storage using PostgreSQL and Drizzle ORM
+- **Modern UI**: Built with Svelte 5 for an interactive experience
+- **Data Recall**: Ability to reconstruct original spreadsheets from structured data
+
+## Data Pipeline Overview
+
+| **Stage**         | **Description**                                        |
+| ----------------- | ------------------------------------------------------ |
+| **1. Import**     | Users upload raw, flat data (spreadsheet format).      |
+| **2. Transform**  | Users manually select column types and validate data.  |
+| **3. Transplant** | Users map transformed data to a **normalized schema**. |
+| **4. Store**      | Transformed data is assigned to relational tables.     |
+| **5. Interact**   | Users analyze, filter, and generate reports.           |
+| **6. Recall**     | Data is restructured into a flat format for export.    |
 
 ## Getting Started
 
@@ -38,6 +51,28 @@ npm run db:push
 # Start development server
 npm run dev
 ```
+
+## Data Handling
+
+### Storage Overview
+
+| **Data Type**        | **Where It’s Stored?**        | **Purpose**                     |
+| -------------------- | ----------------------------- | ------------------------------- |
+| **Raw CSV Upload**   | JSON string in submission log | Allows users to reprocess later |
+| **Transformed Data** | Linked to normalized tables   | Active working data             |
+| **Normalized Data**  | Structured relational tables  | Efficient querying & analysis   |
+| **User-Defined Key** | Used for deduplication        | Prevents duplicate entries      |
+
+### Deduplication Logic
+
+- A **user-defined key** (e.g., `land_name`) is used to detect existing records.
+- Re-uploading a CSV updates matching records instead of inserting duplicates.
+
+| **Action**                 | **Behavior**                                |
+| -------------------------- | ------------------------------------------- |
+| First upload               | Inserts new records                         |
+| Re-upload with new sites   | Inserts new records, updates existing sites |
+| Re-upload with corrections | Only updates modified records               |
 
 ## Development
 
@@ -73,27 +108,64 @@ npm test:unit      # Run unit tests
 npm test:integration # Run integration tests
 ```
 
-## Contributing
-
-Please read [CONTRIBUTING.md](CONTRIBUTING.md) for our development process, coding standards, and state management patterns.
-
 ## Architecture
 
-Transplant follows a three-stage data pipeline:
+### Database Schema
 
-1. **CSV Stage**: Raw data ingestion
-2. **Transform Stage**: Data validation and cleaning
-3. **Map Stage**: Schema mapping and database preparation
+#### Land Table
 
-Each stage maintains its own typed state and validation rules.
-
-## Testing
-
-We use Vitest for unit testing and Playwright for integration tests. Run the full suite:
-
-```bash
-npm run test
+```sql
+CREATE TABLE Land (
+  land_id UUID PRIMARY KEY,
+  land_name TEXT,
+  gps_lat FLOAT,
+  gps_lon FLOAT,
+  hectares FLOAT
+);
 ```
+
+#### Crop Table
+
+```sql
+CREATE TABLE Crop (
+  species_id UUID PRIMARY KEY,
+  crop_name TEXT
+);
+```
+
+#### Planted Table (Join Table)
+
+```sql
+CREATE TABLE Planted (
+  planted_id UUID PRIMARY KEY,
+  land_id UUID REFERENCES Land(land_id),
+  crop_id UUID REFERENCES Crop(species_id),
+  planted INTEGER,
+  planting_date DATE
+);
+```
+
+### Recall (Export & Transpose)
+
+Users can reconstruct the original flat format at any time using SQL:
+
+```sql
+SELECT
+  l.land_name AS parcelID,
+  CONCAT(l.gps_lat, ' ', l.gps_lon) AS Location,
+  l.hectares AS areaHa,
+  p.planted AS numberTrees,
+  p.planting_date AS plantingYear,
+  (p.planted / l.hectares) AS trees_per_ha,
+  c.crop_name AS Species
+FROM Planted p
+JOIN Land l ON p.land_id = l.land_id
+JOIN Crop c ON p.crop_id = c.species_id;
+```
+
+## Contributing
+
+Please read [CONTRIBUTING.md](CONTRIBUTING.md) for our development process, coding standards, and best practices.
 
 ## License
 
