@@ -10,6 +10,7 @@
 	}
 
 	function handleFileSelect(event: Event) {
+		if (typeof window === 'undefined') return;
 		const file = (event.target as HTMLInputElement)?.files?.[0];
 		if (!file) return;
 

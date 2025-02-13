@@ -15,11 +15,7 @@
 		"types": ["node", "vite/client"], // Add Node.js types and vite/client
 		"resolveJsonModule": true,
 		"forceConsistentCasingInFileNames": true,
-		"sourceMap": true,
-		// "paths": {
-		// 	"$lib": ["./src/lib"],
-		// 	"$lib/*": ["./src/lib/*"]
-		// }
+		"sourceMap": true
 	},
 	"include": ["src/**/*.ts", "src/**/*.svelte"],
 	"exclude": ["node_modules"]

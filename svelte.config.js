@@ -10,8 +10,9 @@ const config = {
 	}),
 	kit: {
 		alias: {
-			$lib: 'src/lib'
-		  },
+			$lib: 'src/lib',
+			$app: './.svelte-kit/types/$app'
+		},
 		adapter: adapter({
 			edge: false,
 			split: false,
