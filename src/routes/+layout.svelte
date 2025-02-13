@@ -7,7 +7,7 @@
 <nav >
 	<div class="container-fluid p-1">
 		<a href="/">Home</a>
-		<a href="/Transplant">Transplant</a>
+		<a href="/transplant">Transplant</a>
 		<br />
 		<br />
 	</div>

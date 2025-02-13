@@ -3,8 +3,7 @@
 		data: Record<string, string>[];
 		columnTypes: Record<string, string>;
 	}>();
-
-	let filteredData = $derived(
+let filteredData = $derived(
 		data.map((row) => {
 			return Object.fromEntries(
 				Object.entries(row).map(([key, value]) => [
