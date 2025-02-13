@@ -12,10 +12,15 @@
 		"rootDir": "./",
 		// "baseUrl": "./",
 		"skipLibCheck": true,
-		"types": ["node", "vite/client"], // Add Node.js types and vite/client
+		"types": ["node", "vite/client", "@sveltejs/kit"], // Add Node.js types, vite/client, and SvelteKit
 		"resolveJsonModule": true,
 		"forceConsistentCasingInFileNames": true,
-		"sourceMap": true
+		"sourceMap": true,
+		"paths": {
+			"$lib": ["./src/lib"],
+			"$lib/*": ["./src/lib/*"],
+			"$app/*": ["./.svelte-kit/types/$app/*"]
+		}
 	},
 	"include": ["src/**/*.ts", "src/**/*.svelte"],
 	"exclude": ["node_modules"]
