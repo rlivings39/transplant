@@ -1,46 +1,35 @@
 <script lang="ts">
 	import { logger } from '$lib/utils/logger';
 
-		// 6. DATA TRANSFORMER: Receives data and columnTypes as props from +page.svelte
-	// 7. Will transform this data based on the specified column types
 	const { data, columnTypes } = $props<{
 		data: Record<string, string>[];
 		columnTypes: Record<string, string>;
 	}>();
 
-	const transformedData = $state<Record<string, string | number | Date | null>[]>([]);
-	let prevData = $state<Record<string, string>[]>([]);
-	let prevColumnTypes = $state<Record<string, string>>({});
+	let transformedData = $state<Record<string, string | number | Date | null>[]>([]);
 
-		// 8. Reactively transforms data whenever data or columnTypes change
+	// Rebuild table whenever columnTypes change
 	$effect(() => {
-		if (data === prevData && columnTypes === prevColumnTypes) return;
+		if (!data?.length) return;
 
-		logger.log('ImportTable: columnTypes changed:', $state.snapshot(columnTypes));
-		logger.log('ImportTable: current data:', $state.snapshot(data));
+		transformedData = data.map((row: Record<string, string>) => {
+			const transformedRow: Record<string, string | number | Date | null> = {};
+			for (const [header, type] of Object.entries(columnTypes)) {
+				const value = row[header];
+				transformedRow[header] = transformValue(value, type);
+			}
+			return transformedRow;
+		});
 
-		$state.snapshot(transformedData).length = 0;
-		transformedData.push(
-			...data.map((row: Record<string, string>) => {
-				const transformedRow: Record<string, string | number | Date | null> = {};
-
-				for (const [header, type] of Object.entries(columnTypes)) {
-					const value = row[header];
-					transformedRow[header] = transformValue(value, type);
-				}
-
-				return transformedRow;
-			})
-		);
-
-		prevData = data;
-		prevColumnTypes = columnTypes;
+		logger.log('Transformed data:', transformedData);
 	});
 
 	function transformValue(value: string, type: string): string | number | Date | null {
+		if (!value || value.trim() === '') return null;
+
 		switch (type) {
 			case 'number': {
-				const num = parseFloat(value);
+				const num = parseFloat(value.replace(/,/g, ''));
 				return isNaN(num) ? null : num;
 			}
 			case 'date': {
@@ -48,8 +37,9 @@
 				return isNaN(date.getTime()) ? null : date;
 			}
 			case 'gps': {
-				const [lat, lon] = value.split(',').map(Number);
-				return isNaN(lat) || isNaN(lon) ? null : `${lat.toFixed(6)},${lon.toFixed(6)}`;
+				const coords = value.split(',').map((v) => parseFloat(v.trim()));
+				if (coords.length !== 2 || coords.some(isNaN)) return null;
+				return `${coords[0].toFixed(6)},${coords[1].toFixed(6)}`;
 			}
 			case 'email':
 				return value.toLowerCase();
@@ -61,23 +51,28 @@
 	}
 </script>
 
-<table>
-	{#if data.length > 0}
-		<thead>
-			<tr>
-				{#each Object.keys(data[0]) as header}
-					<th>{header}</th>
-				{/each}
-			</tr>
-		</thead>
-		<tbody>
-			{#each data as row}
+<div class="table-container">
+	{#if data?.length > 0}
+		<table>
+			<thead>
 				<tr>
-					{#each Object.keys(row) as key}
-						<td class={typeof row[key] === 'number' ? 'numeric' : ''}>{row[key]}</td>
+					{#each Object.keys(data[0]) as header}
+						<th>{header}</th>
 					{/each}
 				</tr>
-			{/each}
-		</tbody>
+			</thead>
+			<tbody>
+				{#each data as row, i}
+					<tr>
+						{#each Object.keys(row) as key}
+							<td class={typeof transformedData[i]?.[key] === 'number' ? 'numeric' : ''}>
+								{transformedData[i]?.[key] ?? row[key]}
+								<!-- {/if} -->
+							</td>
+						{/each}
+					</tr>
+				{/each}
+			</tbody>
+		</table>
 	{/if}
-</table>
+</div>

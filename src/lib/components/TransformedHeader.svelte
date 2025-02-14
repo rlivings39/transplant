@@ -1,20 +1,19 @@
 <script lang="ts">
 	import { logger } from '$lib/utils/logger';
-		// 9. COLUMN TYPE MANAGER: Manages column type selection UI
-	// 10. Receives headers and data as props from parent for type inference
-	const { headers, data } = $props<{
+	const { headers, data, columnTypes } = $props<{
 		headers: string[];
 		data: Record<string, string>[];
+		columnTypes: Record<string, string>;
 	}>();
 
-	let columnTypes = $state<Record<string, string>>({});
-	const types = ['date', 'email', 'gps', 'number', 'string', 'url'];
+	let mutableColumnTypes = $state(columnTypes);
+	const types = ['date', 'email', 'gps', 'number', 'string', 'url', 'delete'];
 
 	$effect(() => {
 		// Auto-detect types when data changes
 		if (data.length > 0) {
-			columnTypes = Object.fromEntries(
-				headers.map((header) => [header, detectType(data[0][header])])
+			mutableColumnTypes = Object.fromEntries(
+				headers.map((header: string) => [header, detectType(data[0][header])])
 			);
 		}
 	});
@@ -48,9 +47,14 @@
 <div class="dropdown-row">
 	{#each headers as header}
 		<select
-			bind:value={columnTypes[header]}
+			bind:value={mutableColumnTypes[header]}
 			onchange={() => {
-				logger.log('TransformedHeader: dropdown changed for', header, 'to', columnTypes[header]);
+				logger.log(
+					'TransformedHeader: dropdown changed for',
+					header,
+					'to',
+					mutableColumnTypes[header]
+				);
 			}}
 		>
 			{#each types as type}
