@@ -37,21 +37,20 @@
 	}
 </script>
 
-<table>
+<!-- <table>
 	<thead>
 		<tr>
 			{#each Object.keys(data[0]) as header}
-				<th>{header} ({columnTypes[header]})</th>
+				<th>{header}</th>
 			{/each}
 		</tr>
-	</thead>
-	<tbody>
+	</thead> -->
+	<!-- <tbody>
 		{#each transformedData as row}
 			<tr>
 				{#each Object.keys(row) as key}
 					<td>
 						{#if columnTypes[key] === 'number' && typeof row[key] !== 'number'}
-							<!-- Show empty for non-numeric values in number columns -->
 						{:else}
 							{row[key]}
 						{/if}
@@ -60,4 +59,4 @@
 			</tr>
 		{/each}
 	</tbody>
-</table>
+</table> -->
