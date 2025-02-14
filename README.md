@@ -1,6 +1,7 @@
 # Transplant
 
-A modern data pipeline for managing agricultural planting data, built with Svelte 5 and TypeScript.
+A open source data pipeline for collecting and interacting with large-scale reforestation data. The intention is to provide a public resource for science and practitioners to drive transparency and efficiency in large scale reforestation production. 
+"Reforesation data" is the actual claims on tree planting and silviculture including who planted what trees and where (polygons). The app imports CSV's in various formats and maps them to the database.  
 
 ## Features
 
