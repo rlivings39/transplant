@@ -1,53 +1,64 @@
 <script lang="ts">
-	  import { logger } from '$lib/utils/logger';
+	import { logger } from '$lib/utils/logger';
 
+		// 6. DATA TRANSFORMER: Receives data and columnTypes as props from +page.svelte
+	// 7. Will transform this data based on the specified column types
 	const { data, columnTypes } = $props<{
 		data: Record<string, string>[];
 		columnTypes: Record<string, string>;
 	}>();
-	const transformedData = $state<Record<string, any>[]>([]);
+
+	const transformedData = $state<Record<string, string | number | Date | null>[]>([]);
 	let prevData = $state<Record<string, string>[]>([]);
 	let prevColumnTypes = $state<Record<string, string>>({});
 
-$effect(() => {
-  if (data === prevData && columnTypes === prevColumnTypes) return;
-  
-  logger.log('ImportTable: columnTypes changed:', $state.snapshot(columnTypes));
-  logger.log('ImportTable: current data:', $state.snapshot(data));
+		// 8. Reactively transforms data whenever data or columnTypes change
+	$effect(() => {
+		if (data === prevData && columnTypes === prevColumnTypes) return;
 
-  $state.snapshot(transformedData).length = 0; // Clear existing data
-  transformedData.push(...data.map((row) => {
-    const transformedRow: Record<string, any> = {};
-    
-    for (const [header, type] of Object.entries(columnTypes)) {
-      const value = row[header];
-      transformedRow[header] = transformValue(value, type);
-    }
-    
-    return transformedRow;
-  }));
+		logger.log('ImportTable: columnTypes changed:', $state.snapshot(columnTypes));
+		logger.log('ImportTable: current data:', $state.snapshot(data));
 
-  prevData = data;
-  prevColumnTypes = columnTypes;
-});
-	function transformValue(value: string, type: string): any {
-    switch (type) {
-      case 'number':
-        return parseFloat(value);
-      case 'date':
-        return new Date(value);
-		case 'gps':
-      const [lat, lon] = value.split(',').map(Number);
-      if (isNaN(lat) || isNaN(lon)) return null;
-      return `${lat.toFixed(6)},${lon.toFixed(6)}`;
-      case 'email':
-        return value.toLowerCase();
-      case 'url':
-        return value.startsWith('http') ? value : `https://${value}`;
-      default:
-        return value;
-    }
-  }
+		$state.snapshot(transformedData).length = 0;
+		transformedData.push(
+			...data.map((row: Record<string, string>) => {
+				const transformedRow: Record<string, string | number | Date | null> = {};
+
+				for (const [header, type] of Object.entries(columnTypes)) {
+					const value = row[header];
+					transformedRow[header] = transformValue(value, type);
+				}
+
+				return transformedRow;
+			})
+		);
+
+		prevData = data;
+		prevColumnTypes = columnTypes;
+	});
+
+	function transformValue(value: string, type: string): string | number | Date | null {
+		switch (type) {
+			case 'number': {
+				const num = parseFloat(value);
+				return isNaN(num) ? null : num;
+			}
+			case 'date': {
+				const date = new Date(value);
+				return isNaN(date.getTime()) ? null : date;
+			}
+			case 'gps': {
+				const [lat, lon] = value.split(',').map(Number);
+				return isNaN(lat) || isNaN(lon) ? null : `${lat.toFixed(6)},${lon.toFixed(6)}`;
+			}
+			case 'email':
+				return value.toLowerCase();
+			case 'url':
+				return value.startsWith('http') ? value : `https://${value}`;
+			default:
+				return value;
+		}
+	}
 </script>
 
 <table>

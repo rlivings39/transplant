@@ -1,5 +1,8 @@
+
 <script lang="ts">
-	import Papa from 'papaparse';
+// 1. ENTRY POINT: Handles CSV file upload and parsing using PapaParse
+// 2. Uses PapaParse to convert CSV to array of objects
+import Papa from 'papaparse';
 
 	let { onParsed } = $props();
 

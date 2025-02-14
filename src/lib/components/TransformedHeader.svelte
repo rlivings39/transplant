@@ -1,4 +1,7 @@
 <script lang="ts">
+	import { logger } from '$lib/utils/logger';
+		// 9. COLUMN TYPE MANAGER: Manages column type selection UI
+	// 10. Receives headers and data as props from parent for type inference
 	const { headers, data } = $props<{
 		headers: string[];
 		data: Record<string, string>[];
@@ -44,11 +47,12 @@
 
 <div class="dropdown-row">
 	{#each headers as header}
-		<select 
+		<select
 			bind:value={columnTypes[header]}
 			onchange={() => {
-				console.log('TransformedHeader: dropdown changed for', header, 'to', columnTypes[header]);
-			}}>
+				logger.log('TransformedHeader: dropdown changed for', header, 'to', columnTypes[header]);
+			}}
+		>
 			{#each types as type}
 				<option value={type}>{type}</option>
 			{/each}
