@@ -46,7 +46,7 @@
 		</tr>
 	</thead>
 	<tbody>
-		{#each transformedData as row, i}
+		{#each transformedData as row}
 			<tr>
 				{#each Object.keys(row) as key}
 					<td>

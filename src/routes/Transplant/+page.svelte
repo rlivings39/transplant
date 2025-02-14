@@ -50,14 +50,14 @@
 </script>
 
 <div>
-	<input type="file" accept=".csv" on:change={handleFileSelect} />
+	<input type="file" accept=".csv" onchange={handleFileSelect} />
 
 	{#if data.length > 0}
 		<div>
 			{#each Object.keys(data[0]) as header}
 				<select
 					value={columnTypes[header]}
-					on:change={(e) => handleTypeChange(header, e.target.value)}
+					onchange={(e) => handleTypeChange(header, e.target.value)}
 				>
 					<option value="string">String</option>
 					<option value="number">Number</option>
