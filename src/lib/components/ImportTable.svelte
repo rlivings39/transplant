@@ -1,44 +1,53 @@
 <script lang="ts">
+	  import { logger } from '$lib/utils/logger';
+
 	const { data, columnTypes } = $props<{
 		data: Record<string, string>[];
 		columnTypes: Record<string, string>;
 	}>();
-	let filteredData = $derived(
-		data.map((row) => {
-			return Object.fromEntries(
-				Object.entries(row).map(([key, value]) => [
-					key,
-					isMatchingType(value, columnTypes[key]) ? value : '-'
-				])
-			);
-		})
-	);
+	const transformedData = $state<Record<string, any>[]>([]);
+	let prevData = $state<Record<string, string>[]>([]);
+	let prevColumnTypes = $state<Record<string, string>>({});
 
-	function isMatchingType(value: string, type: string): boolean {
-		switch (type) {
-			case 'number':
-				return !isNaN(Number(value));
-			case 'date':
-				// First check if it matches common date formats (YYYY-MM-DD, MM/DD/YYYY, DD/MM/YYYY)
-				const dateRegex = /^(?:\d{4}-\d{2}-\d{2}|\d{1,2}[\/.-]\d{1,2}[\/.-]\d{2,4})$/;
-				if (!dateRegex.test(value)) return false;
+$effect(() => {
+  if (data === prevData && columnTypes === prevColumnTypes) return;
+  
+  logger.log('ImportTable: columnTypes changed:', $state.snapshot(columnTypes));
+  logger.log('ImportTable: current data:', $state.snapshot(data));
 
-				// Then verify it's a valid date (not like 2023-13-45)
-				const date = new Date(value);
-				return (
-					date instanceof Date &&
-					!isNaN(date.getTime()) &&
-					date.getFullYear() >= 1900 &&
-					date.getFullYear() <= 2100
-				);
-			case 'email':
-				return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value);
-			case 'url':
-				return /^https?:\/\/\S+$/.test(value);
-			default:
-				return true;
-		}
-	}
+  $state.snapshot(transformedData).length = 0; // Clear existing data
+  transformedData.push(...data.map((row) => {
+    const transformedRow: Record<string, any> = {};
+    
+    for (const [header, type] of Object.entries(columnTypes)) {
+      const value = row[header];
+      transformedRow[header] = transformValue(value, type);
+    }
+    
+    return transformedRow;
+  }));
+
+  prevData = data;
+  prevColumnTypes = columnTypes;
+});
+	function transformValue(value: string, type: string): any {
+    switch (type) {
+      case 'number':
+        return parseFloat(value);
+      case 'date':
+        return new Date(value);
+		case 'gps':
+      const [lat, lon] = value.split(',').map(Number);
+      if (isNaN(lat) || isNaN(lon)) return null;
+      return `${lat.toFixed(6)},${lon.toFixed(6)}`;
+      case 'email':
+        return value.toLowerCase();
+      case 'url':
+        return value.startsWith('http') ? value : `https://${value}`;
+      default:
+        return value;
+    }
+  }
 </script>
 
 <table>

@@ -44,7 +44,11 @@
 
 <div class="dropdown-row">
 	{#each headers as header}
-		<select bind:value={columnTypes[header]}>
+		<select 
+			bind:value={columnTypes[header]}
+			onchange={() => {
+				console.log('TransformedHeader: dropdown changed for', header, 'to', columnTypes[header]);
+			}}>
 			{#each types as type}
 				<option value={type}>{type}</option>
 			{/each}
