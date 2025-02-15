@@ -1,15 +1,17 @@
 <script lang="ts">
     import { logger } from '$lib/utils/logger';
 
-    const { header } = $props<{
+    const { header, onToggle } = $props<{
         header: string;
+        onToggle: (header: string, removed: boolean) => void;
     }>();
  
     let isRemoved = $state(false);
 
     function toggleColumn() {
         isRemoved = !isRemoved;
-        logger.log('Column visibility toggled', { header, isRemoved });
+        onToggle(header, isRemoved);
+        logger.log('Column visibility toggled', { header, status: isRemoved ? 'grayed out' : 'visible' });
     }
 </script>
 
