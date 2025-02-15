@@ -6,7 +6,7 @@
 
 	let data = $state<Record<string, string>[]>([]);
 	let columnTypes = $state<Record<string, string>>({});
-let removedColumns = $state<Set<string>>(new Set());
+	let removedColumns = $state<Set<string>>(new Set());
 	let showTable = $state(true);
 	let transformedData = $state<Record<string, string | number | null>[]>([]);
 
@@ -57,64 +57,64 @@ let removedColumns = $state<Set<string>>(new Set());
 	<input type="file" accept=".csv" onchange={handleFileSelect} />
 
 	{#if data.length > 0}
-	{#if showTable}
-		<table>
-			<thead>
-				<tr>
-					{#each Object.keys(data[0]) as header}
-						<th class={removedColumns.has(header) ? 'removed' : ''}>
-							<div class="column-header">
-								<ColumnRemoval 
-									{header} 
-									onToggle={(header, removed) => {
-										const newSet = new Set(removedColumns);
-										if (removed) {
-											newSet.add(header);
-										} else {
-											newSet.delete(header);
-										}
-										removedColumns = newSet;
-									}}
-								/>
-								<select
-									value={columnTypes[header]}
-									onchange={(e) => handleTypeChange(header, e.target.value)}
-								>
-									<option value="string">String</option>
-									<option value="number">Number</option>
-									<option value="date">Date</option>
-									<option value="gps">GPS</option>
-									<option value="delete">Delete</option>
-								</select>
-								<span class="header-text">{header}</span>
-							</div>
-						</th>
-					{/each}
-				</tr>
-			</thead>
-			<tbody>
-				{#each transformedData as row}
+		{#if showTable}
+			<table>
+				<thead>
 					<tr>
-						{#each Object.keys(row) as key}
-							<td class={removedColumns.has(key) ? 'removed' : ''}>
-								{#if columnTypes[key] === 'number'}
-									{typeof row[key] === 'number' ? row[key] : ''}
-								{:else}
-									{row[key]}
-								{/if}
-							</td>
+						{#each Object.keys(data[0]) as header}
+							<th class={removedColumns.has(header) ? 'removed' : ''}>
+								<div class="column-header">
+									<ColumnRemoval
+										{header}
+										onToggle={(header, removed) => {
+											const newSet = new Set(removedColumns);
+											if (removed) {
+												newSet.add(header);
+											} else {
+												newSet.delete(header);
+											}
+											removedColumns = newSet;
+										}}
+									/>
+									<select
+										value={columnTypes[header]}
+										onchange={(e) => handleTypeChange(header, e.target.value)}
+									>
+										<option value="string">String</option>
+										<option value="number">Number</option>
+										<option value="date">Date</option>
+										<option value="gps">GPS</option>
+										<option value="delete">Delete</option>
+									</select>
+									<div class="header-text">{header}</div>
+								</div>
+							</th>
 						{/each}
 					</tr>
-				{/each}
-			</tbody>
-		</table>
-	{:else}
-		<p>Table deleted! Upload a new CSV to start over.</p>
+				</thead>
+				<tbody>
+					{#each transformedData as row}
+						<tr>
+							{#each Object.keys(row) as key}
+								<td class={removedColumns.has(key) ? 'removed' : ''}>
+									{#if columnTypes[key] === 'number'}
+										{typeof row[key] === 'number' ? row[key] : ''}
+									{:else}
+										{row[key]}
+									{/if}
+								</td>
+							{/each}
+						</tr>
+					{/each}
+				</tbody>
+			</table>
+		{:else}
+			<p>Table deleted! Upload a new CSV to start over.</p>
+		{/if}
 	{/if}
-{/if}
 </div>
 
-<style>
+<!-- <style>
 	.column-header {
 		display: flex;
 		flex-direction: column;
@@ -151,4 +151,4 @@ let removedColumns = $state<Set<string>>(new Set());
 		border-radius: 4px;
 		border: 1px solid #ccc;
 	}
-</style>
+</style> -->

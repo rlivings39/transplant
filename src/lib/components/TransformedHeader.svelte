@@ -1,4 +1,4 @@
-<script lang="ts">
+<!-- <script lang="ts">
 	import { logger } from '$lib/utils/logger';
 	const { headers, data, columnTypes } = $props<{
 		headers: string[];
@@ -56,7 +56,7 @@
 
 		return 'string';
 	}
-</script> 
+</script>  -->
 
 <!-- <div class="dropdown-row">
 	{#each headers as header}
