@@ -49,11 +49,13 @@
 	}
 </script>
 
-<div>
+<div style="height: 100vh; display: flex; flex-direction: column;">
+	<!-- <div style="flex: 0 0 auto;"> -->
 	<input type="file" accept=".csv" onchange={handleFileSelect} />
 
+
 	{#if data.length > 0}
-		<div class="table-container">
+	<div class="table-container">
 			<table>
 				{#if showTable}
 					<thead>
@@ -100,4 +102,5 @@
 			</table>
 		</div>
 	{/if}
+
 </div>

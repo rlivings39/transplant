@@ -13,7 +13,7 @@
 	--color-white: #e0e0e0 --input-max-width: 28rem;
 	--button-max-width: 28rem;
 	--column-width: 7rem;
-	--bright-border: 1px solid #ffffff;
+	--bright-border: 1px solid #e0e0e0;
 }
 
 nav a {
@@ -30,13 +30,15 @@ h1 {
 	color: var(--color-white);
 }
 
-.table-container {
-	// width: fit-content;
-	// max-width: 100%;
-	width: 100%;
-	overflow-x: auto;
-	background-color: var(--color-purple);
-}
+// .table-container {
+// 	width: 100%;
+// 	// max-width: 100%;
+// 	width: 100%;
+// 	overflow-x: auto;
+// 	overflow-y: auto;
+// 	max-height: 80vh; /* Add max-height to enable vertical scrolling */
+// 	// background-color: var(--color-purple);
+// }
 
 table {
 	font-family: 'Roboto Mono', monospace;
@@ -83,31 +85,45 @@ td {
 	padding: 8px;
 }
 
-table {
-	position: relative;
-}
+// table {
+// 	position: relative;
+// }
 
 thead {
-	position: sticky;
-	// top: 0;
-	line-height: 2;
-	z-index: 3;
+    position: sticky;
+    top: -1px; /* Compensate for border */
+    z-index: 3;
+    margin: 0;
+    padding: 0;
 }
 
-thead th {
-	border-bottom: var(--bright-border); // Add the border to individual header cells
-}
+// thead tr:first-child {
+//     position: sticky;
+//     top: 0;
+//     z-index: 4;
+//     background-color: var(--pico-background-color);
+// }
 
-/* Sticky First Column */
+// thead tr:first-child td {
+//     padding: 0;
+//     border: none;
+// }
+
+// thead tr:nth-child(2) {
+//     position: sticky;
+//     top: 2rem; /* Adjust based on select height */
+//     z-index: 3;
+// }
+
 td:first-child {
-	position: sticky;
+	// position: sticky;
 	// left: 0;
 	z-index: 1;
 }
 
 th:first-child {
-	position: sticky;
-	z-index: 2;
+	// position: sticky;
+	// z-index: 2;
 }
 
 /* Intersection cell (top-left) */
@@ -134,10 +150,15 @@ td:first-child {
 	}
 }
 
-.table-container {
-	width: 100%;
-	overflow-x: auto;
-}
+// .table-container {
+//     width: 100%;
+//     overflow-x: auto;
+//     overflow-y: auto;
+//     max-height: 100vh;
+//     position: relative;
+//     margin: 0;
+//     padding: 0;
+// }
 
 // .dropdown-row {
 // 	display: grid;
@@ -149,18 +170,18 @@ td:first-child {
 
 
 select {
-    width: var(--column-width);
-    background-color: var(--color-grey);
+    // width: var(--column-width);
+    // background-color: var(--color-grey);
     margin-bottom: 3px;
     font-size: 0.6rem;
-    overflow-x: auto;
+    // overflow-x: auto;
     white-space: nowrap; /* Prevent wrapping */
     background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='white' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
-    background-size: 1.2em;
-    padding: 0.2rem 0.2rem 0.2rem 0.2rem;
+    // background-size: 1.2em;
+    padding: 0.2rem 0.2rem 0.1rem 0.1rem;
     color: var(--color-white);
     cursor: pointer;
-    border: 1px solid var(--color-grey);
+    // border: 1px solid var(--color-grey);
     &:hover {
         background-color: #282828;
     }
