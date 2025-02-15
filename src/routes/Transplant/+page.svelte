@@ -55,7 +55,7 @@
 
 
 	{#if data.length > 0}
-	<div class="table-container">
+	<!-- <div class="table-container"> -->
 			<table>
 				{#if showTable}
 					<thead>
@@ -77,7 +77,7 @@
 						</tr>
 						<tr>
 							{#each Object.keys(data[0]) as header}
-								<th>{header} ({columnTypes[header]})</th>
+								<th>{header}</th>
 							{/each}
 						</tr>
 					</thead>
@@ -100,7 +100,7 @@
 					<div>Table deleted! Upload a new CSV to start over.</div>
 				{/if}
 			</table>
-		</div>
+		<!-- </div> -->
 	{/if}
 
 </div>
