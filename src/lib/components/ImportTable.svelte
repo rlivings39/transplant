@@ -36,27 +36,3 @@
 		}
 	}
 </script>
-
-<!-- <table>
-	<thead>
-		<tr>
-			{#each Object.keys(data[0]) as header}
-				<th>{header}</th>
-			{/each}
-		</tr>
-	</thead> -->
-	<!-- <tbody>
-		{#each transformedData as row}
-			<tr>
-				{#each Object.keys(row) as key}
-					<td>
-						{#if columnTypes[key] === 'number' && typeof row[key] !== 'number'}
-						{:else}
-							{row[key]}
-						{/if}
-					</td>
-				{/each}
-			</tr>
-		{/each}
-	</tbody>
-</table> -->

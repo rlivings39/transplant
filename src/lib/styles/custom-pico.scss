@@ -31,9 +31,11 @@ h1 {
 }
 
 .table-container {
-	width: fit-content;
-	max-width: 100%;
+	// width: fit-content;
+	// max-width: 100%;
+	width: 100%;
 	overflow-x: auto;
+	background-color: var(--color-purple);
 }
 
 table {
@@ -55,6 +57,7 @@ td {
 	max-width: var(--column-width);
 	overflow: hidden;
 	// text-overflow: ellipsis;
+	
 	white-space: nowrap;
 	// vertical-align: top;
 	padding: 1px;
@@ -131,29 +134,36 @@ td:first-child {
 	}
 }
 
-.dropdown-row {
-	display: grid;
-	grid-auto-flow: column;
-	grid-auto-columns: var(--column-width);
-	gap: 0px;
-	padding: 1px;
+.table-container {
+	width: 100%;
+	overflow-x: auto;
 }
+
+// .dropdown-row {
+// 	display: grid;
+// 	grid-auto-flow: column;
+// 	grid-auto-columns: var(--column-width);
+// 	gap: 0px;
+// 	padding: 1px;
+// }
+
+
 select {
-	width: calc(var(--column-width) - 4px);
-	background-color: var(--color-grey);
-	margin-bottom: 3px;
-	font-size: 0.6rem;
-	/* appearance: none; */
-	background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='white' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
-	// background-position: right 0.2rem right 0.2rem;
-	background-size: 1.2em;
-	padding: 0.2rem 0.2rem 0.2rem 0.2rem;
-	color: var(--color-white);
-	cursor: pointer;
-	border: 1px solid var(--color-grey);
-	&:hover {
-		background-color: #282828;
-	}
+    width: var(--column-width);
+    background-color: var(--color-grey);
+    margin-bottom: 3px;
+    font-size: 0.6rem;
+    overflow-x: auto;
+    white-space: nowrap; /* Prevent wrapping */
+    background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='white' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
+    background-size: 1.2em;
+    padding: 0.2rem 0.2rem 0.2rem 0.2rem;
+    color: var(--color-white);
+    cursor: pointer;
+    border: 1px solid var(--color-grey);
+    &:hover {
+        background-color: #282828;
+    }
 }
 
 button,
