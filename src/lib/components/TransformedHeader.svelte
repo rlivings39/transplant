@@ -10,16 +10,28 @@
 	const types = ['date', 'email', 'gps', 'number', 'string', 'url', 'delete'];
 
 	$effect(() => {
-		// Auto-detect types when data changes
+		logger.log('Type Detection Started', { dataLength: data.length, headers });
 		if (data.length > 0) {
 			mutableColumnTypes = Object.fromEntries(
-				headers.map((header: string) => [header, detectType(data[0][header])])
+				headers.map((header: string) => {
+					// Check first 5 rows for type detection
+					const typeCounts: Record<string, number> = {};
+					for (let i = 0; i < Math.min(5, data.length); i++) {
+						const type = detectType(data[i][header]);
+						typeCounts[type] = (typeCounts[type] || 0) + 1;
+					}
+					// Return the most common type
+					return [header, Object.entries(typeCounts).reduce((a, b) => (a[1] > b[1] ? a : b))[0]];
+				})
 			);
 		}
 	});
 
 	function detectType(value: string): string {
-		// First check if it's a pure number
+		// Skip empty values
+		if (!value || value.trim() === '') return 'string';
+
+		// Check for pure numbers
 		if (!isNaN(Number(value)) && !/^\s*$/.test(value)) return 'number';
 
 		// Check for GPS coordinates
@@ -29,7 +41,9 @@
 		const datePatterns = [
 			/^\d{4}-\d{2}-\d{2}$/, // YYYY-MM-DD
 			/^\d{1,2}\/\d{1,2}\/\d{2,4}$/, // MM/DD/YY or MM/DD/YYYY
-			/^\d{1,2}\s+[A-Za-z]{3}\s+\d{2,4}$/ // DD MMM YYYY or DD MMM YY
+			/^\d{1,2}\s+[A-Za-z]{3}\s+\d{2,4}$/, // DD MMM YYYY or DD MMM YY
+			/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}.\d{3}Z$/, // ISO format
+			/^\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}$/ // Date with time
 		];
 		if (datePatterns.some((pattern) => pattern.test(value))) {
 			const date = new Date(value);
@@ -42,9 +56,9 @@
 
 		return 'string';
 	}
-</script>
+</script> 
 
-<div class="dropdown-row">
+<!-- <div class="dropdown-row">
 	{#each headers as header}
 		<select
 			bind:value={mutableColumnTypes[header]}
@@ -63,3 +77,4 @@
 		</select>
 	{/each}
 </div>
+-->

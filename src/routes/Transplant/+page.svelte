@@ -1,6 +1,8 @@
 <script lang="ts">
 	import { logger } from '$lib/utils/logger';
 	import Papa from 'papaparse';
+	import ColumnRemoval from '$lib/components/ColumnRemoval.svelte';
+	import TransformedHeader from '$lib/components/TransformedHeader.svelte';
 
 	let data = $state<Record<string, string>[]>([]);
 	let columnTypes = $state<Record<string, string>>({});
@@ -53,54 +55,62 @@
 	<!-- <div style="flex: 0 0 auto;"> -->
 	<input type="file" accept=".csv" onchange={handleFileSelect} />
 
-
 	{#if data.length > 0}
-	<!-- <div class="table-container"> -->
-			<table>
-				{#if showTable}
-					<thead>
+		<!-- <div class="table-container"> -->
+		<table>
+			{#if showTable}
+				<thead>
+					<tr>
+						{#each Object.keys(data[0]) as header}
+							<td>
+								<ColumnRemoval {header} />
+								<select
+									value={columnTypes[header]}
+									onchange={(e) => handleTypeChange(header, e.target.value)}
+								>
+									<option value="string">String</option>
+									<option value="number">Number</option>
+									<option value="date">Date</option>
+									<option value="gps">GPS</option>
+									<option value="delete">Delete</option>
+								</select>
+							</td>
+						{/each}
+					</tr>
+					<tr>
+						{#each Object.keys(data[0]) as header}
+							<th>{header}</th>
+						{/each}
+					</tr>
+				</thead>
+				<tbody>
+					{#each transformedData as row}
 						<tr>
-							{#each Object.keys(data[0]) as header}
+							{#each Object.keys(row) as key}
 								<td>
-									<select
-										value={columnTypes[header]}
-										onchange={(e) => handleTypeChange(header, e.target.value)}
-									>
-										<option value="string">String</option>
-										<option value="number">Number</option>
-										<option value="date">Date</option>
-										<option value="gps">GPS</option>
-										<option value="delete">Delete</option>
-									</select>
+									{#if columnTypes[key] === 'number'}
+										{typeof row[key] === 'number' ? row[key] : ''}
+									{:else}
+										{row[key]}
+									{/if}
 								</td>
 							{/each}
 						</tr>
-						<tr>
-							{#each Object.keys(data[0]) as header}
-								<th>{header}</th>
-							{/each}
-						</tr>
-					</thead>
-					<tbody>
-						{#each transformedData as row}
-							<tr>
-								{#each Object.keys(row) as key}
-									<td>
-										{#if columnTypes[key] === 'number'}
-											{typeof row[key] === 'number' ? row[key] : ''}
-										{:else}
-											{row[key]}
-										{/if}
-									</td>
-								{/each}
-							</tr>
-						{/each}
-					</tbody>
-				{:else}
-					<div>Table deleted! Upload a new CSV to start over.</div>
-				{/if}
-			</table>
+					{/each}
+				</tbody>
+			{:else}
+				<div>Table deleted! Upload a new CSV to start over.</div>
+			{/if}
+		</table>
 		<!-- </div> -->
 	{/if}
-
 </div>
+
+<!-- <style>
+	.column-header {
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+		gap: 0.5rem;
+	}
+</style> -->

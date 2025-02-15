@@ -1,7 +1,7 @@
 import { sveltekit } from '@sveltejs/kit/vite';
 import { defineConfig } from 'vite';
 import type { UserConfig } from 'vite';
-import type { UserConfig as VitestConfig } from 'vitest/config';
+// import type { UserConfig as VitestConfig } from 'vitest/config';
 
 export default defineConfig({
 	plugins: [sveltekit()],
@@ -15,5 +15,8 @@ export default defineConfig({
 			allow: ['..']
 		},
 		port: 5174
+	},
+	build: {
+		sourcemap: true
 	}
-} as UserConfig & VitestConfig);
+} as UserConfig);
