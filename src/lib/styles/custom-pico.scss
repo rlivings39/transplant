@@ -41,6 +41,95 @@ table {
 	border: 0.05px solid #ffffff;
 }
 
+.header-text {
+	word-break: break-word !important;
+	max-width: 100px;
+	font-size: 0.8rem;
+	// white-space: normal !important;
+}
+
+// TOOL TIP🖊️️
+// [title] {
+//     position: relative;
+//     cursor: help;
+
+//     &:hover::before {
+//         content: attr(title);
+//         position: absolute;
+//         top: 100%;    // Position above the element
+//         left: 50%;       // Center horizontally
+//         transform: translateX(-50%);
+//         padding: 0.5rem;
+//         background: rgba(0, 0, 0, 0.8);
+//         color: white;
+//         border-radius: 4px;
+//         font-size: 0.8rem;
+//         white-space: nowrap;
+//         z-index: 1000;
+//         pointer-events: none;
+//         min-width: 120px;
+//         text-align: center;
+//         margin-bottom: 5px;  // Add some space between tooltip and element
+//     }
+// }
+
+// [data-tooltip] {
+//     position: relative;
+//     cursor: help;
+
+//     &::before {
+//         content: attr(data-tooltip);
+//         position: absolute;
+//         top: 125%;  // Position above the element
+//         left: 50%;
+//         transform: translateX(-50%);
+//         padding: 0.5rem;
+//         background: rgba(0, 0, 0, 0.8);
+//         color: white;
+//         border-radius: 4px;
+//         font-size: 0.8rem;
+//         white-space: nowrap;
+//         z-index: 1000;
+//         opacity: 0;
+//         pointer-events: none;
+//         transition: opacity 0.2s;
+//     }
+
+//     &:hover::before {
+//         opacity: 1;
+//     }
+// }
+
+[data-tooltip] {
+    position: relative;
+    cursor: help;
+
+    &::before {
+        content: attr(data-tooltip);
+        position: fixed;
+        clip: auto;           // Add this to prevent clipping
+        clip-path: none;      // Add this to prevent clipping
+        overflow: visible;    // Add this to ensure visibility
+        transform: translate(-50%, -120%);
+        padding: 0.5rem;
+        background: rgba(0, 0, 0, 0.8);
+        color: white;
+        border-radius: 4px;
+        font-size: 0.8rem;
+        white-space: nowrap;
+        z-index: 1000;
+        opacity: 0;
+        pointer-events: none;
+        transition: opacity 0.2s;
+    }
+
+    &:hover::before {
+        opacity: 1;
+        top: var(--tooltip-y);
+        left: var(--tooltip-x);
+    }
+}
+
 th,
 td {
 	// position: relative;
@@ -49,7 +138,7 @@ td {
 	max-width: var(--column-width);
 	overflow: hidden;
 	// text-overflow: ellipsis;
-	
+
 	white-space: nowrap;
 	// vertical-align: top;
 	padding: 1px;
@@ -76,11 +165,11 @@ td {
 }
 
 thead {
-    position: sticky;
-    top: -1px; /* Compensate for border */
-    z-index: 3;
-    margin: 0;
-    padding: 0;
+	position: sticky;
+	top: -1px; /* Compensate for border */
+	z-index: 3;
+	margin: 0;
+	padding: 0;
 }
 
 td:first-child {
@@ -111,21 +200,21 @@ td:first-child {
 }
 
 select {
-    // width: var(--column-width);
-    // background-color: var(--color-grey);
-    margin-bottom: 3px;
-    font-size: 0.6rem;
-    // overflow-x: auto;
-    white-space: nowrap; /* Prevent wrapping */
-    background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='white' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
-    // background-size: 1.2em;
-    padding: 0.2rem 0.2rem 0.1rem 0.1rem;
-    color: var(--color-white);
-    cursor: pointer;
-    // border: 1px solid var(--color-grey);
-    &:hover {
-        background-color: #282828;
-    }
+	// width: var(--column-width);
+	// background-color: var(--color-grey);
+	margin-bottom: 3px;
+	font-size: 0.6rem;
+	// overflow-x: auto;
+	white-space: nowrap; /* Prevent wrapping */
+	background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='white' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
+	// background-size: 1.2em;
+	padding: 0.2rem 0.2rem 0.1rem 0.1rem;
+	color: var(--color-white);
+	cursor: pointer;
+	// border: 1px solid var(--color-grey);
+	&:hover {
+		background-color: #282828;
+	}
 }
 
 button,
@@ -167,8 +256,6 @@ thead th {
 // 📱️📱️📱️📱️📱️📱️📱️📱️📱️📱️📱️📱️📱️📱️📱️📱️📱️📱️📱️📱️📱️📱️📱️📱️📱️📱️📱️📱️📱️📱️📱️📱️📱️📱️📱️📱️📱️📱️📱️📱️📱️📱️📱️📱️📱️📱️📱️📱️📱️📱️📱️📱️📱️📱️📱️
 
 @media (max-width: 480px) {
-	
-
 	table {
 		width: 100%;
 		overflow-x: auto;
@@ -192,13 +279,13 @@ thead th {
 	// 	margin: 0;
 	// 	padding: 0;
 	// }
-	
+
 	td:first-child {
 		z-index: 1;
 	}
-	
+
 	thead th:first-child {
 		z-index: 4;
-		background-color: var(--background-color, #172b18)
-	} 
+		background-color: var(--background-color, #172b18);
+	}
 }

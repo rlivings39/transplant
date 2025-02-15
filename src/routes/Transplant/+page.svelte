@@ -86,7 +86,17 @@
 										<option value="gps">GPS</option>
 										<option value="delete">Delete</option>
 									</select>
-									<div class="header-text">{header}</div>
+									<div
+										class="header-text"
+										data-tooltip={header}
+										onmousemove={(e) => {
+											const target = e.currentTarget;
+											target.style.setProperty('--tooltip-x', `${e.clientX}px`);
+											target.style.setProperty('--tooltip-y', `${e.clientY}px`);
+										}}
+									>
+										{header}
+									</div>
 								</div>
 							</th>
 						{/each}
@@ -115,40 +125,15 @@
 </div>
 
 <!-- <style>
-	.column-header {
-		display: flex;
-		flex-direction: column;
-		align-items: center;
-		gap: 0.5rem;
-		padding: 0.5rem;
-	}
+    .column-header {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 0.5rem;
+    }
 
-	.header-text {
-		font-weight: bold;
-		margin-top: 0.25rem;
-	}
-
-	.removed {
-		opacity: 0.5;
-	}
-
-	.removed .column-header {
-		opacity: 0.7;
-	}
-
-	table {
-		border-collapse: collapse;
-		width: 100%;
-	}
-
-	th, td {
-		border: 1px solid #ddd;
-		padding: 0.5rem;
-	}
-
-	select {
-		padding: 0.25rem;
-		border-radius: 4px;
-		border: 1px solid #ccc;
-	}
+    :global([title]) {
+        position: relative;
+        cursor: help;
+    }
 </style> -->
