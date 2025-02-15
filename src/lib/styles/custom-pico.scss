@@ -31,6 +31,34 @@ h1 {
 }
 
 table {
+    td, th {
+        position: relative;
+        cursor: help;
+
+        &:hover::before {
+            content: attr(title);  // Use title instead of data-tooltip
+            position: fixed;
+            clip: auto;
+            clip-path: none;
+            overflow: visible;
+            transform: translate(-50%, -120%);
+            padding: 0.5rem;
+            background: rgba(0, 0, 0, 0.8);
+            color: white;
+            border-radius: 4px;
+            font-size: 0.8rem;
+            white-space: nowrap;
+            z-index: 1000;
+            opacity: 1;
+            pointer-events: none;
+            top: var(--tooltip-y);
+            left: var(--tooltip-x);
+        }
+    }
+}
+
+
+table {
 	font-family: 'Roboto Mono', monospace;
 	font-size: 10px;
 	line-height: 1;

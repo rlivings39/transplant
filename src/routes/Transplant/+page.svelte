@@ -58,7 +58,16 @@
 
 	{#if data.length > 0}
 		{#if showTable}
-			<table>
+			<table
+				role="grid"
+				onmousemove={(e) => {
+					const target = e.target.closest('td, th');
+					if (target) {
+						target.style.setProperty('--tooltip-x', `${e.clientX}px`);
+						target.style.setProperty('--tooltip-y', `${e.clientY}px`);
+					}
+				}}
+			>
 				<thead>
 					<tr>
 						{#each Object.keys(data[0]) as header}
@@ -86,15 +95,7 @@
 										<option value="gps">GPS</option>
 										<option value="delete">Delete</option>
 									</select>
-									<div
-										class="header-text"
-										data-tooltip={header}
-										onmousemove={(e) => {
-											const target = e.currentTarget;
-											target.style.setProperty('--tooltip-x', `${e.clientX}px`);
-											target.style.setProperty('--tooltip-y', `${e.clientY}px`);
-										}}
-									>
+									<div class="header-text" data-content={header}>
 										{header}
 									</div>
 								</div>
