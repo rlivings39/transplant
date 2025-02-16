@@ -31,32 +31,32 @@ h1 {
 }
 
 table {
-    td, th {
-        position: relative;
-        cursor: help;
+	td,
+	th {
+		position: relative;
+		cursor: help;
 
-        &:hover::before {
-            content: attr(title);  // Use title instead of data-tooltip
-            position: fixed;
-            clip: auto;
-            clip-path: none;
-            overflow: visible;
-            transform: translate(-50%, -120%);
-            padding: 0.5rem;
-            background: rgba(0, 0, 0, 0.8);
-            color: white;
-            border-radius: 4px;
-            font-size: 0.8rem;
-            white-space: nowrap;
-            z-index: 1000;
-            opacity: 1;
-            pointer-events: none;
-            top: var(--tooltip-y);
-            left: var(--tooltip-x);
-        }
-    }
+		&:hover::before {
+			content: attr(title); // Use title instead of data-tooltip
+			position: fixed;
+			clip: auto;
+			clip-path: none;
+			overflow: visible;
+			transform: translate(-50%, -120%);
+			padding: 0.5rem;
+			background: rgba(0, 0, 0, 0.8);
+			color: white;
+			border-radius: 4px;
+			font-size: 0.8rem;
+			white-space: nowrap;
+			z-index: 1000;
+			opacity: 1;
+			pointer-events: none;
+			top: var(--tooltip-y);
+			left: var(--tooltip-x);
+		}
+	}
 }
-
 
 table {
 	font-family: 'Roboto Mono', monospace;
@@ -129,33 +129,33 @@ table {
 // }
 
 [data-tooltip] {
-    position: relative;
-    cursor: help;
+	position: relative;
+	cursor: help;
 
-    &::before {
-        content: attr(data-tooltip);
-        position: fixed;
-        clip: auto;           // Add this to prevent clipping
-        clip-path: none;      // Add this to prevent clipping
-        overflow: visible;    // Add this to ensure visibility
-        transform: translate(-50%, -120%);
-        padding: 0.5rem;
-        background: rgba(0, 0, 0, 0.8);
-        color: white;
-        border-radius: 4px;
-        font-size: 0.8rem;
-        white-space: nowrap;
-        z-index: 1000;
-        opacity: 0;
-        pointer-events: none;
-        transition: opacity 0.2s;
-    }
+	&::before {
+		content: attr(data-tooltip);
+		position: fixed;
+		clip: auto; // Add this to prevent clipping
+		clip-path: none; // Add this to prevent clipping
+		overflow: visible; // Add this to ensure visibility
+		transform: translate(-50%, -120%);
+		padding: 0.5rem;
+		background: rgba(0, 0, 0, 0.8);
+		color: white;
+		border-radius: 4px;
+		font-size: 0.8rem;
+		white-space: nowrap;
+		z-index: 1000;
+		opacity: 0;
+		pointer-events: none;
+		transition: opacity 0.2s;
+	}
 
-    &:hover::before {
-        opacity: 1;
-        top: var(--tooltip-y);
-        left: var(--tooltip-x);
-    }
+	&:hover::before {
+		opacity: 1;
+		top: var(--tooltip-y);
+		left: var(--tooltip-x);
+	}
 }
 
 th,
@@ -175,6 +175,28 @@ td {
 
 	&:hover {
 		background-color: rgb(55, 55, 55);
+	}
+}
+
+th.removed,
+td.removed {
+	background-color: rgba(128, 128, 128, 0.2) !important;
+	color: rgba(224, 224, 224, 0.5) !important;
+
+	&:hover {
+		background-color: rgba(128, 128, 128, 0.3) !important;
+	}
+}
+
+.column-toggle {
+	input[type='checkbox']:not(:checked) {
+		opacity: 0.5;
+
+		& ~ .column-header,
+		& ~ td {
+			background-color: rgba(128, 128, 128, 0.2) !important;
+			color: rgba(224, 224, 224, 0.5) !important;
+		}
 	}
 }
 
@@ -264,7 +286,7 @@ button,
 	}
 }
 
-// 🏄🏼‍♀️️🏄🏼‍♀️️🏄🏼‍♀️️🏄🏼‍♀️️🏄🏼‍♀️️🏄🏼‍♀️️🏄🏼‍♀️️🏄🏼‍♀️️🏄🏼‍♀️️🏄🏼‍♀️️🏄🏼‍♀️️🏄🏼‍♀️️🏄🏼‍♀️️🏄🏼‍♀️️🏄🏼‍♀️️🏄🏼‍♀️️🏄🏼‍♀️️🏄🏼‍♀️️🏄🏼‍♀️️🏄🏼‍♀️️🏄🏼‍♀️️🏄🏼‍♀️️🏄🏼‍♀️️🏄🏼‍♀️️🏄🏼‍♀️️🏄🏼‍♀️️🏄🏼‍♀️️🏄🏼‍♀️️🏄🏼‍♀️️🏄🏼‍♀️️🏄🏼‍♀️️🏄🏼‍♀️️🏄🏼‍♀️🏄🏼‍♀️️🏄🏼‍♀️️🏄🏼‍♀️️🏄🏼‍♀️️🏄🏼‍♀️️🏄🏼‍♀️️🏄🏼‍♀️️🏄🏼‍♀️️🏄🏼‍♀️️🏄🏼‍♀️️🏄🏼‍♀️️🏄🏼‍♀️️🏄🏼‍♀️️🏄🏼‍♀️️️🏄🏼‍♀️️🏄🏼‍♀️️🏄🏼‍♀️️🏄🏼‍♀️️🏄🏼‍♀️️🏄🏼‍♀️️🏄🏼‍♀️️🏄🏼‍♀️️
+// 🏄🏼‍♀️️🏄🏼‍♀️️🏄🏼‍♀️️🏄🏼‍♀️️🏄🏼‍♀️️🏄🏼‍♀️️🏄🏼‍♀️️🏄🏼‍♀️️🏄🏼‍♀️️🏄🏼‍♀️️🏄🏼‍♀️️🏄🏼‍♀️️🏄🏼‍♀️️🏄🏼‍♀️️🏄🏼‍♀️️🏄🏼‍♀️️🏄🏼‍♀️️🏄🏼‍♀️️🏄🏼‍♀️️🏄🏼‍♀️️🏄🏼‍♀️️🏄🏼‍♀️️🏄🏼‍♀️️🏄🏼‍♀️️🏄🏼‍♀️️🏄🏼‍♀️️🏄🏼‍♀️️🏄🏼‍♀️️🏄🏼‍♀️🏄🏼‍♀️️🏄🏼‍♀️️🏄🏼‍♀️️🏄🏼‍♀️️🏄🏼‍♀️️🏄🏼‍♀️️🏄🏼‍♀️️🏄🏼‍♀️️🏄🏼‍♀️️🏄🏼‍♀️️🏄🏼‍♀️️🏄🏼‍♀️️🏄🏼‍♀️️🏄🏼‍♀️️🏄🏼‍♀️️🏄🏼‍♀️️🏄🏼‍♀️️️🏄🏼‍♀️️🏄🏼‍♀️️🏄🏼‍♀️️🏄🏼‍♀️️🏄🏼‍♀️️🏄🏼‍♀️️🏄🏼‍♀️️🏄🏼‍♀️️
 /* Responsive Adjustment */
 @media (max-width: 768px) {
 	th,
@@ -281,7 +303,7 @@ thead th {
 	padding: 0.3rem;
 }
 
-// 📱️📱️📱️📱️📱️📱️📱️📱️📱️📱️📱️📱️📱️📱️📱️📱️📱️📱️📱️📱️📱️📱️📱️📱️📱️📱️📱️📱️📱️📱️📱️📱️📱️📱️📱️📱️📱️📱️📱️📱️📱️📱️📱️📱️📱️📱️📱️📱️📱️📱️📱️📱️📱️📱️📱️
+// 📱️📱️📱️📱️📱️📱️📱️📱️📱️📱️📱️📱️📱️📱️📱️📱️📱️📱️📱️📱️📱️📱️📱️📱️📱️📱️📱️📱️📱️📱️📱️📱️📱️📱️📱️📱️📱️📱️📱️📱️📱️📱️📱️📱️📱️📱️📱️📱️📱️📱️📱️📱️📱️📱️📱️📱️
 
 @media (max-width: 480px) {
 	table {
