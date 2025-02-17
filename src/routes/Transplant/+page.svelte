@@ -2,7 +2,7 @@
 	import { logger } from '$lib/utils/logger';
 	import Papa from 'papaparse';
 	import ColumnRemoval from '$lib/components/ColumnRemoval.svelte';
-	import TransformedHeader from '$lib/components/TransformedHeader.svelte';
+	// import TransformedHeader from '$lib/components/TransformedHeader.svelte';
 
 	let data = $state<Record<string, string>[]>([]);
 	let columnTypes = $state<Record<string, string>>({});
@@ -72,7 +72,7 @@
 					<tr>
 						{#each Object.keys(data[0]) as header}
 							<th class={removedColumns.has(header) ? 'removed' : ''}>
-								<div class="column-header">
+								<div class="header-text">
 									<ColumnRemoval
 										{header}
 										onToggle={(header, removed) => {

@@ -1,27 +1,21 @@
-/* eslint-disable */ {
-	"extends": "./.svelte-kit/tsconfig.json",
-	"compilerOptions": {
-		"allowJs": true,
-		"checkJs": true,
-		"esModuleInterop": true,
-		"lib": ["dom", "es2022"],
-		"target": "ES2022",
-		"verbatimModuleSyntax": true, // Required for using Svelte files with TypeScript
-		"strict": true,
-		"outDir": "./dist",
-		"rootDir": "./",
-		// "baseUrl": "./",
-		"skipLibCheck": true,
-		"types": ["node", "vite/client", "@sveltejs/kit"], // Add Node.js types, vite/client, and SvelteKit
-		"resolveJsonModule": true,
-		"forceConsistentCasingInFileNames": true,
-		"sourceMap": true,
-		"paths": {
-			"$lib": ["./src/lib"],
-			"$lib/*": ["./src/lib/*"],
-			"$app/*": ["./.svelte-kit/types/$app/*"]
-		}
-	},
-	"include": ["src/**/*.ts", "src/**/*.svelte"],
-	"exclude": ["node_modules"]
+{
+    "extends": "./.svelte-kit/tsconfig.json",
+    "compilerOptions": {
+        "module": "esnext",
+        "moduleResolution": "node",
+        "target": "es2020",
+        "lib": ["es2020", "dom"],
+        "strict": true,
+        "esModuleInterop": true,
+        "skipLibCheck": true,
+        "forceConsistentCasingInFileNames": true,
+        "resolveJsonModule": true,
+        "isolatedModules": true,
+        "noEmit": true,
+        "jsx": "preserve",
+        "jsxImportSource": "svelte",
+        "types": ["svelte", "node", "vite/client"]
+    },
+    "include": ["src/**/*"],
+    "exclude": ["node_modules"]
 }
