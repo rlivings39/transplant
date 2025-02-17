@@ -26,10 +26,10 @@
 	<div class="table-container">
 		<table>
 			<thead>
-				<tr>
+				<tr class="header-text">
 					{#each headers as header}
 						<th>
-							<div class="header-text">
+							<div>
 								<select value={columnTypes[header]} on:change={(e) => handleTypeChange(header, e)}>
 									<option value="string">Text</option>
 									<option value="number">Number</option>

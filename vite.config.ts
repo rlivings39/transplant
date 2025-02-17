@@ -14,7 +14,8 @@ export default defineConfig({
 		fs: {
 			allow: ['..']
 		},
-		port: 5174
+		port: 5174,
+		strictPort: false
 	},
 	build: {
 		sourcemap: true
