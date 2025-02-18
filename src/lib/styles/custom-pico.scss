@@ -87,8 +87,16 @@ table {
 	font-size: 0.8rem !important;
 	// white-space: normal !important;
 }
+.column-toggle {
+	display: inline-block;
+	margin: 0 0.5rem;
+  }
 
-[data-tooltip] {
+  input[type="checkbox"] {
+	cursor: pointer;
+  }
+
+  [data-tooltip] {
 	position: relative;
 	cursor: help;
 

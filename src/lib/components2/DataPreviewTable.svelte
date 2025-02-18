@@ -7,8 +7,9 @@
 	let toggledColumns = $state<Record<string, boolean>>({});
 
 	function handleColumnToggle(columnId: string, isActive: boolean) {
-		toggledColumns = { ...toggledColumns, [columnId]: !isActive };
-	}
+  toggledColumns = { ...toggledColumns, [columnId]: !isActive };
+  console.log('Column toggled:', columnId, isActive);
+}
 
 	const { data } = $props<{
 		data: Record<string, string>[];
@@ -31,41 +32,50 @@
 
 <div>
 	<div class="table-container">
-		<table>
-			<thead>
-				<tr class="header-text">
-				  {#each headers as header}
-				  <th>
-					<div class="header-controls">
-					  <ToggleOff 
-						columnId={header} 
-						onToggle={handleColumnToggle}
-					  />
-					  <select value={columnTypes[header]} onchange={(e) => handleTypeChange(header, e)}>
-						<option value="string">Text</option>
-						<option value="number">Number</option>
-						<option value="date">Date</option>
-						<option value="delete">Delete</option>
-					  </select>
-					</div>
-					<div class="header-name">
-					  {header}
-					</div>
-				  </th>
-				  {/each}
-				</tr>
-			  </thead>
-			  <tbody>
-				{#each previewData as row, i}
-				  <tr>
-					{#each headers as header}
-					  <td class={toggledColumns[header] ? 'toggled-off' : ''}>
-						{row[header]}
-					  </td>
-					{/each}
-				  </tr>
-				{/each}
-			  </tbody>
-		</table>
+	  <table>
+		<thead>
+		  <tr class="header-text">
+			{#each headers as header}
+			  <th>
+				<div class="header-controls">
+				  <ToggleOff 
+					columnId={header} 
+					onToggle={handleColumnToggle}
+				  />
+				  <select value={columnTypes[header]} onchange={(e) => handleTypeChange(header, e)}>
+					<option value="string">Text</option>
+					<option value="number">Number</option>
+					<option value="date">Date</option>
+					<option value="delete">Delete</option>
+				  </select>
+				</div>
+				<div class="header-name">
+				  {header}
+				</div>
+			  </th>
+			{/each}
+		  </tr>
+		</thead>
+		<tbody>
+		  {#each previewData as row, i}
+			<tr>
+			  {#each headers as header}
+				<td class={toggledColumns[header] ? 'toggled-off' : ''}>
+				  {toggledColumns[header] ? '' : row[header]}
+				</td>
+			  {/each}
+			</tr>
+		  {/each}
+		</tbody>
+	  </table>
 	</div>
-</div>
+  </div>
+  
+			  
+			  <style>
+				.toggled-off {
+				  opacity: 0.3;
+				  background-color: #f0f0f0;
+				  pointer-events: none;
+				}
+			  </style>

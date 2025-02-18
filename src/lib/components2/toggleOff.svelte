@@ -9,31 +9,16 @@
     function handleToggle() {
       isActive = !isActive;
       onToggle(columnId, isActive);
+      console.log('Toggle:', columnId, isActive);
     }
   </script>
   
-  <div class="column-toggle {columnId}">
+  <div class="column-toggle">
     <input 
       type="checkbox" 
-      bind:checked={isActive}
+      checked={isActive}
       onchange={handleToggle}
-      class={columnId}
     />
   </div>
   
-  <style>
-    .column-toggle {
-      display: inline-block;
-      margin: 0 0.5rem;
-    }
   
-    input[type="checkbox"] {
-      cursor: pointer;
-      opacity: 1;
-      transition: opacity 0.2s ease;
-    }
-  
-    input[type="checkbox"]:not(:checked) {
-      opacity: 0.5;
-    }
-  </style>
