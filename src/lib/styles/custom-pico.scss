@@ -65,7 +65,22 @@ table {
 	border-spacing: 0;
 	border: 0.05px solid #ffffff;
 }
-
+.header-controls {
+	display: flex;
+	flex-direction: column;
+	gap: 0.25rem;
+	align-items: center;
+	margin-bottom: 0.5rem;
+  
+	input[type="checkbox"] {
+	  margin-bottom: 0.25rem;
+	}
+  
+	select {
+	  width: 100%;
+	  max-width: 120px;
+	}
+  } 
 .header-text {
 	// word-break: break-word !important;
 	// max-width: 100px;

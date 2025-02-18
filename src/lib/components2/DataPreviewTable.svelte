@@ -2,6 +2,13 @@
 	/// <reference types="svelte" />
 	import { createEventDispatcher } from 'svelte';
 	import type { HTMLSelectElement } from 'svelte/elements';
+	import ToggleOff from './toggleOff.svelte';
+
+	let toggledColumns = $state<Record<string, boolean>>({});
+
+	function handleColumnToggle(columnId: string, isActive: boolean) {
+		toggledColumns = { ...toggledColumns, [columnId]: !isActive };
+	}
 
 	const { data } = $props<{
 		data: Record<string, string>[];
@@ -27,30 +34,38 @@
 		<table>
 			<thead>
 				<tr class="header-text">
-					{#each headers as header}
-						<th>
-							<div>
-								<select value={columnTypes[header]} on:change={(e) => handleTypeChange(header, e)}>
-									<option value="string">Text</option>
-									<option value="number">Number</option>
-									<option value="date">Date</option>
-									<option value="delete">Delete</option>
-								</select>
-							</div>
-							{header}
-						</th>
-					{/each}
+				  {#each headers as header}
+				  <th>
+					<div class="header-controls">
+					  <ToggleOff 
+						columnId={header} 
+						onToggle={handleColumnToggle}
+					  />
+					  <select value={columnTypes[header]} onchange={(e) => handleTypeChange(header, e)}>
+						<option value="string">Text</option>
+						<option value="number">Number</option>
+						<option value="date">Date</option>
+						<option value="delete">Delete</option>
+					  </select>
+					</div>
+					<div class="header-name">
+					  {header}
+					</div>
+				  </th>
+				  {/each}
 				</tr>
-			</thead>
-			<tbody>
-				{#each previewData as row}
-					<tr>
-						{#each headers as header}
-							<td>{row[header]}</td>
-						{/each}
-					</tr>
+			  </thead>
+			  <tbody>
+				{#each previewData as row, i}
+				  <tr>
+					{#each headers as header}
+					  <td class={toggledColumns[header] ? 'toggled-off' : ''}>
+						{row[header]}
+					  </td>
+					{/each}
+				  </tr>
 				{/each}
-			</tbody>
+			  </tbody>
 		</table>
 	</div>
 </div>
