@@ -1,15 +1,15 @@
 <script lang="ts">
-    const { columnId, onToggle } = $props<{
-      columnId: string;
-      onToggle: (columnId: string, isActive: boolean) => void;
+    const { columnHeader, onToggle } = $props<{
+      columnHeader: string;  // Changed from columnId
+      onToggle: (columnHeader: string, isActive: boolean) => void;  
     }>();
   
     let isActive = $state(true);
   
     function handleToggle() {
       isActive = !isActive;
-      onToggle(columnId, isActive);
-      console.log('Toggle:', columnId, isActive);
+      onToggle(columnHeader, isActive);  
+      console.log('Toggle:', columnHeader, isActive);  
     }
   </script>
   
@@ -20,5 +20,3 @@
       onchange={handleToggle}
     />
   </div>
-  
-  

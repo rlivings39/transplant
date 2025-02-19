@@ -6,76 +6,75 @@
 
 	let toggledColumns = $state<Record<string, boolean>>({});
 
-	function handleColumnToggle(columnId: string, isActive: boolean) {
-  toggledColumns = { ...toggledColumns, [columnId]: !isActive };
-  console.log('Column toggled:', columnId, isActive);
-}
+	function handleColumnToggle(columnHeader: string, isActive: boolean) {
+		// Changed parameter name
+		toggledColumns = { ...toggledColumns, [columnHeader]: !isActive };
+		console.log('Column toggled:', columnHeader, isActive);
+	}
 
-	const { data } = $props<{
-		data: Record<string, string>[];
+	const { rows, invalidCells, columnTypes } = $props<{
+		rows: Record<string, string>[];
+		invalidCells: Record<string, Set<number>>;
+		columnTypes: Record<string, string>;
 	}>();
 
 	let columnTypes = $state<Record<string, string>>({});
-	let headers = $derived(data.length > 0 ? Object.keys(data[0]) : []);
-	let previewData = $derived(data.slice(0, 500));
+	let columnHeaders = $derived(rows.length > 0 ? Object.keys(rows[0]) : []);
+	let previewRows = $derived(rows.slice(0, 500));
 
 	const dispatch = createEventDispatcher<{
-		typeChange: { header: string; type: string };
+		typeChange: { columnHeader: string; type: string }; // Changed from header
 	}>();
 
-	function handleTypeChange(header: string, e: Event) {
-		const target = e.target as HTMLSelectElement;
-		columnTypes = { ...columnTypes, [header]: target.value };
-		dispatch('typeChange', { header, type: target.value });
+	function handleTypeChange(columnHeader: string, event: Event) {
+		const select = event.target as HTMLSelectElement;
+		dispatch('typeChange', { columnHeader, type: select.value });
 	}
 </script>
 
 <div>
 	<div class="table-container">
-	  <table>
-		<thead>
-		  <tr class="header-text">
-			{#each headers as header}
-			  <th>
-				<div class="header-controls">
-				  <ToggleOff 
-					columnId={header} 
-					onToggle={handleColumnToggle}
-				  />
-				  <select value={columnTypes[header]} onchange={(e) => handleTypeChange(header, e)}>
-					<option value="string">Text</option>
-					<option value="number">Number</option>
-					<option value="date">Date</option>
-					<option value="delete">Delete</option>
-				  </select>
-				</div>
-				<div class="header-name">
-				  {header}
-				</div>
-			  </th>
-			{/each}
-		  </tr>
-		</thead>
-		<tbody>
-		  {#each previewData as row, i}
-			<tr>
-			  {#each headers as header}
-				<td class={toggledColumns[header] ? 'toggled-off' : ''}>
-				  {toggledColumns[header] ? '' : row[header]}
-				</td>
-			  {/each}
-			</tr>
-		  {/each}
-		</tbody>
-	  </table>
+		<table>
+			<thead>
+				<tr class="header-text">
+					{#each columnHeaders as columnHeader}
+						<th>
+							<div class="header-controls">
+								<ToggleOff {columnHeader} onToggle={handleColumnToggle} />
+								<select
+									value={columnTypes[columnHeader]}
+									on:change={(e) => handleTypeChange(columnHeader, e)}
+								>
+									<option value="string">Text</option>
+									<option value="number">Number</option>
+									<option value="date">Date</option>
+									<option value="delete">Delete</option>
+								</select>
+							</div>
+							<div class="header-name">
+								{columnHeader}
+							</div>
+						</th>
+					{/each}
+				</tr>
+			</thead>
+			<tbody>
+				{#each previewRows as row, rowIndex (rowIndex)}
+					<!-- Use index as key -->
+					<tr>
+						{#each columnHeaders as columnHeader (columnHeader)}
+							<!-- Add key here too -->
+							<td
+								class={toggledColumns[columnHeader] || invalidCells[columnHeader]?.has(rowIndex)
+									? 'toggled-off'
+									: ''}
+							>
+								{row[columnHeader]}
+							</td>
+						{/each}
+					</tr>
+				{/each}
+			</tbody>
+		</table>
 	</div>
-  </div>
-  
-			  
-			  <style>
-				.toggled-off {
-				  opacity: 0.3;
-				  background-color: #f0f0f0;
-				  pointer-events: none;
-				}
-			  </style>
+</div>

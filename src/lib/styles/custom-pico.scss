@@ -87,9 +87,31 @@ table {
 	font-size: 0.8rem !important;
 	// white-space: normal !important;
 }
-.column-toggle {
-	display: inline-block;
-	margin: 0 0.5rem;
+// .column-toggle {
+// 	display: inline-block;
+// 	margin: 0 0.5rem;
+//   }
+ 
+.toggled-off {
+	opacity: 0.5;
+	filter: grayscale(80%);
+	transition: all 0.3s ease;
+	background-color: var(--color-light-grey);
+	&:hover {
+	  opacity: 0.8; /* Slightly more visible on hover */
+	}
+  }
+  
+  .column-toggle {
+	  input[type='checkbox']:not(:checked) {
+		  opacity: 0.5;
+  
+		  & ~ .column-header,
+		  & ~ td {
+			//   background-color: rgba(128, 128, 128, 0.2) !important;
+			//   color: rgba(224, 224, 224, 0.5) !important;
+		  }
+	  }
   }
 
   input[type="checkbox"] {
@@ -156,17 +178,6 @@ td.removed {
 	}
 }
 
-.column-toggle {
-	input[type='checkbox']:not(:checked) {
-		opacity: 0.5;
-
-		& ~ .column-header,
-		& ~ td {
-			background-color: rgba(128, 128, 128, 0.2) !important;
-			color: rgba(224, 224, 224, 0.5) !important;
-		}
-	}
-}
 
 table.numeric,
 td.numeric,
