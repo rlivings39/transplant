@@ -3,6 +3,7 @@
 	import { createEventDispatcher } from 'svelte';
 	import type { HTMLSelectElement } from 'svelte/elements';
 	import ToggleOff from './toggleOff.svelte';
+	import GpsColumn from './GpsColumn.svelte';
 
 	let toggledColumns = $state<Record<string, boolean>>({});
 
@@ -37,13 +38,16 @@
 		<table>
 			<thead>
 				<tr class="header-text">
+					<th>
+						<div class="header-name">GPS</div>
+					</th>
 					{#each columnHeaders as columnHeader}
 						<th>
 							<div class="header-controls">
 								<ToggleOff {columnHeader} onToggle={handleColumnToggle} />
 								<select
 									value={columnTypes[columnHeader]}
-									on:change={(e) => handleTypeChange(columnHeader, e)}
+									onchange={(e) => handleTypeChange(columnHeader, e)}
 								>
 									<option value="string">Text</option>
 									<option value="number">Number</option>
@@ -61,6 +65,7 @@
 			<tbody>
 				{#each previewRows as row, rowIndex (rowIndex)}
 					<tr>
+						<GpsColumn {row} {columnHeaders} {toggledColumns} />
 						{#each columnHeaders as columnHeader (columnHeader)}
 							<td
 								class:number-cell={columnTypes[columnHeader] === 'number'}
