@@ -33,13 +33,65 @@
 		}
 	});
 
+	function isValidCoordinate(lat: number, lon: number): boolean {
+		return lat >= -90 && lat <= 90 && lon >= -180 && lon <= 180;
+	}
+
+	function parseDD(value: string): { lat: number; lon: number } | null {
+		// Match DD format: 37.7749, -122.4194
+		const ddMatch = value.match(/^\s*(-?\d+\.?\d*)\s*[,\s]\s*(-?\d+\.?\d*)\s*$/);
+		if (ddMatch) {
+			const lat = parseFloat(ddMatch[1]);
+			const lon = parseFloat(ddMatch[2]);
+			if (!isNaN(lat) && !isNaN(lon) && isValidCoordinate(lat, lon)) {
+				return { lat, lon };
+			}
+		}
+		return null;
+	}
+
+	function parseDMS(value: string): { lat: number; lon: number } | null {
+		// Match DMS format: 37°46'29"N 122°25'10"W
+		const dmsMatch = value.match(
+			/^\s*(\d+)°\s*(\d+)'\s*(\d+(\.\d+)?)?"?\s*([NS])\s*(\d+)°\s*(\d+)'\s*(\d+(\.\d+)?)?"?\s*([EW])\s*$/i
+		);
+		if (dmsMatch) {
+			try {
+				const [_, latD, latM, latS, , latDir, lonD, lonM, lonS, , lonDir] = dmsMatch;
+				const lat =
+					(parseInt(latD) + parseInt(latM) / 60 + parseFloat(latS || '0') / 3600) *
+					(latDir.toUpperCase() === 'N' ? 1 : -1);
+				const lon =
+					(parseInt(lonD) + parseInt(lonM) / 60 + parseFloat(lonS || '0') / 3600) *
+					(lonDir.toUpperCase() === 'E' ? 1 : -1);
+				if (!isNaN(lat) && !isNaN(lon) && isValidCoordinate(lat, lon)) {
+					return { lat, lon };
+				}
+			} catch (e) {
+				return null;
+			}
+		}
+		return null;
+	}
+
 	function detectType(value: string): string {
 		if (/^-?\d+\.?\d*$/.test(value)) return 'number';
 		if (/^\d{4}-\d{2}-\d{2}(T\d{2}:\d{2}:\d{2}(\.\d+)?Z?)?$/.test(value)) {
 			const date = new Date(value);
 			if (!isNaN(date.getTime())) return 'date';
 		}
-		if (/^-?\d+\.\d+,\s*-?\d+\.\d+$/.test(value)) return 'gps';
+
+		// Check for GPS coordinates
+		if (parseDD(value) || parseDMS(value)) {
+			return 'gps';
+		}
+
+		// Check for single coordinate (lat or lon)
+		const singleCoord = parseFloat(value);
+		if (!isNaN(singleCoord) && (Math.abs(singleCoord) <= 90 || Math.abs(singleCoord) <= 180)) {
+			return 'gps';
+		}
+
 		return 'string';
 	}
 	

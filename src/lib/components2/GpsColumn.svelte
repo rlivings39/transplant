@@ -13,46 +13,84 @@
 		toggledColumns: Record<string, boolean>;
 	}>();
 
-	// Parse DD format (e.g., "49.266446, -123.071453" or separate lat/lon)
+	function isValidCoordinate(lat: number, lon: number): boolean {
+		return lat >= -90 && lat <= 90 && lon >= -180 && lon <= 180;
+	}
+
+	// Parse DD format (e.g., "49.266446, -123.071453")
 	function parseDD(value: string): GpsPoint | null {
-		// Try parsing combined format first
-		const combined = value.match(/(-?\d+\.?\d*)[,\s]+(-?\d+\.?\d*)/);
-		if (combined) {
-			const [_, lat, lon] = combined;
-			return {
-				lat: parseFloat(lat),
-				lon: parseFloat(lon),
-				source: 'dd'
-			};
+		const ddMatch = value.match(/^\s*(-?\d+\.?\d*)\s*[,\s]\s*(-?\d+\.?\d*)\s*$/);
+		if (ddMatch) {
+			const lat = parseFloat(ddMatch[1]);
+			const lon = parseFloat(ddMatch[2]);
+			if (!isNaN(lat) && !isNaN(lon) && isValidCoordinate(lat, lon)) {
+				return { lat, lon, source: 'dd' };
+			}
 		}
 		return null;
 	}
 
 	// Parse DMS format (e.g., "49°15'59.2"N 123°04'17.2"W")
 	function parseDMS(value: string): GpsPoint | null {
-		const dms = value.match(/(\d+)°(\d+)'(\d+\.?\d*)"([NS])\s*(\d+)°(\d+)'(\d+\.?\d*)"([EW])/);
-		if (dms) {
-			const [_, latD, latM, latS, latDir, lonD, lonM, lonS, lonDir] = dms;
-			const lat =
-				(parseInt(latD) + parseInt(latM) / 60 + parseFloat(latS) / 3600) *
-				(latDir === 'N' ? 1 : -1);
-			const lon =
-				(parseInt(lonD) + parseInt(lonM) / 60 + parseFloat(lonS) / 3600) *
-				(lonDir === 'E' ? 1 : -1);
-			return {
-				lat,
-				lon,
-				source: 'dms'
-			};
+		const dmsMatch = value.match(
+			/^\s*(\d+)°\s*(\d+)'\s*(\d+(\.\d+)?)?"?\s*([NS])\s*(\d+)°\s*(\d+)'\s*(\d+(\.\d+)?)?"?\s*([EW])\s*$/i
+		);
+		if (dmsMatch) {
+			try {
+				const [_, latD, latM, latS, , latDir, lonD, lonM, lonS, , lonDir] = dmsMatch;
+				const lat =
+					(parseInt(latD) + parseInt(latM) / 60 + parseFloat(latS || '0') / 3600) *
+					(latDir.toUpperCase() === 'N' ? 1 : -1);
+				const lon =
+					(parseInt(lonD) + parseInt(lonM) / 60 + parseFloat(lonS || '0') / 3600) *
+					(lonDir.toUpperCase() === 'E' ? 1 : -1);
+				if (!isNaN(lat) && !isNaN(lon) && isValidCoordinate(lat, lon)) {
+					return { lat, lon, source: 'dms' };
+				}
+			} catch (e) {
+				return null;
+			}
 		}
+		return null;
+	}
+
+	// Try to find matching lat/lon columns
+	function findLatLonPair(): GpsPoint | null {
+		let lat: number | null = null;
+		let lon: number | null = null;
+
+		const activeColumns = columnHeaders.filter((header) => !toggledColumns[header]);
+		
+		for (const header of activeColumns) {
+			const value = row[header]?.trim();
+			if (!value) continue;
+
+			const num = parseFloat(value);
+			if (isNaN(num)) continue;
+
+			const headerLower = header.toLowerCase();
+			if (headerLower.includes('lat') && Math.abs(num) <= 90) {
+				lat = num;
+			} else if (headerLower.includes('lon') && Math.abs(num) <= 180) {
+				lon = num;
+			}
+		}
+
+		if (lat !== null && lon !== null) {
+			return { lat, lon, source: 'split' };
+		}
+
 		return null;
 	}
 
 	// Get primary GPS point from row data
 	function getPrimaryGpsPoint(): GpsPoint | null {
-		// Filter out toggled-off columns
-		const activeColumns = columnHeaders.filter((header) => !toggledColumns[header]);
+		// First try to find matching lat/lon columns
+		const splitPoint = findLatLonPair();
+		if (splitPoint) return splitPoint;
 
+		// Then try combined formats
+		const activeColumns = columnHeaders.filter((header) => !toggledColumns[header]);
 		for (const header of activeColumns) {
 			const value = row[header];
 			if (!value) continue;
@@ -66,7 +104,6 @@
 			if (dmsPoint) return dmsPoint;
 		}
 
-		// TODO: Implement address geocoding fallback
 		return null;
 	}
 
@@ -74,7 +111,10 @@
 	function formatGpsPoint(point: GpsPoint | null): string {
 		if (!point || typeof point.lat !== 'number' || typeof point.lon !== 'number') return '';
 		try {
-			return `${point.lat.toFixed(6)}, ${point.lon.toFixed(6)}`;
+			// Limit to 6 decimal places
+			const lat = parseFloat(point.lat.toFixed(6));
+			const lon = parseFloat(point.lon.toFixed(6));
+			return `${lat}, ${lon}`;
 		} catch (e) {
 			return '';
 		}
