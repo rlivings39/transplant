@@ -29,9 +29,61 @@
 	function detectColumnType(values: string[]): string {
 		const sample = values.slice(0, 5).filter(Boolean);
 
-		if (sample.every((v) => !isNaN(Number(v)))) return 'number';
-		if (sample.every((v) => !isNaN(Date.parse(v)))) return 'date';
-		return 'string'; // Default type
+		// 1. First check if all values are numbers
+		if (sample.every((v) => !isNaN(Number(v)))) {
+			// 2. If they're numbers, check if they're all in date range
+			if (
+				sample.every((v) => {
+					const num = Number(v);
+					return num >= 1850 && num <= 2035;
+				})
+			) {
+				return 'date'; // 3. All numbers are in date range
+			}
+			return 'number'; // 3. Some numbers outside date range
+		}
+
+		// If not all numbers, check if they're valid dates
+		if (
+			sample.every((v) => {
+				try {
+					const date = new Date(v);
+					return !isNaN(date.getTime());
+				} catch {
+					return false;
+				}
+			})
+		) {
+			return 'date';
+		}
+
+		// If neither numbers nor dates, it's a string
+		return 'string';
+	}
+
+	function formatDate(value: string): string {
+		// If it's a year in range, format as year date
+		const num = Number(value);
+		if (!isNaN(num) && num >= 1850 && num <= 2035) {
+			return `${value}-01-01T00:00:00.000Z`;
+		}
+
+		// Otherwise try to format as regular date
+		try {
+			const date = new Date(value);
+			if (!isNaN(date.getTime())) {
+				return date.toISOString();
+			}
+		} catch {
+			return value;
+		}
+		return value;
+	}
+
+	function formatNumber(value: string): string {
+		// Parse the number and convert back to string to remove leading zeros
+		const num = Number(value);
+		return isNaN(num) ? value : num.toString();
 	}
 
 	function cleanValue(value: string): string {
@@ -49,31 +101,10 @@
 		);
 	}
 
-	function isYearDate(value: string): boolean {
-		const year = parseInt(value);
-		return !isNaN(year) && year >= 1945 && year <= 2035;
-	}
-
-	function formatDate(value: string): string {
-		if (isYearDate(value)) {
-			return `${value}-01-01T00:00:00.000Z`;
-		}
-		try {
-			const date = new Date(value);
-			if (!isNaN(date.getTime())) {
-				return date.toISOString();
-			}
-		} catch {
-			// If date parsing fails, return original value
-			return value;
-		}
-		return value;
-	}
-
 	function isValidType(value: string, type: string): boolean {
 		if (!value.trim()) return true; // Empty values are considered valid
 		if (type === 'number') return !isNaN(Number(value));
-		if (type === 'date') return !isNaN(Date.parse(value)) || isYearDate(value);
+		if (type === 'date') return !isNaN(Date.parse(value)) || isDateValue(value);
 		return true; // Default valid for string type
 	}
 
@@ -83,11 +114,27 @@
 			invalidCells[header] = new Set();
 			transformedData.forEach((row, index) => {
 				const type = columnTypes[header];
+				const currentValue = row[header];
+
+				// 5. Format according to selected type
+				if (type === 'number') {
+					if (typeof currentValue === 'string' && currentValue.includes('T')) {
+						// Convert from date format back to number
+						const originalNumber = currentValue.split('T')[0].split('-')[0];
+						if (!isNaN(Number(originalNumber))) {
+							row[header] = formatNumber(originalNumber);
+						}
+					} else {
+						// Format regular numbers
+						row[header] = formatNumber(currentValue);
+					}
+				} else if (type === 'date') {
+					row[header] = formatDate(row[header]);
+				}
+
+				// Mark invalid cells
 				if (!isValidType(row[header], type)) {
 					invalidCells[header].add(index);
-				} else if (type === 'date') {
-					// Format dates when they're valid
-					row[header] = formatDate(row[header]);
 				}
 			});
 		});
