@@ -11,6 +11,50 @@
 
 	const types = ['string', 'number', 'date', 'gps', 'delete'];
 
+	// GPS validation functions
+	function isValidCoordinate(lat: number, lon: number): boolean {
+		return lat >= -90 && lat <= 90 && lon >= -180 && lon <= 180;
+	}
+
+	function isGpsColumn(values: string[]): boolean {
+		// Get first 5 non-empty values
+		const sample = values.filter(Boolean).slice(0, 5);
+		if (sample.length === 0) return false;
+
+		// Try parsing each value as GPS
+		let validCount = 0;
+		for (const value of sample) {
+			// Check for DD format
+			const ddMatch = value.match(/^\s*(-?\d+\.?\d*)\s*[,\s]\s*(-?\d+\.?\d*)\s*$/);
+			if (ddMatch) {
+				const lat = parseFloat(ddMatch[1]);
+				const lon = parseFloat(ddMatch[2]);
+				if (!isNaN(lat) && !isNaN(lon) && isValidCoordinate(lat, lon)) {
+					validCount++;
+					continue;
+				}
+			}
+
+			// Check for DMS format
+			const dmsMatch = value.match(
+				/^\s*(\d+)°\s*(\d+)'\s*(\d+(\.\d+)?)?"?\s*([NS])\s*(\d+)°\s*(\d+)'\s*(\d+(\.\d+)?)?"?\s*([EW])\s*$/i
+			);
+			if (dmsMatch) {
+				validCount++;
+				continue;
+			}
+
+			// Check for single coordinate
+			const num = parseFloat(value);
+			if (!isNaN(num) && (Math.abs(num) <= 90 || Math.abs(num) <= 180)) {
+				validCount++;
+			}
+		}
+
+		// Consider it a GPS column if most values are valid GPS format
+		return validCount / sample.length >= 0.8; // 80% threshold
+	}
+
 	// Auto-detect type from first 10 non-empty values
 	$effect(() => {
 		if (data.length === 0) return;
@@ -98,6 +142,10 @@
   function detectColumnType(values: string[]): string {
 		const sample = values.slice(0, 10).filter(Boolean);
 
+		// Check for GPS first
+		if (isGpsColumn(sample)) return 'gps';
+		
+		// Then check other types
 		if (sample.every((v) => !isNaN(Number(v)))) return 'number';
 		if (sample.every((v) => !isNaN(Date.parse(v)))) return 'date';
 		if (sample.every((v) => EMAIL_REGEX.test(v))) return 'email';

@@ -52,6 +52,7 @@
 									<option value="string">Text</option>
 									<option value="number">Number</option>
 									<option value="date">Date</option>
+									<option value="gps">GPS</option>
 									<option value="delete">Delete</option>
 								</select>
 							</div>
@@ -69,6 +70,7 @@
 						{#each columnHeaders as columnHeader (columnHeader)}
 							<td
 								class:number-cell={columnTypes[columnHeader] === 'number'}
+								class:gps-cell={columnTypes[columnHeader] === 'gps'}
 								class:toggled-off={toggledColumns[columnHeader] ||
 									invalidCells[columnHeader]?.has(rowIndex)}
 							>
@@ -90,6 +92,12 @@
 
 	.number-cell {
 		text-align: right;
+	}
+
+	.gps-cell {
+		font-family: monospace;
+		text-align: right;
+		color: var(--primary);
 	}
 
 	.toggled-off {
