@@ -49,9 +49,31 @@
 		);
 	}
 
+	function isYearDate(value: string): boolean {
+		const year = parseInt(value);
+		return !isNaN(year) && year >= 1945 && year <= 2035;
+	}
+
+	function formatDate(value: string): string {
+		if (isYearDate(value)) {
+			return `${value}-01-01T00:00:00.000Z`;
+		}
+		try {
+			const date = new Date(value);
+			if (!isNaN(date.getTime())) {
+				return date.toISOString();
+			}
+		} catch {
+			// If date parsing fails, return original value
+			return value;
+		}
+		return value;
+	}
+
 	function isValidType(value: string, type: string): boolean {
+		if (!value.trim()) return true; // Empty values are considered valid
 		if (type === 'number') return !isNaN(Number(value));
-		if (type === 'date') return !isNaN(Date.parse(value));
+		if (type === 'date') return !isNaN(Date.parse(value)) || isYearDate(value);
 		return true; // Default valid for string type
 	}
 
@@ -60,8 +82,12 @@
 		columnHeaders.forEach((header) => {
 			invalidCells[header] = new Set();
 			transformedData.forEach((row, index) => {
-				if (!isValidType(row[header], columnTypes[header])) {
+				const type = columnTypes[header];
+				if (!isValidType(row[header], type)) {
 					invalidCells[header].add(index);
+				} else if (type === 'date') {
+					// Format dates when they're valid
+					row[header] = formatDate(row[header]);
 				}
 			});
 		});
