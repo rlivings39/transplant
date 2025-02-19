@@ -9,7 +9,7 @@ export function isValidCoordinate(lat: number, lon: number): boolean {
 
 export function formatGpsCoordinate(coord: GpsCoordinate | null): string {
 	if (!coord) return '';
-	// Don't use toFixed, just return the numbers as they are
+	// Format with consistent precision
 	return `${coord.latitude}, ${coord.longitude}`;
 }
 
@@ -17,30 +17,31 @@ export function parseGpsCoordinate(value: string): GpsCoordinate | null {
 	// DD format (decimal degrees)
 	const ddMatch = value.match(/^\s*(-?\d+\.?\d*)\s*[,\s]\s*(-?\d+\.?\d*)\s*$/);
 	if (ddMatch) {
-		const lat = parseFloat(ddMatch[1]);
-		const lon = parseFloat(ddMatch[2]);
+		const lat = Number(ddMatch[1]); // Use Number instead of parseFloat to preserve precision
+		const lon = Number(ddMatch[2]);
 		if (!isNaN(lat) && !isNaN(lon) && isValidCoordinate(lat, lon)) {
 			return { latitude: lat, longitude: lon };
 		}
 	}
 
-	// DMS format
+	// DMS format (e.g., "48° 51' 24.0" N, 2° 21' 03.0" E")
 	const dmsMatch = value.match(
-		/^\s*(\d+)°\s*(\d+)'\s*(\d+(\.\d+)?)?\"?\s*([NS])\s*(\d+)°\s*(\d+)'\s*(\d+(\.\d+)?)?\"?\s*([EW])\s*$/i
+		/^\s*(\d+)°\s*(\d+)'\s*(\d+(\.\d+)?)?\"?\s*([NS])\s*,?\s*(\d+)°\s*(\d+)'\s*(\d+(\.\d+)?)?\"?\s*([EW])\s*$/i
 	);
 	if (dmsMatch) {
-		const latDeg = parseInt(dmsMatch[1]);
-		const latMin = parseInt(dmsMatch[2]);
-		const latSec = parseFloat(dmsMatch[3] || '0');
+		const latDeg = Number(dmsMatch[1]);
+		const latMin = Number(dmsMatch[2]);
+		const latSec = Number(dmsMatch[3] || '0');
 		const latDir = dmsMatch[5].toUpperCase();
 
-		const lonDeg = parseInt(dmsMatch[6]);
-		const lonMin = parseInt(dmsMatch[7]);
-		const lonSec = parseFloat(dmsMatch[8] || '0');
+		const lonDeg = Number(dmsMatch[6]);
+		const lonMin = Number(dmsMatch[7]);
+		const lonSec = Number(dmsMatch[8] || '0');
 		const lonDir = dmsMatch[10].toUpperCase();
 
-		let lat = latDeg + latMin / 60 + latSec / 3600;
-		let lon = lonDeg + lonMin / 60 + lonSec / 3600;
+		// Convert to decimal degrees with high precision
+		let lat = latDeg + (latMin + latSec / 60) / 60;
+		let lon = lonDeg + (lonMin + lonSec / 60) / 60;
 
 		if (latDir === 'S') lat = -lat;
 		if (lonDir === 'W') lon = -lon;

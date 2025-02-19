@@ -161,11 +161,8 @@
 				} else if (type === 'date') {
 					formattedRow[header] = formatDate(value);
 				} else if (type === 'gps') {
-					const coord = parseGpsCoordinate(value);
-					if (coord) {
-						const [lat, lon] = coord;
-						formattedRow[header] = `${lat.toFixed(6)}, ${lon.toFixed(6)}`;
-					}
+					// For GPS type, preserve the original value
+					formattedRow[header] = value;
 				}
 			});
 			return formattedRow;
