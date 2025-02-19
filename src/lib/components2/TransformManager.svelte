@@ -14,17 +14,16 @@
 	}
 
 	function handleDataLoaded(event: CustomEvent<{ data: Record<string, string>[] }>) {
-		transformedData = cleanData(event.detail.data);
-
-		// Initialize column types
+		transformedData = event.detail.data;
+		// Initial type detection
 		columnTypes = Object.keys(transformedData[0]).reduce(
-			(acc, header) => ({
-				...acc,
+			(types, header) => ({
+				...types,
 				[header]: detectColumnType(transformedData.map((row) => row[header]))
 			}),
 			{}
 		);
-		// validateColumns();
+		validateColumns(); // Validate after setting initial types
 	}
 
 	function detectColumnType(values: string[]): string {
@@ -55,6 +54,7 @@
 		if (type === 'date') return !isNaN(Date.parse(value));
 		return true; // Default valid for string type
 	}
+
 	function validateColumns() {
 		invalidCells = {};
 		columnHeaders.forEach((header) => {
