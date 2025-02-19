@@ -27,7 +27,7 @@
 	}
 
 	function detectColumnType(values: string[]): string {
-		const sample = values.slice(0, 10).filter(Boolean);
+		const sample = values.slice(0, 5).filter(Boolean);
 
 		if (sample.every((v) => !isNaN(Number(v)))) return 'number';
 		if (sample.every((v) => !isNaN(Date.parse(v)))) return 'date';
