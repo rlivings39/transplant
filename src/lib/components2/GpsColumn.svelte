@@ -13,57 +13,22 @@
 		toggledColumns: Record<string, boolean>;
 	}>();
 
-	// Parse DD format (e.g., "45.123, -122.456")
-	function parseDD(value: string): GpsPoint | null {
-		const ddMatch = value.match(/^\s*(-?\d+\.?\d*)\s*[,\s]\s*(-?\d+\.?\d*)\s*$/);
-		if (ddMatch) {
-			const lat = parseFloat(ddMatch[1]);
-			const lon = parseFloat(ddMatch[2]);
-			if (!isNaN(lat) && !isNaN(lon) && isValidCoordinate(lat, lon)) {
-				return { lat, lon, source: 'dd' };
-			}
-		}
-		return null;
-	}
-
 	interface GpsPoint {
 		lat: number;
 		lon: number;
 		source: 'dd' | 'dms' | 'split';
 	}
 
-	// Parse DMS format (e.g., "49°15'59.2"N 123°04'17.2"W")
-	function parseDMS(value: string): GpsPoint | null {
-		const dmsMatch = value.match(
-			/^\s*(\d+)°\s*(\d+)'\s*(\d+(\.\d+)?)?"?\s*([NS])\s*(\d+)°\s*(\d+)'\s*(\d+(\.\d+)?)?"?\s*([EW])\s*$/i
-		);
-		if (dmsMatch) {
-			try {
-				const [_, latD, latM, latS, , latDir, lonD, lonM, lonS, , lonDir] = dmsMatch;
-				const lat =
-					(parseInt(latD) + parseInt(latM) / 60 + parseFloat(latS || '0') / 3600) *
-					(latDir.toUpperCase() === 'N' ? 1 : -1);
-				const lon =
-					(parseInt(lonD) + parseInt(lonM) / 60 + parseFloat(lonS || '0') / 3600) *
-					(lonDir.toUpperCase() === 'E' ? 1 : -1);
-				if (!isNaN(lat) && !isNaN(lon) && isValidCoordinate(lat, lon)) {
-					return { lat, lon, source: 'dms' };
-				}
-			} catch (e) {
-				return null;
-			}
-		}
-		return null;
-	}
-
-	// Try to find matching lat/lon columns
+	// Find matching lat/lon columns
 	function findLatLonPair(): GpsPoint | null {
 		let lat: number | null = null;
 		let lon: number | null = null;
+		let latHeader: string | null = null;
+		let lonHeader: string | null = null;
 
-		const activeColumns = columnHeaders.filter((header) => !toggledColumns[header]);
+		for (const header of columnHeaders) {
+			if (toggledColumns[header]) continue;
 
-		for (const header of activeColumns) {
 			const value = row[header]?.trim();
 			if (!value) continue;
 
@@ -73,12 +38,14 @@
 			const headerLower = header.toLowerCase();
 			if (headerLower.includes('lat') && Math.abs(num) <= 90) {
 				lat = num;
+				latHeader = header;
 			} else if (headerLower.includes('lon') && Math.abs(num) <= 180) {
 				lon = num;
+				lonHeader = header;
 			}
 		}
 
-		if (lat !== null && lon !== null) {
+		if (lat !== null && lon !== null && latHeader && lonHeader) {
 			return { lat, lon, source: 'split' };
 		}
 
@@ -92,49 +59,52 @@
 		if (splitPoint) return splitPoint;
 
 		// Then try combined formats
-		const activeColumns = columnHeaders.filter((header) => !toggledColumns[header]);
-		for (const header of activeColumns) {
+		for (const header of columnHeaders) {
+			if (!toggledColumns[header]) continue;
+
 			const value = row[header];
 			if (!value) continue;
 
-			// Try parsing as DD format
-			const ddPoint = parseDD(value);
-			if (ddPoint) return ddPoint;
-
-			// Try parsing as DMS format
-			const dmsPoint = parseDMS(value);
-			if (dmsPoint) return dmsPoint;
+			const coord = parseGpsCoordinate(value);
+			if (coord) {
+				return {
+					lat: coord.latitude,
+					lon: coord.longitude,
+					source: 'dd' // We convert everything to DD format
+				};
+			}
 		}
 
 		return null;
 	}
 
-	// Format GPS point for display
 	function formatGpsPoint(point: GpsPoint | null): string {
-		if (!point || typeof point.lat !== 'number' || typeof point.lon !== 'number') return '';
-		try {
-			// Preserve full precision
-			return `${point.lat}, ${point.lon}`;
-		} catch (e) {
-			return '';
-		}
+		if (!point) return '';
+		// Format in DD with 6 decimal places
+		return `${point.lat.toFixed(6)}, ${point.lon.toFixed(6)}`;
 	}
 
 	// Reactive GPS point calculation
 	let gpsPoint = $derived(getPrimaryGpsPoint());
 	let displayValue = $derived(formatGpsPoint(gpsPoint));
+	let isValid = $derived(gpsPoint !== null);
 </script>
 
-<td class="gps-column">
+<td class="gps-column" class:invalid={!isValid}>
 	{displayValue}
 </td>
 
 <style>
 	.gps-column {
+		font-family: monospace;
 		width: 12.5rem;
 		white-space: nowrap;
 		overflow: hidden;
 		text-overflow: ellipsis;
 		padding: 0.25rem 0.5rem;
+	}
+	.invalid {
+		color: #999;
+		font-style: italic;
 	}
 </style>

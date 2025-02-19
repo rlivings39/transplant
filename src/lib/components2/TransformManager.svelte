@@ -42,6 +42,32 @@
 		const sample = values.slice(0, 5).filter(Boolean);
 		if (sample.length === 0) return 'string';
 
+		// Check if it's a latitude column
+		const headerLower = columnHeaders[0].toLowerCase();
+		if (headerLower.includes('lat')) {
+			const allLat = sample.every((value) => {
+				const num = parseFloat(value);
+				return !isNaN(num) && Math.abs(num) <= 90;
+			});
+			if (allLat) return 'gps';
+		}
+
+		// Check if it's a longitude column
+		if (headerLower.includes('lon')) {
+			const allLon = sample.every((value) => {
+				const num = parseFloat(value);
+				return !isNaN(num) && Math.abs(num) <= 180;
+			});
+			if (allLon) return 'gps';
+		}
+
+		// Check for combined GPS coordinates
+		const allGps = sample.every((value) => {
+			const coord = parseGpsCoordinate(value);
+			return coord !== null;
+		});
+		if (allGps) return 'gps';
+
 		// First check if all values could be numbers (including comma-separated)
 		if (sample.every(isNumber)) {
 			// If they're all numbers, check if they're all in date range
@@ -72,6 +98,18 @@
 
 		// If neither numbers nor dates, it's a string
 		return 'string';
+	}
+
+	function parseGpsCoordinate(value: string): [number, number] | null {
+		const parts = value.split(',');
+		if (parts.length !== 2) return null;
+
+		const lat = parseFloat(parts[0]);
+		const lon = parseFloat(parts[1]);
+
+		if (isNaN(lat) || isNaN(lon)) return null;
+
+		return [lat, lon];
 	}
 
 	function formatDate(value: string): string {
@@ -122,6 +160,12 @@
 					formattedRow[header] = formatNumber(value);
 				} else if (type === 'date') {
 					formattedRow[header] = formatDate(value);
+				} else if (type === 'gps') {
+					const coord = parseGpsCoordinate(value);
+					if (coord) {
+						const [lat, lon] = coord;
+						formattedRow[header] = `${lat.toFixed(6)}, ${lon.toFixed(6)}`;
+					}
 				}
 			});
 			return formattedRow;
@@ -150,6 +194,7 @@
 		if (!value?.trim()) return true; // Empty values are considered valid
 		if (type === 'number') return isNumber(value);
 		if (type === 'date') return isValidDateValue(value);
+		if (type === 'gps') return parseGpsCoordinate(value) !== null;
 		return true; // Default valid for string type
 	}
 
