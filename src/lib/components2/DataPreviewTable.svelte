@@ -60,14 +60,12 @@
 			</thead>
 			<tbody>
 				{#each previewRows as row, rowIndex (rowIndex)}
-					<!-- Use index as key -->
 					<tr>
 						{#each columnHeaders as columnHeader (columnHeader)}
-							<!-- Add key here too -->
 							<td
-								class={toggledColumns[columnHeader] || invalidCells[columnHeader]?.has(rowIndex)
-									? 'toggled-off'
-									: ''}
+								class:number-cell={columnTypes[columnHeader] === 'number'}
+								class:toggled-off={toggledColumns[columnHeader] ||
+									invalidCells[columnHeader]?.has(rowIndex)}
 							>
 								{row[columnHeader]}
 							</td>
@@ -78,3 +76,29 @@
 		</table>
 	</div>
 </div>
+
+<style>
+	.table-container {
+		overflow-x: auto;
+		max-width: 100%;
+	}
+
+	.number-cell {
+		text-align: right;
+	}
+
+	.toggled-off {
+		background-color: rgba(255, 0, 0, 0.2);
+	}
+
+	.header-controls {
+		display: flex;
+		gap: 0.5rem;
+		align-items: center;
+		margin-bottom: 0.5rem;
+	}
+
+	.header-name {
+		font-weight: bold;
+	}
+</style>

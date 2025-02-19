@@ -26,15 +26,21 @@
 		validateColumns(); // Validate after setting initial types
 	}
 
+	function isNumber(value: string): boolean {
+		// Remove commas and try to parse
+		const cleanValue = value.replace(/,/g, '');
+		return !isNaN(Number(cleanValue));
+	}
+
 	function detectColumnType(values: string[]): string {
 		const sample = values.slice(0, 5).filter(Boolean);
 
-		// 1. First check if all values are numbers
-		if (sample.every((v) => !isNaN(Number(v)))) {
+		// 1. First check if all values are numbers (including comma-separated)
+		if (sample.every(isNumber)) {
 			// 2. If they're numbers, check if they're all in date range
 			if (
 				sample.every((v) => {
-					const num = Number(v);
+					const num = Number(v.replace(/,/g, ''));
 					return num >= 1850 && num <= 2035;
 				})
 			) {
@@ -81,9 +87,12 @@
 	}
 
 	function formatNumber(value: string): string {
-		// Parse the number and convert back to string to remove leading zeros
-		const num = Number(value);
-		return isNaN(num) ? value : num.toString();
+		// Remove any existing commas and parse
+		const num = Number(value.replace(/,/g, ''));
+		if (isNaN(num)) return value;
+
+		// Format with comma-separated thousands
+		return num.toLocaleString('en-US');
 	}
 
 	function cleanValue(value: string): string {
@@ -103,7 +112,7 @@
 
 	function isValidType(value: string, type: string): boolean {
 		if (!value.trim()) return true; // Empty values are considered valid
-		if (type === 'number') return !isNaN(Number(value));
+		if (type === 'number') return isNumber(value);
 		if (type === 'date') return !isNaN(Date.parse(value)) || isDateValue(value);
 		return true; // Default valid for string type
 	}
