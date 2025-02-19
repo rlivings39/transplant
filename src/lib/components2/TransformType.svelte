@@ -12,9 +12,7 @@
 	const types = ['string', 'number', 'date', 'gps', 'delete'];
 
 	// GPS validation functions
-	function isValidCoordinate(lat: number, lon: number): boolean {
-		return lat >= -90 && lat <= 90 && lon >= -180 && lon <= 180;
-	}
+		import { parseGpsCoordinate } from '$lib/utils/gpsUtils';
 
 	function isGpsColumn(values: string[]): boolean {
 		// Get first 5 non-empty values
@@ -24,29 +22,7 @@
 		// Try parsing each value as GPS
 		let validCount = 0;
 		for (const value of sample) {
-			// Check for DD format
-			const ddMatch = value.match(/^\s*(-?\d+\.?\d*)\s*[,\s]\s*(-?\d+\.?\d*)\s*$/);
-			if (ddMatch) {
-				const lat = parseFloat(ddMatch[1]);
-				const lon = parseFloat(ddMatch[2]);
-				if (!isNaN(lat) && !isNaN(lon) && isValidCoordinate(lat, lon)) {
-					validCount++;
-					continue;
-				}
-			}
-
-			// Check for DMS format
-			const dmsMatch = value.match(
-				/^\s*(\d+)°\s*(\d+)'\s*(\d+(\.\d+)?)?"?\s*([NS])\s*(\d+)°\s*(\d+)'\s*(\d+(\.\d+)?)?"?\s*([EW])\s*$/i
-			);
-			if (dmsMatch) {
-				validCount++;
-				continue;
-			}
-
-			// Check for single coordinate
-			const num = parseFloat(value);
-			if (!isNaN(num) && (Math.abs(num) <= 90 || Math.abs(num) <= 180)) {
+			if (parseGpsCoordinate(value) !== null) {
 				validCount++;
 			}
 		}
@@ -154,8 +130,30 @@
 	}
 </script>
 
-<select bind:value={type}>
+<select 
+	bind:value={type}
+	class:gps-type={type === 'gps'}
+>
 	{#each types as t}
-		<option value={t}>{t.toUpperCase()}</option>
+		<option value={t} class:gps-option={t === 'gps'}>{t.toUpperCase()}</option>
 	{/each}
 </select>
+
+<style>
+	.gps-type {
+		color: var(--primary);
+		font-family: 'JetBrains Mono', monospace;
+	}
+
+	.gps-type option:not(.gps-option) {
+		color: var(--muted);
+		font-family: system-ui, -apple-system, sans-serif;
+		font-style: italic;
+	}
+
+	.gps-option {
+		color: var(--primary);
+		font-family: 'JetBrains Mono', monospace;
+		font-weight: 500;
+	}
+</style>

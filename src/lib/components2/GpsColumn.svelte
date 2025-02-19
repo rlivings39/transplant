@@ -1,10 +1,5 @@
 <script lang="ts">
-	// Types for GPS data
-	interface GpsPoint {
-		lat: number;
-		lon: number;
-		source: string;
-	}
+	import { parseGpsCoordinate, formatGpsCoordinate, type GpsCoordinate } from '$lib/utils/gpsUtils';
 
 	// Props
 	const { row, columnHeaders, toggledColumns } = $props<{
@@ -13,22 +8,18 @@
 		toggledColumns: Record<string, boolean>;
 	}>();
 
-	function isValidCoordinate(lat: number, lon: number): boolean {
-		return lat >= -90 && lat <= 90 && lon >= -180 && lon <= 180;
-	}
-
-	// Parse DD format (e.g., "49.266446, -123.071453")
-	function parseDD(value: string): GpsPoint | null {
-		const ddMatch = value.match(/^\s*(-?\d+\.?\d*)\s*[,\s]\s*(-?\d+\.?\d*)\s*$/);
-		if (ddMatch) {
-			const lat = parseFloat(ddMatch[1]);
-			const lon = parseFloat(ddMatch[2]);
-			if (!isNaN(lat) && !isNaN(lon) && isValidCoordinate(lat, lon)) {
-				return { lat, lon, source: 'dd' };
+	// Process GPS data for display
+	$effect(() => {
+		columnHeaders.forEach((header) => {
+			if (toggledColumns[header]) {
+				const value = row[header];
+				if (value) {
+					const coord = parseGpsCoordinate(value);
+					row[header] = formatGpsCoordinate(coord);
+				}
 			}
-		}
-		return null;
-	}
+		});
+	});
 
 	// Parse DMS format (e.g., "49°15'59.2"N 123°04'17.2"W")
 	function parseDMS(value: string): GpsPoint | null {
@@ -60,7 +51,7 @@
 		let lon: number | null = null;
 
 		const activeColumns = columnHeaders.filter((header) => !toggledColumns[header]);
-		
+
 		for (const header of activeColumns) {
 			const value = row[header]?.trim();
 			if (!value) continue;
