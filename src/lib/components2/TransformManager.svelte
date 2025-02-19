@@ -87,6 +87,9 @@
 	}
 
 	function formatNumber(value: string): string {
+		// Preserve empty or whitespace-only values
+		if (!value.trim()) return '';
+
 		// Remove any existing commas and parse
 		const num = Number(value.replace(/,/g, ''));
 		if (isNaN(num)) return value;
