@@ -18,7 +18,7 @@
 		columnTypes: Record<string, string>;
 	}>();
 
-	let columnTypes = $state<Record<string, string>>({});
+	// let columnTypes = $state<Record<string, string>>({});
 	let columnHeaders = $derived(rows.length > 0 ? Object.keys(rows[0]) : []);
 	let previewRows = $derived(rows.slice(0, 500));
 

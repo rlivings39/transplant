@@ -24,7 +24,7 @@
 			}),
 			{}
 		);
-		validateColumns();
+		// validateColumns();
 	}
 
 	function detectColumnType(values: string[]): string {
