@@ -2,11 +2,14 @@
 	import CSVImporter from './CSVImporter.svelte';
 	import DataPreviewTable from './DataPreviewTable.svelte';
 
-	let transformedData = $state<Record<string, any>[]>([]);
-	let invalidCells = $state<Record<string, Set<number>>>({});
+	// Store original data immutably
+	let originalData = $state<Record<string, string>[]>([]);
 	let columnTypes = $state<Record<string, string>>({});
+	let invalidCells = $state<Record<string, Set<number>>>({});
 
-	let columnHeaders = $derived(transformedData.length > 0 ? Object.keys(transformedData[0]) : []);
+	// Derive headers and transformed data
+	let columnHeaders = $derived(originalData.length > 0 ? Object.keys(originalData[0]) : []);
+	let transformedData = $derived(formatDataForDisplay(originalData));
 
 	function handleTypeChange(event: CustomEvent<{ columnHeader: string; type: string }>) {
 		columnTypes = { ...columnTypes, [event.detail.columnHeader]: event.detail.type };
@@ -14,19 +17,22 @@
 	}
 
 	function handleDataLoaded(event: CustomEvent<{ data: Record<string, string>[] }>) {
-		transformedData = event.detail.data;
+		// Create a new copy of the data to avoid mutating CSVImporter's data
+		originalData = event.detail.data.map((row) => ({ ...row }));
+
 		// Initial type detection
-		columnTypes = Object.keys(transformedData[0]).reduce(
+		columnTypes = Object.keys(originalData[0] || {}).reduce(
 			(types, header) => ({
 				...types,
-				[header]: detectColumnType(transformedData.map((row) => row[header]))
+				[header]: detectColumnType(originalData.map((row) => row[header]))
 			}),
 			{}
 		);
-		validateColumns(); // Validate after setting initial types
+		validateColumns();
 	}
 
 	function isNumber(value: string): boolean {
+		if (!value?.trim()) return false;
 		// Remove commas and try to parse
 		const cleanValue = value.replace(/,/g, '');
 		return !isNaN(Number(cleanValue));
@@ -34,6 +40,7 @@
 
 	function detectColumnType(values: string[]): string {
 		const sample = values.slice(0, 5).filter(Boolean);
+		if (sample.length === 0) return 'string';
 
 		// First check if all values could be numbers (including comma-separated)
 		if (sample.every(isNumber)) {
@@ -68,6 +75,8 @@
 	}
 
 	function formatDate(value: string): string {
+		if (!value?.trim()) return '';
+
 		// If it's a year in range, format as year date
 		const num = Number(value);
 		if (!isNaN(num) && num >= 1850 && num <= 2035) {
@@ -88,29 +97,60 @@
 
 	function formatNumber(value: string): string {
 		// Preserve empty or whitespace-only values
-		if (!value.trim()) return '';
+		if (!value?.trim()) return '';
 
 		// Remove any existing commas and parse
 		const num = Number(value.replace(/,/g, ''));
 		if (isNaN(num)) return value;
 
-		// Format with comma-separated thousands
-		return num.toLocaleString('en-US');
+		// Format with comma-separated thousands, preserving decimal places
+		const [whole, decimal] = value.split('.');
+		const formattedWhole = Number(whole).toLocaleString('en-US');
+		return decimal ? `${formattedWhole}.${decimal}` : formattedWhole;
 	}
 
-	function cleanValue(value: string): string {
-		// Trim and basic normalization
-		return value
-			.trim()
-			.replace(/\s+/g, ' ')
-			.replace(/[\u2018\u2019]/g, "'") // Curly quotes
-			.replace(/[\u201C\u201D]/g, '"');
+	function formatDataForDisplay(data: Record<string, string>[]): Record<string, string>[] {
+		if (!data?.length) return [];
+
+		return data.map((row) => {
+			const formattedRow = { ...row };
+			Object.keys(row).forEach((header) => {
+				const type = columnTypes[header];
+				const value = row[header];
+
+				if (type === 'number') {
+					formattedRow[header] = formatNumber(value);
+				} else if (type === 'date') {
+					formattedRow[header] = formatDate(value);
+				}
+			});
+			return formattedRow;
+		});
 	}
 
-	function cleanData(rows: Record<string, string>[]) {
-		return rows.map((row) =>
-			Object.fromEntries(Object.entries(row).map(([key, val]) => [key, cleanValue(val)]))
-		);
+	function validateColumns() {
+		const newInvalidCells: Record<string, Set<number>> = {};
+
+		columnHeaders.forEach((header) => {
+			newInvalidCells[header] = new Set();
+			originalData.forEach((row, index) => {
+				const type = columnTypes[header];
+				const value = row[header];
+
+				if (!isValidType(value, type)) {
+					newInvalidCells[header].add(index);
+				}
+			});
+		});
+
+		invalidCells = newInvalidCells;
+	}
+
+	function isValidType(value: string, type: string): boolean {
+		if (!value?.trim()) return true; // Empty values are considered valid
+		if (type === 'number') return isNumber(value);
+		if (type === 'date') return isValidDateValue(value);
+		return true; // Default valid for string type
 	}
 
 	function isValidDateValue(value: string): boolean {
@@ -128,50 +168,11 @@
 			return false;
 		}
 	}
-
-	function isValidType(value: string, type: string): boolean {
-		if (!value.trim()) return true; // Empty values are considered valid
-		if (type === 'number') return isNumber(value);
-		if (type === 'date') return isValidDateValue(value);
-		return true; // Default valid for string type
-	}
-
-	function validateColumns() {
-		invalidCells = {};
-		columnHeaders.forEach((header) => {
-			invalidCells[header] = new Set();
-			transformedData.forEach((row, index) => {
-				const type = columnTypes[header];
-				const currentValue = row[header];
-
-				// 5. Format according to selected type
-				if (type === 'number') {
-					if (typeof currentValue === 'string' && currentValue.includes('T')) {
-						// Convert from date format back to number
-						const originalNumber = currentValue.split('T')[0].split('-')[0];
-						if (!isNaN(Number(originalNumber))) {
-							row[header] = formatNumber(originalNumber);
-						}
-					} else {
-						// Format regular numbers
-						row[header] = formatNumber(currentValue);
-					}
-				} else if (type === 'date') {
-					row[header] = formatDate(row[header]);
-				}
-
-				// Mark invalid cells
-				if (!isValidType(row[header], type)) {
-					invalidCells[header].add(index);
-				}
-			});
-		});
-	}
 </script>
 
 <div class="transform-manager">
 	<CSVImporter on:dataLoaded={handleDataLoaded} />
-	{#if transformedData.length > 0}
+	{#if originalData.length > 0}
 		<DataPreviewTable
 			rows={transformedData}
 			{invalidCells}

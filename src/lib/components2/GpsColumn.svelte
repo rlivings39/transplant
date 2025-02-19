@@ -1,5 +1,10 @@
 <script lang="ts">
-	import { parseGpsCoordinate, formatGpsCoordinate, type GpsCoordinate } from '$lib/utils/gpsUtils';
+	import {
+		parseGpsCoordinate,
+		formatGpsCoordinate,
+		type GpsCoordinate,
+		isValidCoordinate
+	} from '$lib/utils/gpsUtils';
 
 	// Props
 	const { row, columnHeaders, toggledColumns } = $props<{
@@ -8,18 +13,24 @@
 		toggledColumns: Record<string, boolean>;
 	}>();
 
-	// Process GPS data for display
-	$effect(() => {
-		columnHeaders.forEach((header) => {
-			if (toggledColumns[header]) {
-				const value = row[header];
-				if (value) {
-					const coord = parseGpsCoordinate(value);
-					row[header] = formatGpsCoordinate(coord);
-				}
+	// Parse DD format (e.g., "45.123, -122.456")
+	function parseDD(value: string): GpsPoint | null {
+		const ddMatch = value.match(/^\s*(-?\d+\.?\d*)\s*[,\s]\s*(-?\d+\.?\d*)\s*$/);
+		if (ddMatch) {
+			const lat = parseFloat(ddMatch[1]);
+			const lon = parseFloat(ddMatch[2]);
+			if (!isNaN(lat) && !isNaN(lon) && isValidCoordinate(lat, lon)) {
+				return { lat, lon, source: 'dd' };
 			}
-		});
-	});
+		}
+		return null;
+	}
+
+	interface GpsPoint {
+		lat: number;
+		lon: number;
+		source: 'dd' | 'dms' | 'split';
+	}
 
 	// Parse DMS format (e.g., "49°15'59.2"N 123°04'17.2"W")
 	function parseDMS(value: string): GpsPoint | null {
@@ -102,10 +113,8 @@
 	function formatGpsPoint(point: GpsPoint | null): string {
 		if (!point || typeof point.lat !== 'number' || typeof point.lon !== 'number') return '';
 		try {
-			// Limit to 6 decimal places
-			const lat = parseFloat(point.lat.toFixed(6));
-			const lon = parseFloat(point.lon.toFixed(6));
-			return `${lat}, ${lon}`;
+			// Preserve full precision
+			return `${point.lat}, ${point.lon}`;
 		} catch (e) {
 			return '';
 		}
