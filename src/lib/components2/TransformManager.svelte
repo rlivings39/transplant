@@ -35,18 +35,18 @@
 	function detectColumnType(values: string[]): string {
 		const sample = values.slice(0, 5).filter(Boolean);
 
-		// 1. First check if all values are numbers (including comma-separated)
+		// First check if all values could be numbers (including comma-separated)
 		if (sample.every(isNumber)) {
-			// 2. If they're numbers, check if they're all in date range
-			if (
-				sample.every((v) => {
-					const num = Number(v.replace(/,/g, ''));
-					return num >= 1850 && num <= 2035;
-				})
-			) {
-				return 'date'; // 3. All numbers are in date range
+			// If they're all numbers, check if they're all in date range
+			const allInDateRange = sample.every((v) => {
+				const num = Number(v.replace(/,/g, ''));
+				return num >= 1850 && num <= 2035;
+			});
+
+			if (allInDateRange) {
+				return 'date'; // All numbers are in date range
 			}
-			return 'number'; // 3. Some numbers outside date range
+			return 'number'; // Some numbers outside date range
 		}
 
 		// If not all numbers, check if they're valid dates
@@ -110,10 +110,26 @@
 		);
 	}
 
+	function isValidDateValue(value: string): boolean {
+		// If it's a number, check if it's in the valid year range
+		if (isNumber(value)) {
+			const num = Number(value.replace(/,/g, ''));
+			return num >= 1850 && num <= 2035;
+		}
+
+		// If not a number, check if it's a valid date string
+		try {
+			const date = new Date(value);
+			return !isNaN(date.getTime());
+		} catch {
+			return false;
+		}
+	}
+
 	function isValidType(value: string, type: string): boolean {
 		if (!value.trim()) return true; // Empty values are considered valid
 		if (type === 'number') return isNumber(value);
-		if (type === 'date') return !isNaN(Date.parse(value)) || isDateValue(value);
+		if (type === 'date') return isValidDateValue(value);
 		return true; // Default valid for string type
 	}
 
