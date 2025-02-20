@@ -31,6 +31,13 @@
 		const select = event.target as HTMLSelectElement;
 		dispatch('typeChange', { columnHeader, type: select.value });
 	}
+
+	function isGreyedOut(columnHeader: string, rowIndex: number): boolean {
+		// Data is greyed out if either:
+		// 1. The column is toggled off
+		// 2. The data doesn't match the selected type
+		return toggledColumns[columnHeader] || invalidCells[columnHeader]?.has(rowIndex);
+	}
 </script>
 
 <div>
@@ -71,8 +78,7 @@
 							<td
 								class:number-cell={columnTypes[columnHeader] === 'number'}
 								class:gps-cell={columnTypes[columnHeader] === 'gps'}
-								class:toggled-off={toggledColumns[columnHeader] ||
-									invalidCells[columnHeader]?.has(rowIndex)}
+								class:greyed-out={isGreyedOut(columnHeader, rowIndex)}
 							>
 								{row[columnHeader]}
 							</td>
@@ -102,6 +108,17 @@
 
 	.toggled-off {
 		background-color: rgba(255, 0, 0, 0.2);
+	}
+
+	.greyed-out {
+		opacity: 0.5;
+		background-color: #f8f8f8;
+	}
+
+	/* Override other styles when greyed out */
+	.greyed-out.number-cell,
+	.greyed-out.gps-cell {
+		opacity: 0.5;
 	}
 
 	.header-controls {

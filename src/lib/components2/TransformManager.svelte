@@ -6,6 +6,7 @@
 	let originalData = $state<Record<string, string>[]>([]);
 	let columnTypes = $state<Record<string, string>>({});
 	let invalidCells = $state<Record<string, Set<number>>>({});
+	let toggledColumns = $state<Record<string, boolean>>({});
 
 	// Derive headers and transformed data
 	let columnHeaders = $derived(originalData.length > 0 ? Object.keys(originalData[0]) : []);
@@ -147,44 +148,63 @@
 		return decimal ? `${formattedWhole}.${decimal}` : formattedWhole;
 	}
 
-	function formatDataForDisplay(data: Record<string, string>[]): Record<string, string>[] {
-		if (!data?.length) return [];
+	function isValidForType(value: string, type: string): boolean {
+		if (!value?.trim()) return false;
 
-		return data.map((row) => {
-			const formattedRow = { ...row };
-			Object.keys(row).forEach((header) => {
-				const type = columnTypes[header];
-				const value = row[header];
-
-				if (type === 'number') {
-					formattedRow[header] = formatNumber(value);
-				} else if (type === 'date') {
-					formattedRow[header] = formatDate(value);
-				} else if (type === 'gps') {
-					// For GPS type, preserve the original value
-					formattedRow[header] = value;
-				}
-			});
-			return formattedRow;
-		});
+		switch (type) {
+			case 'number':
+				const cleanValue = value.replace(/,/g, '');
+				return !isNaN(Number(cleanValue));
+			case 'date':
+				const date = new Date(value);
+				return !isNaN(date.getTime());
+			case 'gps':
+				const coord = parseGpsCoordinate(value);
+				return coord !== null;
+			case 'string':
+				return true;
+			default:
+				return false;
+		}
 	}
 
 	function validateColumns() {
 		const newInvalidCells: Record<string, Set<number>> = {};
 
 		columnHeaders.forEach((header) => {
+			const type = columnTypes[header];
 			newInvalidCells[header] = new Set();
-			originalData.forEach((row, index) => {
-				const type = columnTypes[header];
-				const value = row[header];
 
-				if (!isValidType(value, type)) {
+			originalData.forEach((row, index) => {
+				if (!isValidForType(row[header], type)) {
 					newInvalidCells[header].add(index);
 				}
 			});
 		});
 
 		invalidCells = newInvalidCells;
+	}
+
+	function formatDataForDisplay(data: Record<string, string>[]): Record<string, string>[] {
+		if (!data?.length) return [];
+
+		return data.map((row, rowIndex) => {
+			const formattedRow: Record<string, string> = {};
+
+			Object.entries(row).forEach(([header, value]) => {
+				// Only include data that is both valid for its type and not toggled off
+				const isValid = !invalidCells[header]?.has(rowIndex);
+				const isToggled = toggledColumns[header];
+
+				if (isValid && !isToggled) {
+					formattedRow[header] = value;
+				} else {
+					formattedRow[header] = value; // Still include but will be greyed out in UI
+				}
+			});
+
+			return formattedRow;
+		});
 	}
 
 	function isValidType(value: string, type: string): boolean {
@@ -219,6 +239,7 @@
 			rows={transformedData}
 			{invalidCells}
 			{columnTypes}
+			{toggledColumns}
 			on:typeChange={handleTypeChange}
 		/>
 	{/if}
