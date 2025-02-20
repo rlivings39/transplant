@@ -1,55 +1,40 @@
 <script lang="ts">
-	const { row, columnHeaders, columnTypes, toggledColumns } = $props<{
+	const { row, columnHeaders, columnTypes, toggledColumns, invalidCells, rowIndex } = $props<{
 		row: Record<string, string>;
 		columnHeaders: string[];
 		columnTypes: Record<string, string>;
 		toggledColumns: Record<string, boolean>;
+		invalidCells: Record<string, Set<number>>;
+		rowIndex: number;
 	}>();
 
-	function isValidDecimalPair(value: string): boolean {
-		const parts = value.split(/[,\s]+/).map((p) => p.trim());
-		if (parts.length !== 2) return false;
-
-		const [lat, lon] = parts.map(parseFloat);
-		return !isNaN(lat) && !isNaN(lon) && Math.abs(lat) <= 90 && Math.abs(lon) <= 180;
-	}
-
-	function formatLatLon(lat: string, lon: string): string | null {
-		const latNum = parseFloat(lat);
-		const lonNum = parseFloat(lon);
-		if (!isNaN(latNum) && !isNaN(lonNum) && Math.abs(latNum) <= 90 && Math.abs(lonNum) <= 180) {
-			return `${latNum}, ${lonNum}`;
-		}
-		return null;
+	function isValidCell(header: string): boolean {
+		return !toggledColumns[header] && !(invalidCells?.[header]?.has(rowIndex) ?? false);
 	}
 
 	function getGpsDisplayValue(): string {
-		const activeColumns = columnHeaders.filter((header) => !toggledColumns[header]);
+		// Only look at columns that are valid for this row
+		const activeColumns = columnHeaders.filter(
+			(header) => isValidCell(header) && row[header]?.trim()
+		);
 
-		// First try each column for a valid decimal pair
+		// First try columns already validated as GPS type
 		for (const header of activeColumns) {
-			const value = row[header]?.trim();
-			if (value && isValidDecimalPair(value)) {
-				return value;
+			if (columnTypes[header] === 'gps') {
+				return row[header].trim();
 			}
 		}
 
-		// If no valid pair found, try to combine latitude/longitude columns
+		// Then try latitude/longitude pairs
 		const latColumns = activeColumns.filter((header) => columnTypes[header] === 'latitude');
 		const lonColumns = activeColumns.filter((header) => columnTypes[header] === 'longitude');
 
 		for (const latCol of latColumns) {
-			const lat = row[latCol]?.trim();
-			if (!lat) continue;
+			const lat = row[latCol].trim();
 
 			for (const lonCol of lonColumns) {
-				const lon = row[lonCol]?.trim();
-				if (!lon) continue;
-
-				const formatted = formatLatLon(lat, lon);
-				if (formatted) {
-					return formatted;
-				}
+				const lon = row[lonCol].trim();
+				return `${lat}, ${lon}`;
 			}
 		}
 

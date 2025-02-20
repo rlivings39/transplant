@@ -75,7 +75,14 @@
 			<tbody>
 				{#each previewRows as row, rowIndex (rowIndex)}
 					<tr>
-						<GpsColumn {row} {columnHeaders} {toggledColumns} {columnTypes} />
+						<GpsColumn
+							{row}
+							{columnHeaders}
+							{toggledColumns}
+							{columnTypes}
+							{invalidCells}
+							{rowIndex}
+						/>
 						{#each columnHeaders as columnHeader (columnHeader)}
 							<td
 								class:number-cell={columnTypes[columnHeader] === 'number'}
