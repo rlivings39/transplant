@@ -1,4 +1,6 @@
 <script lang="ts">
+	import { isValidLatitude, isValidLongitude } from '$lib/utils/gpsUtils';
+
 	let {
 		header,
 		data,
@@ -9,99 +11,76 @@
 		type?: string;
 	}>();
 
-	const types = ['string', 'number', 'date', 'gps', 'delete'];
+	const types = ['string', 'number', 'date', 'gps', 'latitude', 'longitude', 'delete'];
 
-	// Import GPS validation from GpsColumn
-	import { isValidGpsValue } from './GpsColumn.svelte';
+	// Validate first 5 non-empty values against current type
+	function validateForType(values: string[], type: string): boolean {
+		let validCount = 0;
+		let checkedCount = 0;
 
-	// Auto-detect type from first 10 non-empty values
-	$effect(() => {
-		if (data.length === 0) return;
+		for (const value of values) {
+			if (!value?.trim()) continue;
 
-		const typeCounts = new Map<string, number>();
-		let samplesChecked = 0;
+			let isValid = false;
+			switch (type) {
+				case 'number':
+					isValid = !isNaN(parseFloat(value));
+					break;
+				case 'latitude':
+					isValid = isValidLatitude(value);
+					break;
+				case 'longitude':
+					isValid = isValidLongitude(value);
+					break;
+				case 'gps':
+					// Only validate GPS if explicitly selected
+					isValid = false;
+					break;
+				case 'string':
+					isValid = true;
+					break;
+				default:
+					isValid = false;
+			}
 
-		for (const row of data) {
-			const value = row[header]?.trim();
-			if (!value) continue; // Skip empty cells
-
-			const detected = detectType(value);
-			typeCounts.set(detected, (typeCounts.get(detected) || 0) + 1);
-
-			if (++samplesChecked >= 10) break;
+			if (isValid) validCount++;
+			if (++checkedCount >= 5) break;
 		}
 
-		if (typeCounts.size > 0) {
-			type = Array.from(typeCounts.entries()).reduce((a, b) => (b[1] > a[1] ? b : a))[0];
+		return validCount === checkedCount;
+	}
+
+	// Run validation immediately on load and type changes
+	$effect(() => {
+		if (!data.length) return;
+
+		const values = data.map((row) => row[header]);
+		const isValid = validateForType(values, type);
+
+		if (!isValid) {
+			console.log(`Column ${header} failed validation for type ${type}`);
+			type = 'string'; // Reset to string if validation fails
 		}
 	});
-
-	function isGpsColumn(values: string[]): boolean {
-		// Get first 5 non-empty values
-		const sample = values.filter(Boolean).slice(0, 5);
-		if (sample.length === 0) return false;
-
-		// Use shared validation function
-		let validCount = 0;
-		for (const value of sample) {
-			if (isValidGpsValue(value)) {
-				validCount++;
-			}
-		}
-
-		// Consider it a GPS column if most values are valid GPS format
-		return validCount / sample.length >= 0.8; // 80% threshold
-	}
-
-	function detectType(value: string): string {
-		if (/^-?\d+\.?\d*$/.test(value)) return 'number';
-		if (/^\d{4}-\d{2}-\d{2}(T\d{2}:\d{2}:\d{2}(\.\d+)?Z?)?$/.test(value)) {
-			const date = new Date(value);
-			if (!isNaN(date.getTime())) return 'date';
-		}
-
-		// Check for GPS coordinates
-		if (isValidGpsValue(value)) {
-			return 'gps';
-		}
-
-		// Check for single coordinate (lat or lon)
-		const singleCoord = parseFloat(value);
-		if (!isNaN(singleCoord) && (Math.abs(singleCoord) <= 90 || Math.abs(singleCoord) <= 180)) {
-			return 'gps';
-		}
-
-		return 'string';
-	}
-
-	function detectColumnType(values: string[]): string {
-		const sample = values.slice(0, 10).filter(Boolean);
-
-		// Check for GPS first
-		if (isGpsColumn(sample)) return 'gps';
-
-		// Then check other types
-		if (sample.every((v) => !isNaN(Number(v)))) return 'number';
-		if (sample.every((v) => !isNaN(Date.parse(v)))) return 'date';
-		if (sample.every((v) => EMAIL_REGEX.test(v))) return 'email';
-
-		return 'string';
-	}
 </script>
 
-<select bind:value={type} class:gps-type={type === 'gps'}>
-	{#each types as t}
-		<option value={t} class:gps-option={t === 'gps'}>{t.toUpperCase()}</option>
+<select bind:value={type}>
+	{#each types as typeOption}
+		<option value={typeOption}>
+			{typeOption === 'delete'
+				? 'Delete'
+				: typeOption.charAt(0).toUpperCase() + typeOption.slice(1)}
+		</option>
 	{/each}
 </select>
 
 <style>
-	.gps-type {
+	.coord-type {
 		color: var(--primary);
 		font-family: 'JetBrains Mono', monospace;
 	}
 
-	.gps-type option:not(.gps-option) {
+	.coord-type option:not(.coord-option) {
 		color: var(--muted);
 		font-family:
 			system-ui,
@@ -110,9 +89,8 @@
 		font-style: italic;
 	}
 
-	.gps-option {
+	.coord-option {
 		color: var(--primary);
 		font-family: 'JetBrains Mono', monospace;
-		font-weight: 500;
 	}
 </style>

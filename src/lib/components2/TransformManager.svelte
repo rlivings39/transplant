@@ -2,7 +2,7 @@
 	import CSVImporter from './CSVImporter.svelte';
 	import DataPreviewTable from './DataPreviewTable.svelte';
 	import { formatGpsCoordinate, parseGpsCoordinate } from '../utils/gpsUtils';
-	
+
 	// Store original data immutably
 	let originalData = $state<Record<string, string>[]>([]);
 	let columnTypes = $state<Record<string, string>>({});
@@ -14,22 +14,37 @@
 	let transformedData = $derived(formatDataForDisplay(originalData));
 
 	function handleTypeChange(event: CustomEvent<{ columnHeader: string; type: string }>) {
-		columnTypes = { ...columnTypes, [event.detail.columnHeader]: event.detail.type };
-		validateColumns(); // Re-validate after type change
+		const { columnHeader, type } = event.detail;
+		console.log(`Changing type for ${columnHeader} to ${type}`);
+
+		// Update column type
+		columnTypes = { ...columnTypes, [columnHeader]: type };
+
+		// Clear any existing validation state for this column
+		if (invalidCells[columnHeader]) {
+			const newInvalidCells = { ...invalidCells };
+			delete newInvalidCells[columnHeader];
+			invalidCells = newInvalidCells;
+		}
+
+		// Validate immediately after type change
+		validateColumns();
 	}
 
 	function handleDataLoaded(event: CustomEvent<{ data: Record<string, string>[] }>) {
-		// Create a new copy of the data to avoid mutating CSVImporter's data
+		// Create a new copy of the data
 		originalData = event.detail.data.map((row) => ({ ...row }));
 
-		// Initial type detection
+		// Start all columns as string type
 		columnTypes = Object.keys(originalData[0] || {}).reduce(
 			(types, header) => ({
 				...types,
-				[header]: detectColumnType(originalData.map((row) => row[header]))
+				[header]: 'string'
 			}),
 			{}
 		);
+
+		// Initial validation
 		validateColumns();
 	}
 
@@ -44,61 +59,19 @@
 		const sample = values.slice(0, 5).filter(Boolean);
 		if (sample.length === 0) return 'string';
 
-		// Check if it's a latitude column
-		const headerLower = columnHeaders[0].toLowerCase();
-		if (headerLower.includes('lat')) {
-			const allLat = sample.every((value) => {
-				const num = parseFloat(value);
-				return !isNaN(num) && Math.abs(num) <= 90;
-			});
-			if (allLat) return 'gps';
+		// Check header for lat/lon first
+		const header = columnHeaders[0].toLowerCase();
+		if (/l.*?a.*?t/i.test(header)) {
+			return 'latitude';
+		} else if (/l.*?o.*?n/i.test(header)) {
+			return 'longitude';
 		}
 
-		// Check if it's a longitude column
-		if (headerLower.includes('lon')) {
-			const allLon = sample.every((value) => {
-				const num = parseFloat(value);
-				return !isNaN(num) && Math.abs(num) <= 180;
-			});
-			if (allLon) return 'gps';
-		}
-
-		// Check for combined GPS coordinates
-		const allGps = sample.every((value) => {
-			const coord = parseGpsCoordinate(value);
-			return coord !== null;
-		});
-		if (allGps) return 'gps';
-
-		// First check if all values could be numbers (including comma-separated)
+		// Check if all values are valid numbers
 		if (sample.every(isNumber)) {
-			// If they're all numbers, check if they're all in date range
-			const allInDateRange = sample.every((v) => {
-				const num = Number(v.replace(/,/g, ''));
-				return num >= 1850 && num <= 2035;
-			});
-
-			if (allInDateRange) {
-				return 'date'; // All numbers are in date range
-			}
-			return 'number'; // Some numbers outside date range
+			return 'number';
 		}
 
-		// If not all numbers, check if they're valid dates
-		if (
-			sample.every((v) => {
-				try {
-					const date = new Date(v);
-					return !isNaN(date.getTime());
-				} catch {
-					return false;
-				}
-			})
-		) {
-			return 'date';
-		}
-
-		// If neither numbers nor dates, it's a string
 		return 'string';
 	}
 
@@ -185,43 +158,70 @@
 	function validateColumns() {
 		const newInvalidCells: Record<string, Set<number>> = {};
 
-		columnHeaders.forEach((header) => {
-			const type = columnTypes[header];
-			newInvalidCells[header] = new Set();
+		Object.entries(columnTypes).forEach(([header, type]) => {
+			if (type === 'string') return; // String type is always valid
 
+			const invalid = new Set<number>();
 			originalData.forEach((row, index) => {
-				if (!isValidForType(row[header], type)) {
-					newInvalidCells[header].add(index);
+				const value = row[header]?.trim();
+				if (!value) return; // Empty values are valid
+
+				let isValid = false;
+				switch (type) {
+					case 'gps':
+						isValid = parseGpsCoordinate(value) !== null;
+						break;
+					case 'latitude':
+						const lat = parseFloat(value);
+						isValid = !isNaN(lat) && Math.abs(lat) <= 90;
+						break;
+					case 'longitude':
+						const lon = parseFloat(value);
+						isValid = !isNaN(lon) && Math.abs(lon) <= 180;
+						break;
+					case 'number':
+						isValid = !isNaN(parseFloat(value));
+						break;
+					case 'date':
+						isValid = !isNaN(Date.parse(value));
+						break;
+					default:
+						isValid = false;
+				}
+
+				if (!isValid) {
+					invalid.add(index);
 				}
 			});
+
+			if (invalid.size > 0) {
+				newInvalidCells[header] = invalid;
+			}
 		});
 
 		invalidCells = newInvalidCells;
 	}
 
 	function formatDataForDisplay(data: Record<string, string>[]): Record<string, string>[] {
-		if (!data?.length) return [];
-
-		return data.map((row, rowIndex) => {
-			const formattedRow: Record<string, string> = {};
-
-			Object.entries(row).forEach(([header, value]) => {
-				const type = columnTypes[header];
-				let formattedValue = value;
-
-				// Apply formatting based on type
-				if (type === 'number') {
-					formattedValue = formatNumber(value);
-				} else if (type === 'date') {
-					formattedValue = formatDate(value);
-				} else if (type === 'gps') {
-					formattedValue = formatGps(value);
+		return data.map((row, index) => {
+			const formattedRow = { ...row };
+			Object.entries(columnTypes).forEach(([header, type]) => {
+				// Only format if the cell is valid
+				if (!invalidCells[header]?.has(index)) {
+					const value = row[header]?.trim();
+					if (value) {
+						switch (type) {
+							case 'gps':
+								const coord = parseGpsCoordinate(value);
+								if (coord) {
+									formattedRow[header] = formatGpsCoordinate(coord);
+								}
+								break;
+							// Add other formatting cases as needed
+						}
+					}
 				}
-
-				// Store the formatted value
-				formattedRow[header] = formattedValue;
 			});
-
 			return formattedRow;
 		});
 	}
@@ -248,6 +248,16 @@
 		} catch {
 			return false;
 		}
+	}
+
+	function isValidLatitude(value: string): boolean {
+		// Implement latitude validation logic here
+		return true;
+	}
+
+	function isValidLongitude(value: string): boolean {
+		// Implement longitude validation logic here
+		return true;
 	}
 </script>
 

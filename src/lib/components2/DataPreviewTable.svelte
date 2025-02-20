@@ -60,6 +60,8 @@
 									<option value="number">Number</option>
 									<option value="date">Date</option>
 									<option value="gps">GPS</option>
+									<option value="latitude">Latitude</option>
+									<option value="longitude">Longitude</option>
 									<option value="delete">Delete</option>
 								</select>
 							</div>
@@ -73,11 +75,12 @@
 			<tbody>
 				{#each previewRows as row, rowIndex (rowIndex)}
 					<tr>
-						<GpsColumn {row} {columnHeaders} {toggledColumns} />
+						<GpsColumn {row} {columnHeaders} {toggledColumns} {columnTypes} />
 						{#each columnHeaders as columnHeader (columnHeader)}
 							<td
 								class:number-cell={columnTypes[columnHeader] === 'number'}
-								class:gps-cell={columnTypes[columnHeader] === 'gps'}
+								class:coord-cell={columnTypes[columnHeader] === 'latitude' || columnTypes[columnHeader] === 'longitude'}
+
 								class:greyed-out={isGreyedOut(columnHeader, rowIndex)}
 							>
 								{row[columnHeader]}
