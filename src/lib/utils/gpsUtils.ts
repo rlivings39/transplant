@@ -7,49 +7,66 @@ export function isValidCoordinate(lat: number, lon: number): boolean {
 	return lat >= -90 && lat <= 90 && lon >= -180 && lon <= 180;
 }
 
-export function formatGpsCoordinate(coord: GpsCoordinate | null): string {
-	if (!coord) return '';
-	// Format with consistent precision
-	return `${coord.latitude}, ${coord.longitude}`;
-}
-
-export function parseGpsCoordinate(value: string): GpsCoordinate | null {
-	// DD format (decimal degrees)
-	const ddMatch = value.match(/^\s*(-?\d+\.?\d*)\s*[,\s]\s*(-?\d+\.?\d*)\s*$/);
-	if (ddMatch) {
-		const lat = Number(ddMatch[1]); // Use Number instead of parseFloat to preserve precision
-		const lon = Number(ddMatch[2]);
-		if (!isNaN(lat) && !isNaN(lon) && isValidCoordinate(lat, lon)) {
-			return { latitude: lat, longitude: lon };
-		}
+function parseDmsValue(dms: string): number | null {
+	// Handle decimal degrees format (e.g., "34.0522°")
+	const decimalMatch = dms.match(/^(-?\d+\.?\d*)°/);
+	if (decimalMatch) {
+		return Number(decimalMatch[1]);
 	}
 
-	// DMS format (e.g., "48° 51' 24.0" N, 2° 21' 03.0" E")
-	const dmsMatch = value.match(
-		/^\s*(\d+)°\s*(\d+)'\s*(\d+(\.\d+)?)?\"?\s*([NS])\s*,?\s*(\d+)°\s*(\d+)'\s*(\d+(\.\d+)?)?\"?\s*([EW])\s*$/i
-	);
+	// Handle DMS format (e.g., "51° 30' 26\"")
+	const dmsMatch = dms.match(/(\d+)°\s*(\d+)'\s*(\d+(\.\d+)?)?"/);
 	if (dmsMatch) {
-		const latDeg = Number(dmsMatch[1]);
-		const latMin = Number(dmsMatch[2]);
-		const latSec = Number(dmsMatch[3] || '0');
-		const latDir = dmsMatch[5].toUpperCase();
+		const degrees = Number(dmsMatch[1]);
+		const minutes = Number(dmsMatch[2]);
+		const seconds = Number(dmsMatch[3] || '0');
 
-		const lonDeg = Number(dmsMatch[6]);
-		const lonMin = Number(dmsMatch[7]);
-		const lonSec = Number(dmsMatch[8] || '0');
-		const lonDir = dmsMatch[10].toUpperCase();
-
-		// Convert to decimal degrees with high precision
-		let lat = latDeg + (latMin + latSec / 60) / 60;
-		let lon = lonDeg + (lonMin + lonSec / 60) / 60;
-
-		if (latDir === 'S') lat = -lat;
-		if (lonDir === 'W') lon = -lon;
-
-		if (isValidCoordinate(lat, lon)) {
-			return { latitude: lat, longitude: lon };
+		if (!isNaN(degrees) && !isNaN(minutes) && !isNaN(seconds)) {
+			return degrees + minutes / 60 + seconds / 3600;
 		}
 	}
 
 	return null;
+}
+
+export function parseGpsCoordinate(value: string): GpsCoordinate | null {
+	if (!value?.trim()) return null;
+
+	// Normalize spaces and quotes
+	const normalized = value.replace(/[""]/g, '"').replace(/\s+/g, ' ').trim();
+
+	// Try to split into lat/lon parts
+	const parts = normalized.split(',').map((p) => p.trim());
+	if (parts.length !== 2) return null;
+
+	let [latPart, lonPart] = parts;
+
+	// Extract values and directions
+	const latDir = latPart.includes('N') ? 1 : latPart.includes('S') ? -1 : null;
+	const lonDir = lonPart.includes('E') ? 1 : lonPart.includes('W') ? -1 : null;
+
+	// Remove direction indicators for parsing
+	latPart = latPart.replace(/[NS]$/, '').trim();
+	lonPart = lonPart.replace(/[EW]$/, '').trim();
+
+	const lat = parseDmsValue(latPart);
+	const lon = parseDmsValue(lonPart);
+
+	if (lat === null || lon === null || latDir === null || lonDir === null) {
+		return null;
+	}
+
+	const latitude = lat * latDir;
+	const longitude = lon * lonDir;
+
+	if (!isValidCoordinate(latitude, longitude)) {
+		return null;
+	}
+
+	return { latitude, longitude };
+}
+
+export function formatGpsCoordinate(coord: GpsCoordinate | null): string {
+	if (!coord) return '';
+	return `${coord.latitude.toFixed(6)}, ${coord.longitude.toFixed(6)}`;
 }

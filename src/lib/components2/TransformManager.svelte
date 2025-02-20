@@ -1,7 +1,8 @@
 <script lang="ts">
 	import CSVImporter from './CSVImporter.svelte';
 	import DataPreviewTable from './DataPreviewTable.svelte';
-
+	import { formatGpsCoordinate, parseGpsCoordinate } from '../utils/gpsUtils';
+	
 	// Store original data immutably
 	let originalData = $state<Record<string, string>[]>([]);
 	let columnTypes = $state<Record<string, string>>({});
@@ -101,16 +102,23 @@
 		return 'string';
 	}
 
-	function parseGpsCoordinate(value: string): [number, number] | null {
-		const parts = value.split(',');
-		if (parts.length !== 2) return null;
+	function formatGps(value: string): string {
+		console.log('Formatting GPS value:', value);
+		if (!value?.trim()) return value;
 
-		const lat = parseFloat(parts[0]);
-		const lon = parseFloat(parts[1]);
+		// Try parsing as coordinates
+		const coord = parseGpsCoordinate(value);
+		console.log('Parsed coordinate:', coord);
 
-		if (isNaN(lat) || isNaN(lon)) return null;
+		if (coord !== null) {
+			const formatted = formatGpsCoordinate(coord);
+			console.log('Formatted coordinate:', formatted);
+			return formatted;
+		}
 
-		return [lat, lon];
+		// If parsing failed, return original value
+		console.log('Returning original value');
+		return value;
 	}
 
 	function formatDate(value: string): string {
@@ -207,7 +215,7 @@
 				} else if (type === 'date') {
 					formattedValue = formatDate(value);
 				} else if (type === 'gps') {
-					formattedValue = value; // Keep GPS values as-is
+					formattedValue = formatGps(value);
 				}
 
 				// Store the formatted value
