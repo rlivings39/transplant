@@ -79,8 +79,8 @@
 						{#each columnHeaders as columnHeader (columnHeader)}
 							<td
 								class:number-cell={columnTypes[columnHeader] === 'number'}
-								class:coord-cell={columnTypes[columnHeader] === 'latitude' || columnTypes[columnHeader] === 'longitude'}
-
+								class:coord-cell={columnTypes[columnHeader] === 'latitude' ||
+									columnTypes[columnHeader] === 'longitude'}
 								class:greyed-out={isGreyedOut(columnHeader, rowIndex)}
 							>
 								{row[columnHeader]}

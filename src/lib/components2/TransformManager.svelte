@@ -1,7 +1,12 @@
 <script lang="ts">
 	import CSVImporter from './CSVImporter.svelte';
 	import DataPreviewTable from './DataPreviewTable.svelte';
-	import { formatGpsCoordinate, parseGpsCoordinate } from '../utils/gpsUtils';
+	import {
+		formatGpsCoordinate,
+		parseGpsCoordinate,
+		isValidLatitude,
+		isValidLongitude
+	} from '../utils/gpsUtils';
 
 	// Store original data immutably
 	let originalData = $state<Record<string, string>[]>([]);
@@ -12,6 +17,79 @@
 	// Derive headers and transformed data
 	let columnHeaders = $derived(originalData.length > 0 ? Object.keys(originalData[0]) : []);
 	let transformedData = $derived(formatDataForDisplay(originalData));
+
+	function detectColumnType(header: string, samples: string[]): string {
+		console.log(`\nDetecting type for ${header} with ${samples.length} samples`);
+		const headerLower = header.toLowerCase();
+
+		// 1. Try GPS (most specific)
+		const gpsCount = samples.filter((value) => parseGpsCoordinate(value) !== null).length;
+		console.log(`GPS match: ${gpsCount}/${samples.length}`);
+		if (gpsCount === samples.length) {
+			console.log(`${header}: All values are GPS coordinates`);
+			return 'gps';
+		}
+
+		// 2. Try Latitude/Longitude
+		if (/l.*?a.*?t/i.test(headerLower)) {
+			const validLat = samples.every((v) => !isNaN(parseFloat(v)) && Math.abs(parseFloat(v)) <= 90);
+			if (validLat) {
+				console.log(`${header}: All values are valid latitudes`);
+				return 'latitude';
+			}
+		}
+		if (/l.*?o.*?n/i.test(headerLower)) {
+			const validLon = samples.every(
+				(v) => !isNaN(parseFloat(v)) && Math.abs(parseFloat(v)) <= 180
+			);
+			if (validLon) {
+				console.log(`${header}: All values are valid longitudes`);
+				return 'longitude';
+			}
+		}
+
+		// 3. Try Numbers
+		const numCount = samples.filter((value) => !isNaN(parseFloat(value))).length;
+		if (numCount === samples.length) {
+			console.log(`${header}: All values are numbers`);
+			return 'number';
+		}
+
+		// 4. Default to string (least specific)
+		console.log(`${header}: Defaulting to string`);
+		return 'string';
+	}
+
+	function handleDataLoaded(event: CustomEvent<{ data: Record<string, string>[] }>) {
+		// Create a new copy of the data
+		originalData = event.detail.data.map((row) => ({ ...row }));
+
+		// Get sample values for each column (first 5 non-empty)
+		const samples: Record<string, string[]> = {};
+		Object.keys(originalData[0] || {}).forEach((header) => {
+			const headerSamples: string[] = [];
+			for (const row of originalData) {
+				const value = row[header]?.trim();
+				if (value) {
+					headerSamples.push(value);
+					if (headerSamples.length >= 5) break;
+				}
+			}
+			samples[header] = headerSamples;
+		});
+
+		// Detect types for each column
+		columnTypes = Object.keys(originalData[0] || {}).reduce(
+			(types, header) => ({
+				...types,
+				[header]: detectColumnType(header, samples[header])
+			}),
+			{}
+		);
+
+		// Initial validation
+		validateColumns();
+	}
 
 	function handleTypeChange(event: CustomEvent<{ columnHeader: string; type: string }>) {
 		const { columnHeader, type } = event.detail;
@@ -31,48 +109,11 @@
 		validateColumns();
 	}
 
-	function handleDataLoaded(event: CustomEvent<{ data: Record<string, string>[] }>) {
-		// Create a new copy of the data
-		originalData = event.detail.data.map((row) => ({ ...row }));
-
-		// Start all columns as string type
-		columnTypes = Object.keys(originalData[0] || {}).reduce(
-			(types, header) => ({
-				...types,
-				[header]: 'string'
-			}),
-			{}
-		);
-
-		// Initial validation
-		validateColumns();
-	}
-
 	function isNumber(value: string): boolean {
 		if (!value?.trim()) return false;
 		// Remove commas and try to parse
 		const cleanValue = value.replace(/,/g, '');
 		return !isNaN(Number(cleanValue));
-	}
-
-	function detectColumnType(values: string[]): string {
-		const sample = values.slice(0, 5).filter(Boolean);
-		if (sample.length === 0) return 'string';
-
-		// Check header for lat/lon first
-		const header = columnHeaders[0].toLowerCase();
-		if (/l.*?a.*?t/i.test(header)) {
-			return 'latitude';
-		} else if (/l.*?o.*?n/i.test(header)) {
-			return 'longitude';
-		}
-
-		// Check if all values are valid numbers
-		if (sample.every(isNumber)) {
-			return 'number';
-		}
-
-		return 'string';
 	}
 
 	function formatGps(value: string): string {
@@ -172,12 +213,10 @@
 						isValid = parseGpsCoordinate(value) !== null;
 						break;
 					case 'latitude':
-						const lat = parseFloat(value);
-						isValid = !isNaN(lat) && Math.abs(lat) <= 90;
+						isValid = isValidLatitude(value);
 						break;
 					case 'longitude':
-						const lon = parseFloat(value);
-						isValid = !isNaN(lon) && Math.abs(lon) <= 180;
+						isValid = isValidLongitude(value);
 						break;
 					case 'number':
 						isValid = !isNaN(parseFloat(value));
@@ -248,16 +287,6 @@
 		} catch {
 			return false;
 		}
-	}
-
-	function isValidLatitude(value: string): boolean {
-		// Implement latitude validation logic here
-		return true;
-	}
-
-	function isValidLongitude(value: string): boolean {
-		// Implement longitude validation logic here
-		return true;
 	}
 </script>
 
