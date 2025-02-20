@@ -135,21 +135,27 @@
 	}
 
 	function formatNumber(value: string): string {
-		// Preserve empty or whitespace-only values
-		if (!value?.trim()) return '';
+		if (!value?.trim()) return value;
 
-		// Remove any existing commas and parse
-		const num = Number(value.replace(/,/g, ''));
+		// Remove any existing commas first
+		const cleanValue = value.replace(/,/g, '');
+		const num = Number(cleanValue);
+
 		if (isNaN(num)) return value;
 
-		// Format with comma-separated thousands, preserving decimal places
-		const [whole, decimal] = value.split('.');
-		const formattedWhole = Number(whole).toLocaleString('en-US');
+		// Split into whole and decimal parts
+		const [whole, decimal] = num.toString().split('.');
+
+		// Add commas to the whole number part
+		const formattedWhole = whole.replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+
+		// Return with decimal if it exists
 		return decimal ? `${formattedWhole}.${decimal}` : formattedWhole;
 	}
 
 	function isValidForType(value: string, type: string): boolean {
-		if (!value?.trim()) return false;
+		// Empty cells are always valid
+		if (!value?.trim()) return true;
 
 		switch (type) {
 			case 'number':
@@ -192,15 +198,20 @@
 			const formattedRow: Record<string, string> = {};
 
 			Object.entries(row).forEach(([header, value]) => {
-				// Only include data that is both valid for its type and not toggled off
-				const isValid = !invalidCells[header]?.has(rowIndex);
-				const isToggled = toggledColumns[header];
+				const type = columnTypes[header];
+				let formattedValue = value;
 
-				if (isValid && !isToggled) {
-					formattedRow[header] = value;
-				} else {
-					formattedRow[header] = value; // Still include but will be greyed out in UI
+				// Apply formatting based on type
+				if (type === 'number') {
+					formattedValue = formatNumber(value);
+				} else if (type === 'date') {
+					formattedValue = formatDate(value);
+				} else if (type === 'gps') {
+					formattedValue = value; // Keep GPS values as-is
 				}
+
+				// Store the formatted value
+				formattedRow[header] = formattedValue;
 			});
 
 			return formattedRow;
