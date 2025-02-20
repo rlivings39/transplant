@@ -8,14 +8,15 @@
 		rowIndex: number;
 	}>();
 
-	function isValidCell(header: string): boolean {
-		return !toggledColumns[header] && !(invalidCells?.[header]?.has(rowIndex) ?? false);
+	function isValidCell(header: string, ignoreToggle = false): boolean {
+		const isValid = !(invalidCells?.[header]?.has(rowIndex) ?? false);
+		return ignoreToggle ? isValid : isValid && !toggledColumns[header];
 	}
 
-	function getGpsDisplayValue(): string {
-		// Only look at columns that are valid for this row
+	function tryGetGpsValue(ignoreToggle = false): string {
+		// Get valid columns (optionally ignoring toggle state)
 		const activeColumns = columnHeaders.filter(
-			(header) => isValidCell(header) && row[header]?.trim()
+			(header) => isValidCell(header, ignoreToggle) && row[header]?.trim()
 		);
 
 		// First try columns already validated as GPS type
@@ -39,6 +40,15 @@
 		}
 
 		return '';
+	}
+
+	function getGpsDisplayValue(): string {
+		// First try with toggle rules enforced
+		const value = tryGetGpsValue(false);
+		if (value) return value;
+
+		// If nothing found, try again ignoring toggle state
+		return tryGetGpsValue(true);
 	}
 
 	let displayValue = $derived(getGpsDisplayValue());
