@@ -1,4 +1,6 @@
 <script lang="ts">
+	import { goto } from '$app/navigation';
+	import { canTransform, transformData } from '../utils/transformUtils';
 	import CSVImporter from './CSVImporter.svelte';
 	import DataPreviewTable from './DataPreviewTable.svelte';
 	import {
@@ -21,6 +23,35 @@
 	// Derive headers and transformed data
 	let columnHeaders = $derived(originalData.length > 0 ? Object.keys(originalData[0]) : []);
 	let transformedData = $derived(formatDataForDisplay(originalData));
+
+	// Check if data is ready for transformation
+	let isReadyToTransform = $derived(
+		canTransform({
+			data: originalData,
+			headers: columnHeaders,
+			types: columnTypes,
+			invalidCells,
+			toggledColumns
+		})
+	);
+
+	function handleTransform() {
+		if (!isReadyToTransform) {
+			console.error('Data not ready for transformation');
+			return;
+		}
+
+		const transformed = transformData({
+			data: originalData,
+			headers: columnHeaders,
+			types: columnTypes,
+			invalidCells,
+			toggledColumns
+		});
+
+		sessionStorage.setItem('transformedData', JSON.stringify(transformed));
+		onTransform();
+	}
 
 	function detectColumnType(header: string, samples: string[]): string {
 		console.log(`\nDetecting type for ${header} with ${samples.length} samples`);
@@ -295,7 +326,7 @@
 </script>
 
 <div class="transform-manager">
-	<CSVImporter on:dataLoaded={handleDataLoaded} {onTransform} />
+	<CSVImporter on:dataLoaded={handleDataLoaded} />
 	{#if originalData.length > 0}
 		<DataPreviewTable
 			rows={transformedData}
@@ -303,6 +334,32 @@
 			{columnTypes}
 			{toggledColumns}
 			on:typeChange={handleTypeChange}
-		/>
+		>
+			<div slot="file-input" class="transform-actions">
+				<button class="primary" disabled={!isReadyToTransform} onclick={handleTransform}>
+					Transform Data
+				</button>
+				{#if !isReadyToTransform}
+					<p class="error-text">
+						Please fix validation errors and ensure all columns have valid types before
+						transforming.
+					</p>
+				{/if}
+			</div>
+		</DataPreviewTable>
 	{/if}
 </div>
+
+<style>
+	.transform-actions {
+		display: flex;
+		gap: 1rem;
+		align-items: center;
+	}
+
+	.error-text {
+		color: var(--error-color);
+		font-size: 0.875rem;
+		margin: 0;
+	}
+</style>
