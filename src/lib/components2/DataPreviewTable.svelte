@@ -8,7 +8,6 @@
 	let toggledColumns = $state<Record<string, boolean>>({});
 
 	function handleColumnToggle(columnHeader: string, isActive: boolean) {
-		// Changed parameter name
 		toggledColumns = { ...toggledColumns, [columnHeader]: !isActive };
 		console.log('Column toggled:', columnHeader, isActive);
 	}
@@ -19,12 +18,11 @@
 		columnTypes: Record<string, string>;
 	}>();
 
-	// let columnTypes = $state<Record<string, string>>({});
 	let columnHeaders = $derived(rows.length > 0 ? Object.keys(rows[0]) : []);
 	let previewRows = $derived(rows.slice(0, 500));
 
 	const dispatch = createEventDispatcher<{
-		typeChange: { columnHeader: string; type: string }; // Changed from header
+		typeChange: { columnHeader: string; type: string };
 	}>();
 
 	function handleTypeChange(columnHeader: string, event: Event) {
@@ -33,14 +31,16 @@
 	}
 
 	function isGreyedOut(columnHeader: string, rowIndex: number): boolean {
-		// Data is greyed out if either:
-		// 1. The column is toggled off
-		// 2. The data doesn't match the selected type
 		return toggledColumns[columnHeader] || invalidCells[columnHeader]?.has(rowIndex);
 	}
 </script>
 
 <div>
+	<div class="header-container">
+		<div class="header-actions">
+			<slot name="file-input" />
+		</div>
+	</div>
 	<div class="table-container">
 		<table>
 			<thead>
@@ -100,7 +100,7 @@
 	</div>
 </div>
 
-<!-- <style>
+<style>
 	.table-container {
 		overflow-x: auto;
 		max-width: 100%;
@@ -130,4 +130,15 @@
 	.greyed-out.gps-cell {
 		opacity: 0.5;
 	}
-</style> -->
+
+	.header-container {
+		margin-bottom: 1rem;
+	}
+
+	.header-actions {
+		display: flex;
+		justify-content: space-between;
+		align-items: center;
+		width: 100%;
+	}
+</style>

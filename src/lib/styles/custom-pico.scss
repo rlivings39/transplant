@@ -14,6 +14,13 @@
 	--button-max-width: 28rem;
 	--column-width: 7rem;
 	--bright-border: 1px solid #e0e0e0;
+	--button-background: transparent;
+	--button-color: white;
+	--button-border: solid 2px #7a7281;
+	--button-padding: 0.75rem 2rem;
+	--button-radius: 0.5rem;
+	--button-font-size: 1rem;
+	--button-transition: all 0.3s ease;
 }
 
 nav a {
@@ -227,7 +234,30 @@ button,
 	}
 }
 
-// 🏄🏼‍♀️️🏄🏼‍♀️️🏄🏼‍♀️️🏄🏼‍♀️️🏄🏼‍♀️️🏄🏼‍♀️️🏄🏼‍♀️️🏄🏼‍♀️️🏄🏼‍♀️️🏄🏼‍♀️️🏄🏼‍♀️️🏄🏼‍♀️️🏄🏼‍♀️️🏄🏼‍♀️️🏄🏼‍♀️️🏄🏼‍♀️️🏄🏼‍♀️️🏄🏼‍♀️️🏄🏼‍♀️️🏄🏼‍♀️️🏄🏼‍♀️️🏄🏼‍♀️️🏄🏼‍♀️️🏄🏼‍♀️️🏄🏼‍♀️🏄🏼‍♀️️🏄🏼‍♀️️🏄🏼‍♀️️🏄🏼‍♀️️🏄🏼‍♀️️🏄🏼‍♀️️🏄🏼‍♀️️🏄🏼‍♀️️🏄🏼‍♀️️🏄🏼‍♀️️🏄🏼‍♀️️🏄🏼‍♀️️🏄🏼‍♀️️🏄🏼‍♀️️🏄🏼‍♀️️🏄🏼‍♀️️🏄🏼‍♀️️🏄🏼‍♀️️🏄🏼‍♀️️🏄🏼‍♀️️🏄🏼‍♀️️🏄🏼‍♀️️
+/* Transform Button Styles */
+.transform-button {
+	background: var(--button-background);
+	color: var(--button-color);
+	border: var(--button-border);
+	padding: var(--button-padding);
+	border-radius: var(--button-radius);
+	font-size: var(--button-font-size);
+	cursor: pointer;
+	transition: var(--button-transition);
+}
+
+.transform-button:hover {
+	filter: brightness(1.1) !important;
+}
+
+.header-container {
+	display: flex;
+	justify-content: space-between;
+	align-items: center;
+	margin-bottom: 1rem;
+	width: 100%;
+}
+
 /* Responsive Adjustment */
 @media (max-width: 768px) {
 	th,

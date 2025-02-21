@@ -8,6 +8,10 @@
 		isValidLongitude
 	} from '../utils/gpsUtils';
 
+	const { onTransform } = $props<{
+		onTransform: () => void;
+	}>();
+
 	// Store original data immutably
 	let originalData = $state<Record<string, string>[]>([]);
 	let columnTypes = $state<Record<string, string>>({});
@@ -291,7 +295,7 @@
 </script>
 
 <div class="transform-manager">
-	<CSVImporter on:dataLoaded={handleDataLoaded} />
+	<CSVImporter on:dataLoaded={handleDataLoaded} {onTransform} />
 	{#if originalData.length > 0}
 		<DataPreviewTable
 			rows={transformedData}

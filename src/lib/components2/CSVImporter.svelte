@@ -2,6 +2,10 @@
 	import Papa from 'papaparse';
 	import { createEventDispatcher } from 'svelte';
 
+	const { onTransform } = $props<{
+		onTransform: () => void;
+	}>();
+
 	let rawData = $state<Record<string, string>[]>([]);
 	let fileInput: HTMLInputElement;
 	let isFileLoaded = $state(false);
@@ -21,14 +25,14 @@
 	function handleDragOver(event: DragEvent) {
 		event.preventDefault();
 		if (event.currentTarget instanceof HTMLElement) {
-			event.currentTarget.classList.add('drag-active');
+			event.currentTarget.classList.add('import-dropzone--drag-active');
 		}
 	}
 
 	function handleDragLeave(event: DragEvent) {
 		event.preventDefault();
 		if (event.currentTarget instanceof HTMLElement) {
-			event.currentTarget.classList.remove('drag-active');
+			event.currentTarget.classList.remove('import-dropzone--drag-active');
 		}
 	}
 
@@ -67,10 +71,10 @@
 	}
 </script>
 
-<div class="import-container {isFileLoaded ? 'loaded' : ''}">
+<div class="import-container">
 	{#if !isFileLoaded}
 		<div
-			class="dropzone"
+			class="import-dropzone"
 			ondrop={handleDrop}
 			ondragover={handleDragOver}
 			ondragleave={handleDragLeave}
@@ -78,15 +82,7 @@
 			tabindex="0"
 			aria-label="Drop CSV file here or click to choose file"
 		>
-			<input
-				type="file"
-				accept=".csv"
-				onchange={handleFileSelect}
-				bind:this={fileInput}
-				id="file-input"
-				style="display: none;"
-			/>
-			<div class="dropzone-content">
+			<div class="import-dropzone-content">
 				<svg
 					xmlns="http://www.w3.org/2000/svg"
 					width="48"
@@ -104,21 +100,24 @@
 				</svg>
 				<h2>Drop your CSV file here</h2>
 				<p>or</p>
-				<button class="simple-button" onclick={() => fileInput.click()}>Upload File</button>
+				<button class="import-simple-button" onclick={() => fileInput.click()}>Upload File</button>
 			</div>
 		</div>
 	{:else}
-		<div class="simple-input-container">
-			<button class="simple-button" onclick={() => fileInput.click()}>Choose File</button>
-			<input
-				type="file"
-				accept=".csv"
-				onchange={handleFileSelect}
-				bind:this={fileInput}
-				style="display: none;"
-			/>
+		<div class="button-container">
+			<div class="import-simple-input-container">
+				<button class="import-simple-button" onclick={() => fileInput.click()}>Choose File</button>
+			</div>
+			<button class="transform-button" onclick={onTransform}>Transform Data</button>
 		</div>
 	{/if}
+	<input
+		type="file"
+		accept=".csv"
+		onchange={handleFileSelect}
+		bind:this={fileInput}
+		style="display: none;"
+	/>
 </div>
 
 <style>
@@ -136,7 +135,7 @@
 		padding: 0;
 	}
 
-	.dropzone {
+	.import-dropzone {
 		width: 100%;
 		min-height: 300px;
 		border: 3px solid #9333ea;
@@ -149,54 +148,71 @@
 		cursor: pointer;
 	}
 
-	.dropzone:hover,
-	.dropzone.drag-active {
-		background: rgba(147, 51, 234, 0.1);
+	.import-dropzone:hover {
+		background: rgba(255, 255, 255, 0.1);
+		border-color: #a855f7;
 	}
 
-	.dropzone-content {
+	.import-dropzone.import-dropzone--drag-active {
+		background: rgba(255, 255, 255, 0.15);
+		border-color: #c084fc;
+	}
+
+	.import-dropzone-content {
 		text-align: center;
-		color: #fff;
 	}
 
-	.dropzone-content svg {
+	.import-dropzone-content svg {
+		color: #9333ea;
 		margin-bottom: 1rem;
-		color: #666;
 		transition: color 0.3s ease;
 	}
 
-	.dropzone:hover svg,
-	.dropzone.drag-active svg {
-		color: #9333ea;
+	.import-dropzone:hover svg {
+		color: #a855f7;
 	}
 
-	.dropzone-content h2 {
+	.import-dropzone.import-dropzone--drag-active svg {
+		color: #c084fc;
+	}
+
+	.import-dropzone-content h2 {
 		margin: 0;
 		font-size: 1.5rem;
-		font-weight: 500;
+		color: #e0e0e0;
 	}
 
-	.dropzone-content p {
+	.import-dropzone-content p {
 		margin: 0.5rem 0;
-		color: #666;
+		color: #888;
 	}
 
-	.simple-button {
-		background: transparent;
-		color: white;
-		border:   solid 2px #7a7281;
-		padding: 0.75rem 2rem;
-		border-radius: 0.5rem;
-		font-size: 1rem;
+	.import-simple-button,
+	.transform-button {
+		background: var(--button-background);
+		color: var(--button-color);
+		border: var(--button-border);
+		padding: var(--button-padding);
+		border-radius: var(--button-radius);
+		font-size: var(--button-font-size);
 		cursor: pointer;
-		transition: all 0.3s ease;
+		transition: var(--button-transition);
 	}
 
-	.simple-button:hover {
-		background: rgba(122, 114, 129, 0.1);
+	.import-simple-button:hover,
+	.transform-button:hover {
+		background: rgba(147, 51, 234, 0.1);
 	}
 
-	.simple-input-container {
-		margin: 1rem 0;
+	.button-container {
+		width: 100%;
+		display: flex;
+		justify-content: space-between;
+		align-items: center;
+		margin-bottom: 1rem;
+	}
+
+	.import-simple-input-container {
+		display: inline-block;
 	}
 </style>

@@ -1,10 +1,32 @@
-
 <script lang="ts">
-    import TransformManager from '$lib/components2/TransformManager.svelte';
-  </script>
-  
-  <div class="transform-container">
-    <h1>TransForm Data Import</h1>
-    <TransformManager />
-  </div>
-  
+	import TransformManager from '$lib/components2/TransformManager.svelte';
+	import { goto } from '$app/navigation';
+
+	function handleTransform() {
+		goto('/transplant');
+	}
+</script>
+
+<div class="transform-container">
+	<div class="transform-header">
+		<h1>TransForm Data Import</h1>
+	</div>
+	<TransformManager onTransform={handleTransform} />
+</div>
+
+<style>
+	.transform-container {
+		width: 100%;
+	}
+
+	.transform-header {
+		width: 100%;
+		padding: 1rem 0;
+		margin-bottom: 1rem;
+	}
+
+	h1 {
+		margin: 0;
+		font-size: 2rem;
+	}
+</style>
