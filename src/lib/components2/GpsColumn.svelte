@@ -13,6 +13,12 @@
 		return ignoreToggle ? isValid : isValid && !toggledColumns[header];
 	}
 
+	function parseGpsCoordinate(value: string): boolean {
+		// TO DO: implement GPS coordinate parsing logic
+		// For now, just return true for demonstration purposes
+		return true;
+	}
+
 	function tryGetGpsValue(ignoreToggle = false): string {
 		// Get valid columns (optionally ignoring toggle state)
 		const activeColumns = columnHeaders.filter(
@@ -23,6 +29,15 @@
 		for (const header of activeColumns) {
 			if (columnTypes[header] === 'gps') {
 				return row[header].trim();
+			}
+		}
+
+		// Then try any column that contains valid GPS data
+		for (const header of activeColumns) {
+			const value = row[header].trim();
+			const gpsCoord = parseGpsCoordinate(value);
+			if (gpsCoord) {
+				return value;
 			}
 		}
 
