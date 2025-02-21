@@ -37,47 +37,89 @@ function parseDmsPart(dms: string): number | null {
 	return null;
 }
 
+function isValidDecimalCoordinate(value: string): boolean {
+	return value.includes('.') && value.split('.')[1].length >= 2;
+}
+
+function parseDecimalDegrees(value: string): GpsCoordinate | null {
+	// Remove any quotes and trim
+	value = value.trim();
+
+	// Try comma-separated format first (with flexible spacing)
+	let parts = value.split(',');
+	if (parts.length === 2) {
+		// Trim each part
+		parts = parts.map((p) => p.trim());
+	} else {
+		// Try space-separated (require 1-5 spaces)
+		const spaceMatch = value.match(/^(-?\d+\.\d+)\s{1,5}(-?\d+\.\d+)$/);
+		if (!spaceMatch) return null;
+		parts = [spaceMatch[1], spaceMatch[2]];
+	}
+
+	const [latStr, lonStr] = parts;
+
+	// Parse numbers
+	const lat = parseFloat(latStr);
+	const lon = parseFloat(lonStr);
+
+	// Validate format and ranges
+	if (
+		!isNaN(lat) &&
+		!isNaN(lon) &&
+		isValidDecimalCoordinate(latStr) &&
+		isValidDecimalCoordinate(lonStr) &&
+		lat >= -90 &&
+		lat <= 90 &&
+		lon >= -180 &&
+		lon <= 180
+	) {
+		return { latitude: lat, longitude: lon };
+	}
+
+	return null;
+}
+
 export function parseGpsCoordinate(value: string): GpsCoordinate | null {
 	console.log('Parsing GPS coordinate:', value);
 	if (!value?.trim()) return null;
 
+	// First try decimal degrees format
+	const ddResult = parseDecimalDegrees(value);
+	if (ddResult) {
+		console.log('Parsed as decimal degrees:', ddResult);
+		return ddResult;
+	}
+
+	// If not DD, try DMS format
 	// Normalize spaces and quotes
 	const normalized = value.replace(/[""]/g, '"').replace(/\s+/g, ' ').trim();
-	console.log('Normalized value:', normalized);
 
-	// Try to split into lat/lon parts
+	// Split into parts
 	const parts = normalized.split(',').map((p) => p.trim());
-	console.log('Split parts:', parts);
-
 	if (parts.length !== 2) return null;
 
 	let [latPart, lonPart] = parts;
 
-	// Extract values and directions
+	// Extract directions
 	const latDir = latPart.includes('N') ? 1 : latPart.includes('S') ? -1 : null;
 	const lonDir = lonPart.includes('E') ? 1 : lonPart.includes('W') ? -1 : null;
-	console.log('Directions:', { latDir, lonDir });
 
-	// Remove direction indicators for parsing
+	// Remove direction indicators
 	latPart = latPart.replace(/[NS]$/, '').trim();
 	lonPart = lonPart.replace(/[EW]$/, '').trim();
-	console.log('Parts after direction removal:', { latPart, lonPart });
 
 	const lat = parseDmsPart(latPart);
 	const lon = parseDmsPart(lonPart);
-	console.log('Parsed coordinates:', { lat, lon });
 
 	if (lat === null || lon === null || latDir === null || lonDir === null) {
-		console.log('Invalid coordinate parts');
 		return null;
 	}
 
 	const latitude = lat * latDir;
 	const longitude = lon * lonDir;
-	console.log('Final coordinates:', { latitude, longitude });
 
 	if (!isValidCoordinate(latitude, longitude)) {
-		console.log('Invalid coordinate range');
 		return null;
 	}
 
