@@ -1,4 +1,6 @@
 <script lang="ts">
+	import { parseGpsCoordinate } from '$lib/utils/gpsUtils';
+
 	const { row, columnHeaders, columnTypes, toggledColumns, invalidCells, rowIndex } = $props<{
 		row: Record<string, string>;
 		columnHeaders: string[];
@@ -13,10 +15,9 @@
 		return ignoreToggle ? isValid : isValid && !toggledColumns[header];
 	}
 
-	function parseGpsCoordinate(value: string): boolean {
-		// TO DO: implement GPS coordinate parsing logic
-		// For now, just return true for demonstration purposes
-		return true;
+	function isValidGpsValue(value: string): boolean {
+		const result = parseGpsCoordinate(value);
+		return result !== null;
 	}
 
 	function tryGetGpsValue(ignoreToggle = false): string {
@@ -27,7 +28,7 @@
 
 		// First try columns already validated as GPS type
 		for (const header of activeColumns) {
-			if (columnTypes[header] === 'gps') {
+			if (columnTypes[header] === 'gps' && isValidGpsValue(row[header])) {
 				return row[header].trim();
 			}
 		}
@@ -35,8 +36,7 @@
 		// Then try any column that contains valid GPS data
 		for (const header of activeColumns) {
 			const value = row[header].trim();
-			const gpsCoord = parseGpsCoordinate(value);
-			if (gpsCoord) {
+			if (isValidGpsValue(value)) {
 				return value;
 			}
 		}
@@ -47,10 +47,11 @@
 
 		for (const latCol of latColumns) {
 			const lat = row[latCol].trim();
-
 			for (const lonCol of lonColumns) {
 				const lon = row[lonCol].trim();
-				return `${lat}, ${lon}`;
+				if (isValidGpsValue(`${lat}, ${lon}`)) {
+					return `${lat}, ${lon}`;
+				}
 			}
 		}
 
