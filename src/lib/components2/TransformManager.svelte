@@ -49,7 +49,7 @@
 		}
 
 		// 3. Try Numbers
-		const numCount = samples.filter((value) => !isNaN(parseFloat(value))).length;
+		const numCount = samples.filter((value) => isNumber(value)).length;
 		if (numCount === samples.length) {
 			console.log(`${header}: All values are numbers`);
 			return 'number';
@@ -111,9 +111,10 @@
 
 	function isNumber(value: string): boolean {
 		if (!value?.trim()) return false;
-		// Remove commas and try to parse
-		const cleanValue = value.replace(/,/g, '');
-		return !isNaN(Number(cleanValue));
+
+		// Only allow digits, one decimal point, and one negative sign at start
+		const numberRegex = /^-?\d*\.?\d+$/;
+		return numberRegex.test(value.trim());
 	}
 
 	function formatGps(value: string): string {
@@ -181,8 +182,7 @@
 
 		switch (type) {
 			case 'number':
-				const cleanValue = value.replace(/,/g, '');
-				return !isNaN(Number(cleanValue));
+				return isNumber(value.trim());
 			case 'date':
 				const date = new Date(value);
 				return !isNaN(date.getTime());
@@ -219,7 +219,7 @@
 						isValid = isValidLongitude(value);
 						break;
 					case 'number':
-						isValid = !isNaN(parseFloat(value));
+						isValid = isNumber(value);
 						break;
 					case 'date':
 						isValid = !isNaN(Date.parse(value));
