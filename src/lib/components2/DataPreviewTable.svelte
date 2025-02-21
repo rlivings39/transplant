@@ -100,7 +100,7 @@
 	</div>
 </div>
 
-<style>
+<!-- <style>
 	.table-container {
 		overflow-x: auto;
 		max-width: 100%;
@@ -130,15 +130,4 @@
 	.greyed-out.gps-cell {
 		opacity: 0.5;
 	}
-
-	.header-controls {
-		display: flex;
-		gap: 0.5rem;
-		align-items: center;
-		margin-bottom: 0.5rem;
-	}
-
-	.header-name {
-		font-weight: bold;
-	}
-</style>
+</style> -->

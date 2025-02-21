@@ -65,87 +65,60 @@ table {
 	border-spacing: 0;
 	border: 0.05px solid #ffffff;
 }
-.header-controls {
-	display: flex;
-	flex-direction: column;
-	gap: 0.25rem;
-	align-items: center;
-	margin-bottom: 0.5rem;
-  
-	input[type="checkbox"] {
-	  margin-bottom: 0.25rem;
+
+/* Table Header Styles */
+thead {
+	position: sticky;
+	top: -1px;
+	z-index: 3;
+	background-color: var(--pico-background-color);
+
+	tr.header-text {
+		position: sticky !important;
+		top: 0;
+		z-index: 3;
+
+		th {
+			background-color: var(--pico-background-color);
+			font-size: 0.8rem;
+
+			&:first-child {
+				position: sticky;
+				left: 0;
+				z-index: 4;
+			}
+
+			.header-controls {
+				display: flex;
+				flex-direction: column;
+				gap: 0.25rem;
+				align-items: center;
+				margin-bottom: 0.5rem;
+
+				select {
+					width: 100%;
+					max-width: 120px;
+					margin-bottom: 3px;
+					font-size: 0.6rem;
+				}
+			}
+
+			.header-name {
+				font-weight: bold;
+				white-space: nowrap;
+				overflow: hidden;
+				text-overflow: ellipsis;
+			}
+		}
 	}
-  
-	select {
-	  width: 100%;
-	  max-width: 120px;
-	}
-  } 
-.header-text {
-	// word-break: break-word !important;
-	// max-width: 100px;
-	font-size: 0.8rem !important;
-	// white-space: normal !important;
 }
-// .column-toggle {
-// 	display: inline-block;
-// 	margin: 0 0.5rem;
-//   }
- 
-.toggled-off {
-	opacity: 0.5;
-	filter: grayscale(80%);
-	transition: all 0.3s ease;
-	background-color: var(--color-light-grey);
-	&:hover {
-	  opacity: 0.8; /* Slightly more visible on hover */
-	}
-  }
-  
-  .column-toggle {
-	  input[type='checkbox']:not(:checked) {
-		  opacity: 0.5;
-  
-		  & ~ .column-header,
-		  & ~ td {
-			//   background-color: rgba(128, 128, 128, 0.2) !important;
-			//   color: rgba(224, 224, 224, 0.5) !important;
-		  }
-	  }
-  }
 
-  input[type="checkbox"] {
-	cursor: pointer;
-  }
-
-  [data-tooltip] {
-	position: relative;
-	cursor: help;
-
-	&::before {
-		content: attr(data-tooltip);
-		position: fixed;
-		clip: auto;
-		clip-path: none;
-		overflow: visible;
-		transform: translate(-50%, -120%);
-		padding: 0.5rem;
-		background: rgba(0, 0, 0, 0.8);
-		color: white;
-		border-radius: 4px;
-		font-size: 0.8rem;
-		white-space: nowrap;
-		z-index: 1000;
-		opacity: 0;
-		pointer-events: none;
-		transition: opacity 0.2s;
-	}
-
-	&:hover::before {
-		opacity: 1;
-		top: var(--tooltip-y);
-		left: var(--tooltip-x);
-	}
+/* First Column Sticky */
+td:first-child {
+	position: sticky;
+	left: 0;
+	z-index: 1;
+	background-color: var(--pico-background-color);
 }
 
 th,
@@ -178,27 +151,14 @@ td.removed {
 	}
 }
 
-
 table.numeric,
 td.numeric,
 th.numeric {
 	text-align: right !important; /* Right-align only numeric cells */
 }
 
-table th {
-	padding-left: 0.4rem;
-}
-
 td {
 	padding: 8px;
-}
-
-thead {
-	position: sticky;
-	top: -1px; /* Compensate for border */
-	z-index: 3;
-	margin: 0;
-	padding: 0;
 }
 
 td:first-child {
@@ -246,10 +206,10 @@ select {
 	}
 }
 
-.table-container {
-	overflow-x: auto;
-	max-width: 100%;
-}
+// .table-container {
+// 	overflow-x: auto;
+// 	max-width: 100%;
+// }
 
 .number-cell {
 	text-align: right;
@@ -266,9 +226,6 @@ select {
 	margin-bottom: 0.5rem;
 }
 
-.header-name {
-	font-weight: bold;
-} 
 button,
 [type='button'],
 [type='submit'],
@@ -288,7 +245,7 @@ button,
 	}
 }
 
-// 🏄🏼‍♀️️🏄🏼‍♀️️🏄🏼‍♀️️🏄🏼‍♀️️🏄🏼‍♀️️🏄🏼‍♀️️🏄🏼‍♀️️🏄🏼‍♀️️🏄🏼‍♀️️🏄🏼‍♀️️🏄🏼‍♀️️🏄🏼‍♀️️🏄🏼‍♀️️🏄🏼‍♀️️🏄🏼‍♀️️🏄🏼‍♀️️🏄🏼‍♀️️🏄🏼‍♀️️🏄🏼‍♀️️🏄🏼‍♀️️🏄🏼‍♀️️🏄🏼‍♀️️🏄🏼‍♀️️🏄🏼‍♀️️🏄🏼‍♀️️🏄🏼‍♀️️🏄🏼‍♀️️🏄🏼‍♀️️🏄🏼‍♀️🏄🏼‍♀️️🏄🏼‍♀️️🏄🏼‍♀️️🏄🏼‍♀️️🏄🏼‍♀️️🏄🏼‍♀️️🏄🏼‍♀️️🏄🏼‍♀️️🏄🏼‍♀️️🏄🏼‍♀️️🏄🏼‍♀️️🏄🏼‍♀️️🏄🏼‍♀️️🏄🏼‍♀️️🏄🏼‍♀️️🏄🏼‍♀️️🏄🏼‍♀️️️🏄🏼‍♀️️🏄🏼‍♀️️🏄🏼‍♀️️🏄🏼‍♀️️🏄🏼‍♀️️🏄🏼‍♀️️🏄🏼‍♀️️🏄🏼‍♀️️
+// 🏄🏼‍♀️️🏄🏼‍♀️️🏄🏼‍♀️️🏄🏼‍♀️️🏄🏼‍♀️️🏄🏼‍♀️️🏄🏼‍♀️️🏄🏼‍♀️️🏄🏼‍♀️️🏄🏼‍♀️️🏄🏼‍♀️️🏄🏼‍♀️️🏄🏼‍♀️️🏄🏼‍♀️️🏄🏼‍♀️️🏄🏼‍♀️️🏄🏼‍♀️️🏄🏼‍♀️️🏄🏼‍♀️️🏄🏼‍♀️️🏄🏼‍♀️️🏄🏼‍♀️️🏄🏼‍♀️️🏄🏼‍♀️️🏄🏼‍♀️️🏄🏼‍♀️️🏄🏼‍♀️️🏄🏼‍♀️🏄🏼‍♀️️🏄🏼‍♀️️🏄🏼‍♀️️🏄🏼‍♀️️🏄🏼‍♀️️🏄🏼‍♀️️🏄🏼‍♀️️🏄🏼‍♀️️🏄🏼‍♀️️🏄🏼‍♀️️🏄🏼‍♀️️🏄🏼‍♀️️🏄🏼‍♀️️🏄🏼‍♀️️🏄🏼‍♀️️🏄🏼‍♀️️🏄🏼‍♀️️🏄🏼‍♀️️🏄🏼‍♀️️
 /* Responsive Adjustment */
 @media (max-width: 768px) {
 	th,
@@ -305,7 +262,7 @@ thead th {
 	padding: 0.3rem;
 }
 
-// 📱️📱️📱️📱️📱️📱️📱️📱️📱️📱️📱️📱️📱️📱️📱️📱️📱️📱️📱️📱️📱️📱️📱️📱️📱️📱️📱️📱️📱️📱️📱️📱️📱️📱️📱️📱️📱️📱️📱️📱️📱️📱️📱️📱️📱️📱️📱️📱️📱️📱️📱️📱️📱️📱️📱️📱️
+// 📱️📱️📱️📱️📱️📱️📱️📱️📱️📱️📱️📱️📱️📱️📱️📱️📱️📱️📱️📱️📱️📱️📱️📱️📱️📱️📱️📱️📱️📱️📱️📱️📱️📱️📱️📱️📱️📱️📱️📱️📱️📱️📱️📱️📱️📱️📱️📱️📱️📱️📱️📱️📱️📱️📱️
 
 @media (max-width: 480px) {
 	table {

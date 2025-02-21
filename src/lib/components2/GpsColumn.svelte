@@ -74,7 +74,7 @@
 	{displayValue}
 </td>
 
-<style>
+<!-- <style>
 	.gps-column {
 		font-family: monospace;
 		width: 12.5rem;
@@ -87,4 +87,4 @@
 		color: var(--text-disabled);
 		font-style: italic;
 	}
-</style>
+</style> -->
