@@ -3,6 +3,7 @@
 	import { canTransform, transformData } from '../utils/transformUtils';
 	import CSVImporter from './CSVImporter.svelte';
 	import DataPreviewTable from './DataPreviewTable.svelte';
+	import { goto } from '$app/navigation';
 	import {
 		formatGpsCoordinate,
 		parseGpsCoordinate,
@@ -323,10 +324,39 @@
 			return false;
 		}
 	}
+
+	async function handleTransform(event: MouseEvent) {
+		console.log('1. Button clicked');
+
+		try {
+			console.log('2. Storing data:', {
+				dataLength: transformedData.length,
+				headers: columnHeaders
+			});
+
+			sessionStorage.setItem(
+				'transformedData',
+				JSON.stringify({
+					data: transformedData,
+					headers: columnHeaders
+				})
+			);
+
+			console.log('3. Data stored, navigating to /transplant');
+			await goto('/transplant');
+			console.log('4. Navigation complete');
+		} catch (error) {
+			console.error('Error in transform:', error);
+		}
+	}
 </script>
 
 <div class="transform-manager">
+<<<<<<< HEAD
 	<CSVImporter on:dataLoaded={handleDataLoaded} />
+=======
+	<CSVImporter on:dataLoaded={handleDataLoaded} onTransform={handleTransform} />
+>>>>>>> 8882074 (Displaying data on http://localhost:5173/transplant)
 	{#if originalData.length > 0}
 		<DataPreviewTable
 			rows={transformedData}
@@ -334,6 +364,7 @@
 			{columnTypes}
 			{toggledColumns}
 			on:typeChange={handleTypeChange}
+<<<<<<< HEAD
 		>
 			<div slot="file-input" class="transform-actions">
 				<button class="primary" disabled={!isReadyToTransform} onclick={handleTransform}>
@@ -347,10 +378,20 @@
 				{/if}
 			</div>
 		</DataPreviewTable>
+=======
+		/>
+
+		<div class="transform-actions">
+			<button class="primary transform-button" onclick={handleTransform} type="button">
+				Transform Data
+			</button>
+		</div>
+>>>>>>> 8882074 (Displaying data on http://localhost:5173/transplant)
 	{/if}
 </div>
 
 <style>
+<<<<<<< HEAD
 	.transform-actions {
 		display: flex;
 		gap: 1rem;
@@ -361,5 +402,17 @@
 		color: var(--error-color);
 		font-size: 0.875rem;
 		margin: 0;
+=======
+	.transform-manager {
+		width: 100%;
+	}
+
+	.transform-actions {
+		margin-top: 1rem;
+		display: flex;
+		flex-direction: column;
+		align-items: flex-start;
+		gap: 0.5rem;
+>>>>>>> 8882074 (Displaying data on http://localhost:5173/transplant)
 	}
 </style>

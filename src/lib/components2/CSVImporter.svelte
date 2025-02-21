@@ -3,7 +3,7 @@
 	import { createEventDispatcher } from 'svelte';
 
 	const { onTransform } = $props<{
-		onTransform: () => void;
+		onTransform?: () => void;
 	}>();
 
 	let rawData = $state<Record<string, string>[]>([]);
@@ -108,7 +108,21 @@
 			<div class="import-simple-input-container">
 				<button class="import-simple-button" onclick={() => fileInput.click()}>Choose File</button>
 			</div>
-			<button class="transform-button" onclick={onTransform}>Transform Data</button>
+			<button
+				class="transform-button"
+				type="button"
+				onclick={() => {
+					console.log('1. CSV Transform button clicked');
+					if (onTransform) {
+						console.log('2. Calling onTransform handler');
+						onTransform();
+					} else {
+						console.log('2. No onTransform handler provided');
+					}
+				}}
+			>
+				Transform Data
+			</button>
 		</div>
 	{/if}
 	<input
