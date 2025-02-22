@@ -348,11 +348,6 @@
 			{toggledColumns}
 			on:typeChange={handleTypeChange}
 		/>
-		<div class="transform-actions">
-			<button class="primary transform-button" onclick={handleTransform} type="button">
-				Transform Data
-			</button>
-		</div>
 	{/if}
 </div>
 

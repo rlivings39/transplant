@@ -1,18 +1,26 @@
 <script lang="ts">
+	import type { DragEvent } from 'svelte/elements';
 	import Papa from 'papaparse';
+	import { goto } from '$app/navigation';
 	import { createEventDispatcher } from 'svelte';
 
-	const { onTransform } = $props<{
-		onTransform?: () => void;
-	}>();
+  
+	
 
 	let rawData = $state<Record<string, string>[]>([]);
 	let fileInput: HTMLInputElement;
 	let isFileLoaded = $state(false);
+	
+
+
 
 	const dispatch = createEventDispatcher<{
 		dataLoaded: { data: Record<string, string>[] };
 	}>();
+
+	function handleNavigate() {
+		goto('/transplant');
+	}
 
 	function handleDrop(event: DragEvent) {
 		event.preventDefault();
@@ -60,6 +68,7 @@
 		});
 	}
 
+
 	function handleFileSelect(event: Event) {
 		const input = event.target as HTMLInputElement;
 		const file = input.files?.[0];
@@ -69,6 +78,7 @@
 			processFile(file);
 		}
 	}
+	
 </script>
 
 <div class="import-container">
@@ -108,13 +118,9 @@
 			<div class="import-simple-input-container">
 				<button class="import-simple-button" onclick={() => fileInput.click()}>Choose File</button>
 			</div>
-			<button
-				class="transform-button"
-				type="button"
-				onclick={() => (window.location.href = '/transplant')}
-			>
+			<button class="transform-button" type="button" onclick={handleNavigate}>
 				Go to Transplant
-			</button>
+			  </button>
 		</div>
 	{/if}
 	<input
@@ -135,11 +141,6 @@
 		text-align: center;
 	}
 
-	.import-container.loaded {
-		text-align: left;
-		margin: 1rem 0;
-		padding: 0;
-	}
 
 	.import-dropzone {
 		width: 100%;
@@ -159,11 +160,6 @@
 		border-color: #a855f7;
 	}
 
-	.import-dropzone.import-dropzone--drag-active {
-		background: rgba(255, 255, 255, 0.15);
-		border-color: #c084fc;
-	}
-
 	.import-dropzone-content {
 		text-align: center;
 	}
@@ -176,10 +172,6 @@
 
 	.import-dropzone:hover svg {
 		color: #a855f7;
-	}
-
-	.import-dropzone.import-dropzone--drag-active svg {
-		color: #c084fc;
 	}
 
 	.import-dropzone-content h2 {
