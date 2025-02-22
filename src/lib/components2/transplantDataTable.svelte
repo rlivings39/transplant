@@ -5,29 +5,33 @@
 	}>();
 </script>
 
-<div class="data-table">
-	<table>
-		<thead>
-			<tr>
-				{#each headers as header}
-					<th>{header}</th>
-				{/each}
-			</tr>
-		</thead>
-		<tbody>
-			{#each data as row}
-				<tr>
+<div>
+	<div class="table-container">
+		<table>
+			<thead>
+				<tr class="header-text">
 					{#each headers as header}
-						<td>{row[header]}</td>
+						<th>
+							<div class="header-name">{header}</div>
+						</th>
 					{/each}
 				</tr>
-			{/each}
-		</tbody>
-	</table>
+			</thead>
+			<tbody>
+				{#each data as row}
+					<tr>
+						{#each headers as header}
+							<td>{row[header]}</td>
+						{/each}
+					</tr>
+				{/each}
+			</tbody>
+		</table>
+	</div>
 </div>
-
+<!-- 
 <style>
-	.data-table {
+	.table-container {
 		overflow-x: auto;
 		max-width: 100%;
 	}
@@ -38,19 +42,24 @@
 		margin-bottom: 1rem;
 	}
 
-	th,
-	td {
+	.header-text {
+		background-color: #333333;
+		color: white;
+	}
+
+	.header-name {
 		padding: 0.5rem;
 		border: 1px solid var(--border-color);
 		text-align: left;
 	}
 
-	th {
-		background-color: #333333;
-		color: white;
-	}
-
 	tr:nth-child(even) {
 		background-color: var(--surface-color);
 	}
-</style>
+
+	tr td {
+		padding: 0.5rem;
+		border: 1px solid var(--border-color);
+		text-align: left;
+	}
+</style> -->

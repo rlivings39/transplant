@@ -111,17 +111,9 @@
 			<button
 				class="transform-button"
 				type="button"
-				onclick={() => {
-					console.log('1. CSV Transform button clicked');
-					if (onTransform) {
-						console.log('2. Calling onTransform handler');
-						onTransform();
-					} else {
-						console.log('2. No onTransform handler provided');
-					}
-				}}
+				onclick={() => (window.location.href = '/transplant')}
 			>
-				Transform Data
+				Go to Transplant
 			</button>
 		</div>
 	{/if}
