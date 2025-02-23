@@ -22,18 +22,8 @@
 		date: dateType,
 		number: numberType,
 		gps: gpsType,
-		latitude: {
-			validate: (value: string) => gpsType.isValidLatitude(value),
-			format: (value: string) => parseFloat(value).toFixed(6),
-			detect: (samples: string[], header?: string) =>
-				samples.every((value) => gpsType.detectCoordinateType(header || '', value) === 'latitude')
-		},
-		longitude: {
-			validate: (value: string) => gpsType.isValidLongitude(value),
-			format: (value: string) => parseFloat(value).toFixed(6),
-			detect: (samples: string[], header?: string) =>
-				samples.every((value) => gpsType.detectCoordinateType(header || '', value) === 'longitude')
-		},
+		latitude: gpsType.latitudeHandler,
+		longitude: gpsType.longitudeHandler,
 		string: {
 			validate: () => true,
 			format: (value: string) => value,
@@ -56,19 +46,13 @@
 	function detectColumnType(header: string): ValidType {
 		if (!data.length) return 'string';
 
-		const samples = data.map((row) => row[header]?.trim()).filter(Boolean);
-		if (!samples.length) return 'string';
+		const samples = data.map((row) => row[header]?.trim());
 
-		// First check for lat/lon in header using our dedicated lat/lon detection
-		const coordType = gpsType.detectCoordinateType(header, samples[0]);
-		if (coordType === 'latitude' && samples.every((value) => gpsType.isValidLatitude(value))) {
-			return 'latitude';
-		}
-		if (coordType === 'longitude' && samples.every((value) => gpsType.isValidLongitude(value))) {
-			return 'longitude';
-		}
+		// Let each type handler decide if it matches
+		const coordType = gpsType.detectCoordinateType(header, samples);
+		if (coordType) return coordType;
 
-		// Then try each type in priority order
+		// Try other types in priority order
 		const detectionOrder: ValidType[] = ['gps', 'date', 'number', 'string'];
 		for (const type of detectionOrder) {
 			if (typeHandlers[type]?.detect(samples, header)) {
@@ -252,16 +236,3 @@
 	{/if}
 	<button onclick={handleTransform}>Transform</button>
 </div>
-
-<!-- <style>
-	.transform-manager {
-		width: 100%;
-	}
-
-	.transform-actions {
-		display: flex;
-		flex-direction: column;
-		align-items: flex-start;
-		gap: 0.5rem;
-	}
-</style> -->
