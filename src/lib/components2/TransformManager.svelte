@@ -15,13 +15,25 @@
 	let originalData = $state<Record<string, string>[]>([]);
 
 	// Available types and their validation/formatting functions
-	const types = ['string', 'number', 'date', 'gps', 'delete'] as const;
+	const types = ['string', 'number', 'date', 'gps', 'latitude', 'longitude', 'delete'] as const;
 	type ValidType = (typeof types)[number];
 
 	const typeHandlers = {
 		date: dateType,
 		number: numberType,
 		gps: gpsType,
+		latitude: {
+			validate: (value: string) => gpsType.isValidLatitude(value),
+			format: (value: string) => parseFloat(value).toFixed(6),
+			detect: (samples: string[], header?: string) =>
+				samples.every((value) => gpsType.detectCoordinateType(header || '', value) === 'latitude')
+		},
+		longitude: {
+			validate: (value: string) => gpsType.isValidLongitude(value),
+			format: (value: string) => parseFloat(value).toFixed(6),
+			detect: (samples: string[], header?: string) =>
+				samples.every((value) => gpsType.detectCoordinateType(header || '', value) === 'longitude')
+		},
 		string: {
 			validate: () => true,
 			format: (value: string) => value,
@@ -47,11 +59,23 @@
 		const samples = data.map((row) => row[header]?.trim()).filter(Boolean);
 		if (!samples.length) return 'string';
 
-		// Try each type in priority order
+		// First check for lat/lon in header using our dedicated lat/lon detection
+		const coordType = gpsType.detectCoordinateType(header, samples[0]);
+		if (coordType === 'latitude' && samples.every((value) => gpsType.isValidLatitude(value))) {
+			return 'latitude';
+		}
+		if (coordType === 'longitude' && samples.every((value) => gpsType.isValidLongitude(value))) {
+			return 'longitude';
+		}
+
+		// Then try each type in priority order
 		const detectionOrder: ValidType[] = ['gps', 'date', 'number', 'string'];
 		for (const type of detectionOrder) {
-			if (typeHandlers[type]?.detect(samples)) return type;
+			if (typeHandlers[type]?.detect(samples, header)) {
+				return type;
+			}
 		}
+
 		return 'string';
 	}
 
@@ -125,21 +149,84 @@
 		transformedData = formatDataForDisplay();
 	});
 
+	function canTransform(): boolean {
+		// Check if we have data
+		if (data.length === 0) return false;
+
+		// Check if all columns have valid types
+		const hasValidTypes = Object.entries(columnTypes).every(([header, type]) => {
+			return type !== 'delete' && !toggledColumns[header];
+		});
+
+		// Check if all visible data is valid
+		const hasValidData = Object.entries(invalidCells).every(([header, invalid]) => {
+			return toggledColumns[header] || invalid.size === 0;
+		});
+
+		return hasValidTypes && hasValidData;
+	}
+
+	function transformData() {
+		// Filter out deleted and toggled-off columns
+		const headers = Object.keys(data[0]);
+		const validHeaders = headers.filter(
+			(header) => columnTypes[header] !== 'delete' && !toggledColumns[header]
+		);
+
+		// Create transformed dataset
+		const transformedDataset = data
+			.map((row, index) => {
+				const newRow: Record<string, any> = {};
+
+				for (const header of validHeaders) {
+					// Skip if cell is invalid
+					if (invalidCells[header]?.has(index)) continue;
+
+					const value = row[header]?.trim();
+					if (!value) continue;
+
+					// Transform value based on type
+					switch (columnTypes[header]) {
+						case 'number':
+							newRow[header] = Number(value.replace(/,/g, ''));
+							break;
+						case 'date':
+							newRow[header] = new Date(value).toISOString();
+							break;
+						case 'gps':
+							const coord = gpsType.parseGpsCoordinate(value);
+							if (coord) newRow[header] = gpsType.format(value);
+							break;
+						case 'latitude':
+							newRow[header] = parseFloat(value);
+							break;
+						case 'longitude':
+							newRow[header] = parseFloat(value);
+							break;
+						default:
+							newRow[header] = value;
+					}
+				}
+				return newRow;
+			})
+			.filter((row) => Object.keys(row).length > 0);
+
+		return {
+			data: transformedDataset,
+			headers: validHeaders,
+			types: columnTypes
+		};
+	}
+
 	async function handleTransform() {
-		if (!transformedData.length) {
+		if (!canTransform()) {
 			console.error('Data not ready for transformation');
 			return;
 		}
 
 		try {
-			sessionStorage.setItem(
-				'transformedData',
-				JSON.stringify({
-					data: transformedData,
-					headers: Object.keys(data[0])
-				})
-			);
-
+			const transformed = transformData();
+			sessionStorage.setItem('transformedData', JSON.stringify(transformed));
 			await import('$app/navigation').then(({ goto }) => goto('/transplant'));
 		} catch (error) {
 			console.error('Error in transform:', error);
@@ -163,10 +250,10 @@
 			on:columnToggle={handleColumnToggle}
 		/>
 	{/if}
-	<button on:click={handleTransform}>Transform</button>
+	<button onclick={handleTransform}>Transform</button>
 </div>
 
-<style>
+<!-- <style>
 	.transform-manager {
 		width: 100%;
 	}
@@ -177,4 +264,4 @@
 		align-items: flex-start;
 		gap: 0.5rem;
 	}
-</style>
+</style> -->
