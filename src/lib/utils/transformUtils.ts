@@ -1,5 +1,4 @@
-import { parseGpsCoordinate, formatGpsCoordinate } from './gpsUtils';
-
+import { parseGpsCoordinate } from '$lib/utils/dataTypes/gpsType';
 export interface TransformState {
     data: Record<string, string>[];
     headers: string[];

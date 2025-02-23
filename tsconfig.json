@@ -1,21 +1,23 @@
 {
-    "extends": "./.svelte-kit/tsconfig.json",
-    "compilerOptions": {
-      "module": "esnext",
-      "moduleResolution": "node",
-      "target": "es2020",
-      "lib": ["es2020", "dom"],
-      "strict": true,
-      "esModuleInterop": true,
-      "skipLibCheck": true,
-      "forceConsistentCasingInFileNames": true,
-      "resolveJsonModule": true,
-      "isolatedModules": true,
-      "noEmit": true,
-      "jsx": "preserve",
-      "jsxImportSource": "svelte",
-      "types": ["svelte/compiler", "@sveltejs/kit/types", "node", "vite/client"]
-    },
-    "include": ["src/**/*"],
-    "exclude": ["node_modules"]
-  }
+	"extends": "./.svelte-kit/tsconfig.json",
+	"compilerOptions": {
+		"module": "esnext",
+		"moduleResolution": "bundler",
+		"target": "es2020",
+		"lib": ["es2020", "dom"],
+		"strict": true,
+		"esModuleInterop": true,
+		"skipLibCheck": true,
+		"forceConsistentCasingInFileNames": true,
+		"resolveJsonModule": true,
+		"isolatedModules": true,
+		"noEmit": true,
+		"jsx": "preserve",
+		"jsxImportSource": "svelte",
+		"types": ["svelte", "vite/client"],
+		"allowJs": true,
+		"checkJs": true
+	},
+	"include": ["src/**/*"],
+	"exclude": ["node_modules"]
+}

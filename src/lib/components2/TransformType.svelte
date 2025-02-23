@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { isValidLatitude, isValidLongitude } from '$lib/utils/gpsUtils';
+	import { isValidLatitude, isValidLongitude } from '$lib/utils/dataTypes/gpsType';
 
 	let {
 		header,

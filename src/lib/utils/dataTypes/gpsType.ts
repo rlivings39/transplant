@@ -1,3 +1,21 @@
+import { parseGpsCoordinate, formatGpsCoordinate } from '$lib/utils/dataTypes/gpsType';
+
+export function validate(value: string): boolean {
+	if (!value?.trim()) return true;
+	return parseGpsCoordinate(value) !== null;
+}
+
+export function format(value: string): string {
+	if (!value?.trim()) return value;
+	const coord = parseGpsCoordinate(value);
+	return coord ? formatGpsCoordinate(coord) : value;
+}
+
+export function detect(samples: string[]): boolean {
+	return samples.every((value) => validate(value));
+}
+
+
 function parseDmsPart(dms: string): number | null {
 	console.log('Parsing DMS part:', dms);
 
