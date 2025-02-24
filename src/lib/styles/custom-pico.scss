@@ -18,6 +18,7 @@
 	--button-color: white;
 	--button-border: solid 2px #7a7281;
 	--button-padding: 0.75rem 2rem;
+	--button-margin: 0.75rem 2rem;
 	--button-radius: 0.5rem;
 	--button-font-size: 1rem;
 	--button-transition: all 0.3s ease;
@@ -240,6 +241,7 @@ button,
 	color: var(--button-color);
 	border: var(--button-border);
 	padding: var(--button-padding);
+	margin: var(--button-margin);
 	border-radius: var(--button-radius);
 	font-size: var(--button-font-size);
 	cursor: pointer;
