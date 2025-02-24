@@ -1,9 +1,16 @@
 <script lang="ts">
+	/* eslint-env browser */
 	/// <reference types="svelte" />
-	import { createEventDispatcher } from 'svelte';
-	import type { HTMLSelectElement } from 'svelte/elements';
+	/// <reference lib="dom" />
+
 	import ToggleOff from './toggleOff.svelte';
 	import GpsColumn from './GpsColumn.svelte';
+
+	const { rows, invalidCells, columnTypes } = $props<{
+		rows: Record<string, string>[];
+		invalidCells: Record<string, Set<number>>;
+		columnTypes: Record<string, string>;
+	}>();
 
 	let toggledColumns = $state<Record<string, boolean>>({});
 
@@ -12,23 +19,8 @@
 		console.log('Column toggled:', columnHeader, isActive);
 	}
 
-	const { rows, invalidCells, columnTypes } = $props<{
-		rows: Record<string, string>[];
-		invalidCells: Record<string, Set<number>>;
-		columnTypes: Record<string, string>;
-	}>();
-
 	let columnHeaders = $derived(rows.length > 0 ? Object.keys(rows[0]) : []);
 	let previewRows = $derived(rows.slice(0, 500));
-
-	const dispatch = createEventDispatcher<{
-		typeChange: { columnHeader: string; type: string };
-	}>();
-
-	function handleTypeChange(columnHeader: string, event: Event) {
-		const select = event.target as HTMLSelectElement;
-		dispatch('typeChange', { columnHeader, type: select.value });
-	}
 
 	function isGreyedOut(columnHeader: string, rowIndex: number): boolean {
 		return toggledColumns[columnHeader] || invalidCells[columnHeader]?.has(rowIndex);
@@ -37,9 +29,7 @@
 
 <div>
 	<div class="header-container">
-		<div class="header-actions">
-			<slot name="file-input" />
-		</div>
+		<div class="header-actions"></div>
 	</div>
 	<div class="table-container">
 		<table>
@@ -54,7 +44,14 @@
 								<ToggleOff {columnHeader} onToggle={handleColumnToggle} />
 								<select
 									value={columnTypes[columnHeader]}
-									onchange={(e) => handleTypeChange(columnHeader, e)}
+									onchange={(e) => {
+										const select = e.currentTarget;
+										const event = new window.CustomEvent('columnTypeChange', {
+											detail: { columnHeader, type: select.value },
+											bubbles: true
+										});
+										select.dispatchEvent(event);
+									}}
 								>
 									<option value="string">Text</option>
 									<option value="number">Number</option>
@@ -114,7 +111,7 @@
 		opacity: 0.5;
 		background-color: #f8f8f8;
 	}
-	
+
 	.header-container {
 		margin-bottom: 1rem;
 	}

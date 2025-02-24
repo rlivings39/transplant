@@ -4,15 +4,9 @@
 	import { goto } from '$app/navigation';
 	import { createEventDispatcher } from 'svelte';
 
-  
-	
-
 	let rawData = $state<Record<string, string>[]>([]);
 	let fileInput: HTMLInputElement;
 	let isFileLoaded = $state(false);
-	
-
-
 
 	const dispatch = createEventDispatcher<{
 		dataLoaded: { data: Record<string, string>[] };
@@ -68,7 +62,6 @@
 		});
 	}
 
-
 	function handleFileSelect(event: Event) {
 		const input = event.target as HTMLInputElement;
 		const file = input.files?.[0];
@@ -78,7 +71,6 @@
 			processFile(file);
 		}
 	}
-	
 </script>
 
 <div class="import-container">
@@ -120,7 +112,7 @@
 			</div>
 			<button class="transform-button" type="button" onclick={handleNavigate}>
 				Go to Transplant
-			  </button>
+			</button>
 		</div>
 	{/if}
 	<input

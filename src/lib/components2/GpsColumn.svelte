@@ -64,18 +64,4 @@
 <td class="gps-column" class:invalid={!displayValue}>
 	{displayValue}
 </td>
-
-<!-- <style>
-	.gps-column {
-		font-family: monospace;
-		width: 12.5rem;
-		white-space: nowrap;
-		overflow: hidden;
-		text-overflow: ellipsis;
-		padding: 0.25rem 0.5rem;
-	}
-	.invalid {
-		color: var(--text-disabled);
-		font-style: italic;
-	}
-</style> --> -->
+ -->

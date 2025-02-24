@@ -4,7 +4,7 @@
 	import * as gpsType from '$lib/utils/dataTypes/gpsType';
 	import CSVImporter from './CSVImporter.svelte';
 	import DataPreviewTable from './DataPreviewTable.svelte';
-	import type { CustomEvent } from '$lib/types/globalTypes';
+	import type { CsvPreviewEvent } from '$lib/types/globalTypes';
 
 	// All the states, in order, raw, columnTypes State
 	let originalData = $state<Record<string, string>[]>([]); // original data for undo
@@ -18,7 +18,7 @@
 	const types = ['string', 'number', 'date', 'gps', 'latitude', 'longitude', 'delete'] as const;
 	type ValidType = (typeof types)[number];
 
-	function csvDataLoad(event: CustomEvent<{ data: Record<string, string>[] }>) {
+	function csvDataLoad(event: CsvPreviewEvent<'csvLoaded'>) {
 		originalData = event.detail.data.map((row) => ({ ...row }));
 		data = originalData;
 	}
@@ -85,7 +85,7 @@
 	}
 
 	// Handle type changes
-	function handleTypeChange(event: CustomEvent<{ columnHeader: string; type: string }>) {
+	function handleTypeChange(event: CsvPreviewEvent<'typeChange'>) {
 		const { columnHeader, type } = event.detail;
 		columnTypes = { ...columnTypes, [columnHeader]: type };
 		validateColumns();
@@ -198,6 +198,7 @@
 </script>
 
 <div class="transform-manager">
+	<!-- {@const debug = console.log('Rendering TransformManager, data length:', data.length)} -->
 	<CSVImporter on:dataLoaded={csvDataLoad} />
 	{#if data.length}
 		<DataPreviewTable
