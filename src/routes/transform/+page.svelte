@@ -11,7 +11,7 @@
 	<div class="transform-header">
 		<h1>TransForm Data Import</h1>
 	</div>
-	<TransformManager onTransform={pushToTransplant} />
+	<TransformManager />
 </div>
 <!-- 
 <style>

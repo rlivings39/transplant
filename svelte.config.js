@@ -9,6 +9,12 @@ const config = {
 
 	kit: {
 		adapter: adapter()
+	},
+
+	// Suppress specific warnings while keeping important ones
+	onwarn: (warning, handler) => {
+		if (warning.code === 'slot_element_deprecated') return;
+		handler(warning);
 	}
 };
 

@@ -1,4 +1,4 @@
-<script lang="ts">
+<!-- <script lang="ts">
 	import { logger } from '$lib/utils/logger';
 	import Papa from 'papaparse';
 	import ColumnRemoval from '$lib/components/ColumnRemoval.svelte';
@@ -50,10 +50,10 @@
 			return transformed;
 		});
 	}
-</script>
+</script> -->
 
-<div style="height: 100vh; display: flex; flex-direction: column;">
-	<!-- <div style="flex: 0 0 auto;"> -->
+<!-- <div style="height: 100vh; display: flex; flex-direction: column;"> -->
+	<!-- <div style="flex: 0 0 auto;"> 
 	<input type="file" accept=".csv" onchange={handleFileSelect} />
 
 	{#if data.length > 0}
@@ -123,7 +123,7 @@
 			<p>Table deleted! Upload a new CSV to start over.</p>
 		{/if}
 	{/if}
-</div>
+</div> -->
 
 <!-- <style>
     .column-header {
