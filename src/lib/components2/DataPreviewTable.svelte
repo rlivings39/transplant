@@ -110,27 +110,11 @@
 		text-align: right;
 	}
 
-	.gps-cell {
-		font-family: monospace;
-		text-align: right;
-		color: var(--primary);
-	}
-
-	.toggled-off {
-		background-color: rgba(255, 0, 0, 0.2);
-	}
-
 	.greyed-out {
 		opacity: 0.5;
 		background-color: #f8f8f8;
 	}
-
-	/* Override other styles when greyed out */
-	.greyed-out.number-cell,
-	.greyed-out.gps-cell {
-		opacity: 0.5;
-	}
-
+	
 	.header-container {
 		margin-bottom: 1rem;
 	}

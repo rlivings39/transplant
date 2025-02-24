@@ -2,7 +2,6 @@
 	import * as dateType from '$lib/utils/dataTypes/dateType';
 	import * as numberType from '$lib/utils/dataTypes/numberType';
 	import * as gpsType from '$lib/utils/dataTypes/gpsType';
-	// import { $state, $derived, $effect } from 'svelte/runes';
 	import CSVImporter from './CSVImporter.svelte';
 	import DataPreviewTable from './DataPreviewTable.svelte';
 
@@ -77,22 +76,6 @@
 		}
 
 		invalidCells = newInvalidCells;
-	}
-
-	// Format data for display 23 Feb 2025  4:08PM
-	function formatDataForDisplay(): Record<string, string>[] {
-		return data.map((row) => {
-			const formattedRow: Record<string, string> = {};
-			for (const [key, value] of Object.entries(row)) {
-				if (toggledColumns[key] || !value?.trim()) {
-					formattedRow[key] = value;
-					continue;
-				}
-				const result = validateAndFormatData(key, value);
-				formattedRow[key] = result.formattedValue;
-			}
-			return formattedRow;
-		});
 	}
 
 	// Handle type changes
@@ -178,6 +161,23 @@
 		originalData = event.detail.data.map((row) => ({ ...row }));
 		data = originalData;
 	}
+
+	function formatDataForDisplay(): Record<string, string>[] {
+    return data.map((row) => {
+        const formattedRow: Record<string, string> = {};
+        for (const [key, value] of Object.entries(row)) {
+            if (toggledColumns[key] || !value?.trim()) {
+                formattedRow[key] = value;
+                continue;
+            }
+            
+            // Get formatted value from type handlers
+            const result = validateAndFormatData(key, value);
+            formattedRow[key] = result.formattedValue;
+        }
+        return formattedRow;
+    });
+}
 </script>
 
 <div class="transform-manager">
