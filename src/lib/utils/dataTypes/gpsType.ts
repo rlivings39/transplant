@@ -4,14 +4,20 @@ export interface GpsCoordinate {
 	longitude: number;
 }
 
+export interface ValidationResult {
+	type: 'gps' | 'latitude' | 'longitude' | null;
+	isValid: boolean;
+	formattedValue: string;
+}
+
 // GPS Detection & Validation
 export function parseGpsCoordinate(value: string): GpsCoordinate | null {
 	if (!value?.trim()) return null;
 	const parts = value.split(/[,\s]+/).filter(Boolean);
-	
+
 	if (parts.length !== 2) return null;
 	if (!isValidLatitude(parts[0]) || !isValidLongitude(parts[1])) return null;
-	
+
 	return {
 		latitude: Number(parts[0]),
 		longitude: Number(parts[1])
@@ -36,22 +42,6 @@ export function formatGpsCoordinate(coord: GpsCoordinate | null): string {
 }
 
 // LATITUDE AND LONGITUDE 🌐️🌐️🌐️🌐️🌐️🌐️🌐️🌐️🌐️🌐️🌐️🌐️🌐️🌐️🌐️🌐️🌐️🌐️🌐️🌐️🌐️🌐️🌐️🌐️🌐️🌐️
-
-
-// Type handlers that TransformManager can use
-export const latitudeHandler = {
-	validate: isValidLatitude,
-	format: (value: string) => parseFloat(value).toFixed(6),
-	detect: (samples: string[], header?: string) =>
-		detectCoordinateType(header || '', samples) === 'latitude'
-};
-
-export const longitudeHandler = {
-	validate: isValidLongitude,
-	format: (value: string) => parseFloat(value).toFixed(6),
-	detect: (samples: string[], header?: string) =>
-		detectCoordinateType(header || '', samples) === 'longitude'
-};
 
 // Core validation functions
 export function isValidLatitude(value: string | number): boolean {
@@ -90,4 +80,66 @@ export function detectCoordinateType(
 	}
 
 	return null;
+}
+
+// Type handlers that TransformManager can use
+export const latitudeHandler = {
+	validate: isValidLatitude,
+	format: (value: string) => parseFloat(value).toFixed(6),
+	detect: (samples: string[], header?: string) =>
+		detectCoordinateType(header || '', samples) === 'latitude'
+};
+
+export const longitudeHandler = {
+	validate: isValidLongitude,
+	format: (value: string) => parseFloat(value).toFixed(6),
+	detect: (samples: string[], header?: string) =>
+		detectCoordinateType(header || '', samples) === 'longitude'
+};
+
+// The main validation and formatting function for TransformManager
+export function validateAndFormat(header: string, value: string): ValidationResult {
+	if (!value?.trim()) {
+		return { type: null, isValid: true, formattedValue: value };
+	}
+
+	// Check if it's a GPS coordinate pair
+	const gpsCoord = parseGpsCoordinate(value);
+	if (gpsCoord) {
+		return {
+			type: 'gps',
+			isValid: true,
+			formattedValue: formatGpsCoordinate(gpsCoord)
+		};
+	}
+
+	// Check if it's latitude
+	const headerLower = header.toLowerCase();
+	if (/lat|latitude/.test(headerLower) && isValidLatitude(value)) {
+		return {
+			type: 'latitude',
+			isValid: true,
+			formattedValue: parseFloat(value).toFixed(6)
+		};
+	}
+
+	// Check if it's longitude
+	if (/lon|longitude/.test(headerLower) && isValidLongitude(value)) {
+		return {
+			type: 'longitude',
+			isValid: true,
+			formattedValue: parseFloat(value).toFixed(6)
+		};
+	}
+
+	// If header suggests it should be lat/lon but value is invalid
+	if (/lat|latitude/.test(headerLower)) {
+		return { type: 'latitude', isValid: false, formattedValue: value };
+	}
+	if (/lon|longitude/.test(headerLower)) {
+		return { type: 'longitude', isValid: false, formattedValue: value };
+	}
+
+	// Not a GPS-related value
+	return { type: null, isValid: true, formattedValue: value };
 }

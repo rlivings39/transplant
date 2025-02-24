@@ -18,49 +18,39 @@
 	const types = ['string', 'number', 'date', 'gps', 'latitude', 'longitude', 'delete'] as const;
 	type ValidType = (typeof types)[number];
 
-	const typeHandlers = {
-		date: dateType,
-		number: numberType,
-		gps: gpsType,
-		latitude: gpsType.latitudeHandler,
-		longitude: gpsType.longitudeHandler,
-		string: {
-			validate: () => true,
-			format: (value: string) => value,
-			detect: () => true
-		}
-	} as const;
-
-	// Validation and formatting
-	function validate(value: string, type: ValidType): boolean {
-		if (!value?.trim()) return true;
-		return typeHandlers[type]?.validate(value) ?? false;
-	}
-
-	function format(value: string, type: ValidType): string {
-		if (!value?.trim() || type === 'delete') return value;
-		return typeHandlers[type]?.format(value) ?? value;
-	}
-
-	// Type detection - tries each type in priority order
-	function detectColumnType(header: string): ValidType {
-		if (!data.length) return 'string';
-
-		const samples = data.map((row) => row[header]?.trim());
-
-		// Let each type handler decide if it matches
-		const coordType = gpsType.detectCoordinateType(header, samples);
-		if (coordType) return coordType;
-
-		// Try other types in priority order
-		const detectionOrder: ValidType[] = ['gps', 'date', 'number', 'string'];
-		for (const type of detectionOrder) {
-			if (typeHandlers[type]?.detect(samples, header)) {
-				return type;
-			}
+	// Let each type handler validate and format its own data
+	function validateAndFormatData(
+		header: string,
+		value: string
+	): {
+		type: ValidType;
+		isValid: boolean;
+		formattedValue: string;
+	} {
+		// Try GPS types first
+		const gpsResult = gpsType.validateAndFormat(header, value);
+		if (gpsResult.type) {
+			return gpsResult;
 		}
 
-		return 'string';
+		// Try date
+		const dateResult = dateType.validateAndFormat(header, value);
+		if (dateResult.type) {
+			return dateResult;
+		}
+
+		// Try number
+		const numberResult = numberType.validateAndFormat(header, value);
+		if (numberResult.type) {
+			return numberResult;
+		}
+
+		// Default to string
+		return {
+			type: 'string',
+			isValid: true,
+			formattedValue: value
+		};
 	}
 
 	// Column validation
@@ -75,7 +65,8 @@
 				const value = row[header]?.trim();
 				if (!value) return;
 
-				if (!validate(value, type as ValidType)) {
+				const result = validateAndFormatData(header, value);
+				if (!result.isValid) {
 					invalidSet.add(index);
 				}
 			});
@@ -88,7 +79,7 @@
 		invalidCells = newInvalidCells;
 	}
 
-	// Format data for display
+	// Format data for display 23 Feb 2025  4:08PM
 	function formatDataForDisplay(): Record<string, string>[] {
 		return data.map((row) => {
 			const formattedRow: Record<string, string> = {};
@@ -97,7 +88,8 @@
 					formattedRow[key] = value;
 					continue;
 				}
-				formattedRow[key] = format(value, columnTypes[key] as ValidType);
+				const result = validateAndFormatData(key, value);
+				formattedRow[key] = result.formattedValue;
 			}
 			return formattedRow;
 		});
@@ -125,30 +117,14 @@
 		const headers = Object.keys(data[0]);
 		headers.forEach((header) => {
 			if (!columnTypes[header]) {
-				columnTypes[header] = detectColumnType(header);
+				const result = validateAndFormatData(header, data[0][header]);
+				columnTypes[header] = result.type;
 			}
 		});
 
 		validateColumns();
 		transformedData = formatDataForDisplay();
 	});
-
-	function canTransform(): boolean {
-		// Check if we have data
-		if (data.length === 0) return false;
-
-		// Check if all columns have valid types
-		const hasValidTypes = Object.entries(columnTypes).every(([header, type]) => {
-			return type !== 'delete' && !toggledColumns[header];
-		});
-
-		// Check if all visible data is valid
-		const hasValidData = Object.entries(invalidCells).every(([header, invalid]) => {
-			return toggledColumns[header] || invalid.size === 0;
-		});
-
-		return hasValidTypes && hasValidData;
-	}
 
 	function transformData() {
 		// Filter out deleted and toggled-off columns
@@ -169,27 +145,8 @@
 					const value = row[header]?.trim();
 					if (!value) continue;
 
-					// Transform value based on type
-					switch (columnTypes[header]) {
-						case 'number':
-							newRow[header] = Number(value.replace(/,/g, ''));
-							break;
-						case 'date':
-							newRow[header] = new Date(value).toISOString();
-							break;
-						case 'gps':
-							const coord = gpsType.parseGpsCoordinate(value);
-							if (coord) newRow[header] = gpsType.format(value);
-							break;
-						case 'latitude':
-							newRow[header] = parseFloat(value);
-							break;
-						case 'longitude':
-							newRow[header] = parseFloat(value);
-							break;
-						default:
-							newRow[header] = value;
-					}
+					const result = validateAndFormatData(header, value);
+					newRow[header] = result.formattedValue;
 				}
 				return newRow;
 			})
