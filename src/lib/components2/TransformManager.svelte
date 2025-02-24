@@ -4,18 +4,24 @@
 	import * as gpsType from '$lib/utils/dataTypes/gpsType';
 	import CSVImporter from './CSVImporter.svelte';
 	import DataPreviewTable from './DataPreviewTable.svelte';
+	import type { CustomEvent } from '$lib/types/globalTypes';
 
-	// State
-	let data = $state<Record<string, string>[]>([]);
-	let columnTypes = $state<Record<string, string>>({});
-	let toggledColumns = $state<Record<string, boolean>>({});
-	let invalidCells = $state<Record<string, Set<number>>>({});
-	let transformedData = $state<Record<string, string>[]>([]);
-	let originalData = $state<Record<string, string>[]>([]);
+	// All the states, in order, raw, columnTypes State
+	let originalData = $state<Record<string, string>[]>([]); // original data for undo
+	let data = $state<Record<string, string>[]>([]); // Moving data state that gets modified.
+	let columnTypes = $state<Record<string, string>>({}); // mapping headers to types
+	let toggledColumns = $state<Record<string, boolean>>({}); // tracks toggled off
+	let invalidCells = $state<Record<string, Set<number>>>({}); // tracks invalid cells
+	let transformedData = $state<Record<string, string>[]>([]); // transformed data for display
 
 	// Available types and their validation/formatting functions
 	const types = ['string', 'number', 'date', 'gps', 'latitude', 'longitude', 'delete'] as const;
 	type ValidType = (typeof types)[number];
+
+	function csvDataLoad(event: CustomEvent<{ data: Record<string, string>[] }>) {
+		originalData = event.detail.data.map((row) => ({ ...row }));
+		data = originalData;
+	}
 
 	// Let each type handler validate and format its own data
 	function validateAndFormatData(
@@ -99,9 +105,23 @@
 		// Detect types for new columns
 		const headers = Object.keys(data[0]);
 		headers.forEach((header) => {
-			if (!columnTypes[header]) {
-				const result = validateAndFormatData(header, data[0][header]);
-				columnTypes[header] = result.type;
+			if (columnTypes[header]) return; // Skip if type already set
+
+			// Get first 5 non-empty values for this column
+			const samples = data
+				.map((row) => row[header]?.trim())
+				.filter((value) => value) // Remove empty/null values
+				.slice(0, 5);
+
+			// Try each type detector
+			if (gpsType.detect(samples)) {
+				columnTypes[header] = 'gps';
+			} else if (dateType.detect(samples)) {
+				columnTypes[header] = 'date';
+			} else if (numberType.detect(samples)) {
+				columnTypes[header] = 'number';
+			} else {
+				columnTypes[header] = 'string';
 			}
 		});
 
@@ -109,7 +129,7 @@
 		transformedData = formatDataForDisplay();
 	});
 
-	function transformData() {
+	function changeDataType() {
 		// Filter out deleted and toggled-off columns
 		const headers = Object.keys(data[0]);
 		const validHeaders = headers.filter(
@@ -142,46 +162,43 @@
 		};
 	}
 
-	async function handleTransform() {
+	//  📺️📺️📺️📺️  display DataPreviewTable 📺️📺️📺️
+	function formatDataForDisplay(): Record<string, string>[] {
+		return data.map((row) => {
+			const formattedRow: Record<string, string> = {};
+			for (const [key, value] of Object.entries(row)) {
+				if (toggledColumns[key] || !value?.trim()) {
+					formattedRow[key] = value;
+					continue;
+				}
+
+				// Get formatted value from type handlers
+				const result = validateAndFormatData(key, value);
+				formattedRow[key] = result.formattedValue;
+			}
+			return formattedRow;
+		});
+	}
+
+	// ➡️️➡️️➡️️➡️️➡️️ final pushToTransplant - push to TRANSPLANT app ➡️️➡️️➡️️
+	async function pushToTransplant() {
 		if (!canTransform()) {
 			console.error('Data not ready for transformation');
 			return;
 		}
 
 		try {
-			const transformed = transformData();
+			const transformed = changeDataType();
 			sessionStorage.setItem('transformedData', JSON.stringify(transformed));
 			await import('$app/navigation').then(({ goto }) => goto('/transplant'));
 		} catch (error) {
 			console.error('Error in transform:', error);
 		}
 	}
-
-	function handleDataLoaded(event: CustomEvent<{ data: Record<string, string>[] }>) {
-		originalData = event.detail.data.map((row) => ({ ...row }));
-		data = originalData;
-	}
-
-	function formatDataForDisplay(): Record<string, string>[] {
-    return data.map((row) => {
-        const formattedRow: Record<string, string> = {};
-        for (const [key, value] of Object.entries(row)) {
-            if (toggledColumns[key] || !value?.trim()) {
-                formattedRow[key] = value;
-                continue;
-            }
-            
-            // Get formatted value from type handlers
-            const result = validateAndFormatData(key, value);
-            formattedRow[key] = result.formattedValue;
-        }
-        return formattedRow;
-    });
-}
 </script>
 
 <div class="transform-manager">
-	<CSVImporter on:dataLoaded={handleDataLoaded} />
+	<CSVImporter on:dataLoaded={csvDataLoad} />
 	{#if data.length}
 		<DataPreviewTable
 			rows={transformedData}
@@ -191,5 +208,5 @@
 			on:columnToggle={handleColumnToggle}
 		/>
 	{/if}
-	<button onclick={handleTransform}>Transform</button>
+	<button onclick={pushToTransplant}>Transform</button>
 </div>

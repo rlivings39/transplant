@@ -1,5 +1,5 @@
 export interface ValidationResult {
-	type: 'date' | null;
+    type: 'date' | 'string';
 	isValid: boolean;
 	formattedValue: string;
 }

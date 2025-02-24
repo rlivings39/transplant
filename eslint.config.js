@@ -53,5 +53,6 @@ export default [
 			}
 		}
 	},
-	prettier
+	prettier,
+	...sveltePlugin.configs['flat/prettier']
 ];

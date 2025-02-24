@@ -157,3 +157,8 @@ export const projects = pgTable('Projects', {
 	project_name: text('project_name'),
 	...baseColumns
 });
+
+export const user = pgTable('user', {
+	id: serial('id').primaryKey(),
+	age: integer('age')
+});

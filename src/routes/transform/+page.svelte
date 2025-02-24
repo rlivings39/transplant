@@ -2,7 +2,7 @@
 	import TransformManager from '$lib/components2/TransformManager.svelte';
 	import { goto } from '$app/navigation';
 
-	function handleTransform() {
+	function pushToTransplant() {
 		goto('/transplant');
 	}
 </script>
@@ -11,9 +11,9 @@
 	<div class="transform-header">
 		<h1>TransForm Data Import</h1>
 	</div>
-	<TransformManager onTransform={handleTransform} />
+	<TransformManager onTransform={pushToTransplant} />
 </div>
-
+<!-- 
 <style>
 	.transform-container {
 		width: 100%;
@@ -29,4 +29,4 @@
 		margin: 0;
 		font-size: 2rem;
 	}
-</style>
+</style> -->
