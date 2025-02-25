@@ -77,24 +77,33 @@
 				const value = row[header]?.trim();
 				if (!value) continue;
 
-				// Find handler that can convert this value
+				console.log(`Processing ${header} (type: ${type}) value: ${value}`);
+
+				// String/text columns accept everything
+				if (type === 'string') {
+					console.log(`${header} is string - accepting value directly`);
+					newRow[header] = value;
+					continue;
+				}
+
+				console.log(`${header} is not string - looking for handler`);
+				// Non-string columns - try to convert and validate
 				const handler = typeDetectors.find(
 					(d) => d.handler.validateAndFormat(header, value).isValid
 				)?.handler;
 
 				if (handler) {
 					const result = handler.validateAndFormat(header, value);
-
-					// Store the converted value
+					console.log(`Handler found for ${header}, result:`, result);
 					newRow[header] = result.formattedValue || value;
 
-					// Only mark invalid if no handler could convert it to the right type
 					if (result.type !== type) {
+						console.log(`${header} type mismatch: detected ${result.type}, column is ${type}`);
 						if (!newInvalidCells[header]) newInvalidCells[header] = new Set();
 						newInvalidCells[header].add(rowIndex);
 					}
 				} else {
-					// No handler could convert this - mark as invalid
+					console.log(`No handler could convert ${header}`);
 					if (!newInvalidCells[header]) newInvalidCells[header] = new Set();
 					newInvalidCells[header].add(rowIndex);
 					newRow[header] = value;
