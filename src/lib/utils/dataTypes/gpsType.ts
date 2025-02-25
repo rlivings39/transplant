@@ -5,7 +5,7 @@ export interface GpsCoordinate {
 }
 
 export interface ValidationResult {
-    type: 'gps' | 'latitude' | 'longitude' | 'string';
+	type: 'gps' | 'latitude' | 'longitude' | 'string';
 	isValid: boolean;
 	formattedValue: string;
 }

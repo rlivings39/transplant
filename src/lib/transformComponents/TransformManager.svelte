@@ -118,8 +118,22 @@
 				.filter((value) => value) // Remove empty/null values
 				.slice(0, 5);
 
-			// Try each type detector
-			if (gpsType.detect(samples)) {
+			// First check for latitude/longitude in header
+			const headerLower = header.toLowerCase();
+			const latPattern = /\b(lat|latitude)\b/;
+			const lonPattern = /\b(lon|long|longitude)\b/;
+
+			if (
+				latPattern.test(headerLower) &&
+				samples.every((value) => gpsType.isValidLatitude(value))
+			) {
+				columnTypes[header] = 'latitude';
+			} else if (
+				lonPattern.test(headerLower) &&
+				samples.every((value) => gpsType.isValidLongitude(value))
+			) {
+				columnTypes[header] = 'longitude';
+			} else if (gpsType.detect(samples)) {
 				columnTypes[header] = 'gps';
 			} else if (dateType.detect(samples)) {
 				columnTypes[header] = 'date';
