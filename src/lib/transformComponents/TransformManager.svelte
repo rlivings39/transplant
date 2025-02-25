@@ -64,55 +64,65 @@
 	// Single-pass validation and transformation
 	function validateAndTransformData() {
 		const newInvalidCells: Record<string, Set<number>> = {};
-		const newTransformedData: Record<string, string>[] = [];
-
-		// Process each row
-		data.forEach((row, rowIndex) => {
+		const newTransformedData = data.map((row, rowIndex) => {
 			const newRow: Record<string, string> = {};
 
-			// Process each column
 			for (const [header, type] of Object.entries(columnTypes)) {
-				if (type === 'delete' || toggledColumns[header]) continue;
-
-				const value = row[header]?.trim();
-				if (!value) continue;
-
+				const value = row[header] || '';
 				console.log(`Processing ${header} (type: ${type}) value: ${value}`);
 
-				// String/text columns accept everything
+				// String columns accept everything
 				if (type === 'string') {
-					console.log(`${header} is string - accepting value directly`);
 					newRow[header] = value;
 					continue;
 				}
 
-				console.log(`${header} is not string - looking for handler`);
-				// Non-string columns - try to convert and validate
-				const handler = typeDetectors.find(
-					(d) => d.handler.validateAndFormat(header, value).isValid
-				)?.handler;
-
-				if (handler) {
-					const result = handler.validateAndFormat(header, value);
-					console.log(`Handler found for ${header}, result:`, result);
-					newRow[header] = result.formattedValue || value;
-
-					if (result.type !== type) {
-						console.log(`${header} type mismatch: detected ${result.type}, column is ${type}`);
+				// Completely separate GPS handling
+				if (type === 'gps' || type === 'latitude' || type === 'longitude') {
+					const result = gpsType.validateAndFormat(header, value);
+					if (!result.isValid || result.type !== type) {
 						if (!newInvalidCells[header]) newInvalidCells[header] = new Set();
 						newInvalidCells[header].add(rowIndex);
+						newRow[header] = value;
+					} else {
+						newRow[header] = result.formattedValue || value;
 					}
-				} else {
-					console.log(`No handler could convert ${header}`);
-					if (!newInvalidCells[header]) newInvalidCells[header] = new Set();
-					newInvalidCells[header].add(rowIndex);
-					newRow[header] = value;
+					continue;
 				}
+
+				// Handle dates and numbers separately
+				if (type === 'date') {
+					const result = dateType.validateAndFormat(header, value);
+					if (!result.isValid || result.type !== 'date') {
+						if (!newInvalidCells[header]) newInvalidCells[header] = new Set();
+						newInvalidCells[header].add(rowIndex);
+						newRow[header] = value;
+					} else {
+						newRow[header] = result.formattedValue || value;
+					}
+					continue;
+				}
+
+				if (type === 'number') {
+					const result = numberType.validateAndFormat(header, value);
+					if (!result.isValid || result.type !== 'number') {
+						if (!newInvalidCells[header]) newInvalidCells[header] = new Set();
+						newInvalidCells[header].add(rowIndex);
+						newRow[header] = value;
+					} else {
+						newRow[header] = result.formattedValue || value;
+					}
+					continue;
+				}
+
+				// Unknown type
+				console.warn(`Unknown type: ${type}`);
+				if (!newInvalidCells[header]) newInvalidCells[header] = new Set();
+				newInvalidCells[header].add(rowIndex);
+				newRow[header] = value;
 			}
 
-			if (Object.keys(newRow).length > 0) {
-				newTransformedData.push(newRow);
-			}
+			return newRow;
 		});
 
 		invalidCells = newInvalidCells;
