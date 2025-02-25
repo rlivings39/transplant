@@ -1,4 +1,4 @@
-import { convertDMSToDecimal, isDMSFormat } from './dmsConverter';
+import { convertDMSToDecimal, isDMSFormat, convertCoordinatePair } from './dmsConverter';
 import { nonBlankValidSampleCount } from './validationSampleCount';
 
 // GPS TYPE 🌎️🌎️🌎️🌎️🌎️🌎️🌎️🌎️🌎️🌎️🌎️🌎️🌎️🌎️🌎️🌎️🌎️🌎️🌎️🌎️🌎️🌎️🌎️🌎️🌎️🌎️🌎️🌎️
@@ -19,22 +19,30 @@ export type GpsTypes = 'gps' | 'latitude' | 'longitude';
 export function parseGpsCoordinate(value: string): GpsCoordinate | null {
 	if (!value?.trim()) return null;
 
-	// Split on common separators and clean up
-	const parts = value
-		.split(/[,;|]|\s+/)
-		.map((part) => part.trim())
-		.filter(Boolean);
+	// Try to split on comma first
+	const parts = value.split(',').map((p) => p.trim());
 
-	// Need exactly two parts for lat/lon
-	if (parts.length !== 2) return null;
+	if (parts.length === 2) {
+		// Try to parse each part as a number first
+		let lat = Number(parts[0]);
+		let lon = Number(parts[1]);
 
-	const lat = parseCoordinate(parts[0]);
-	const lon = parseCoordinate(parts[1]);
+		// If either part isn't a valid number, it might be DMS
+		if (isNaN(lat) || isNaN(lon)) {
+			const converted = convertCoordinatePair(value);
+			if (converted) {
+				const [latStr, lonStr] = converted.split(',').map((p) => p.trim());
+				lat = Number(latStr);
+				lon = Number(lonStr);
+			}
+		}
 
-	if (lat === null || lon === null) return null;
-	if (!isValidLatitude(lat) || !isValidLongitude(lon)) return null;
+		if (!isNaN(lat) && !isNaN(lon) && isValidLatitude(lat) && isValidLongitude(lon)) {
+			return { latitude: lat, longitude: lon };
+		}
+	}
 
-	return { latitude: lat, longitude: lon };
+	return null;
 }
 
 // Required by TransformManager for GPS type
@@ -210,7 +218,15 @@ function parseDMS(value: string): number | null {
 function parseCoordinate(value: string): number | null {
 	if (!value?.trim()) return null;
 
-	// Try decimal degrees first
+	// Try DMS format first
+	if (isDMSFormat(value)) {
+		const dmsValue = convertDMSToDecimal(value);
+		if (dmsValue !== null) {
+			return dmsValue;
+		}
+	}
+
+	// Fall back to decimal degrees
 	const ddValue = parseFloat(value);
 	if (!isNaN(ddValue)) {
 		const direction = value
@@ -220,8 +236,7 @@ function parseCoordinate(value: string): number | null {
 		return direction === 'S' || direction === 'W' ? -ddValue : ddValue;
 	}
 
-	// Try DMS format
-	return parseDMS(value);
+	return null;
 }
 
 // Validate and format a value based on its detected type
@@ -237,24 +252,39 @@ export function validateAndFormat(
 		return { type: null, isValid: true, formattedValue: value };
 	}
 
-	// Check if it's a GPS coordinate pair
-	const gpsCoord = parseGpsCoordinate(value);
-	if (gpsCoord) {
-		return {
-			type: 'gps',
-			isValid: true,
-			formattedValue: formatGpsCoordinate(gpsCoord)
-		};
+	// For GPS coordinate pairs, try the new converter first
+	if (value.includes(',')) {
+		const converted = convertCoordinatePair(value);
+		if (converted) {
+			const gpsCoord = parseGpsCoordinate(converted);
+			if (gpsCoord) {
+				return {
+					type: 'gps',
+					isValid: true,
+					formattedValue: formatGpsCoordinate(gpsCoord)
+				};
+			}
+		}
+	}
+
+	// For single coordinates, use existing DMS conversion
+	let formattedValue = value;
+	if (isDMSFormat(value)) {
+		const decimal = convertDMSToDecimal(value);
+		if (decimal !== null) {
+			formattedValue = decimal.toString();
+		}
 	}
 
 	// Check if it's latitude or longitude
-	const type = detectCoordinateType(header, [value]);
+	const type = detectCoordinateType(header, [formattedValue]);
 	if (type) {
-		const isValid = type === 'latitude' ? isValidLatitude(value) : isValidLongitude(value);
+		const isValid =
+			type === 'latitude' ? isValidLatitude(formattedValue) : isValidLongitude(formattedValue);
 		return {
 			type,
 			isValid,
-			formattedValue: value
+			formattedValue: isValid ? formattedValue : value
 		};
 	}
 
