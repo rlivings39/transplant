@@ -10,12 +10,11 @@
 		columnToggle: { columnHeader: string; isActive: boolean };
 	}>();
 
-	const { rows, columnTypes, invalidCells, toggledColumns, transformedData } = $props<{
+	const { rows, columnTypes, invalidCells, toggledColumns } = $props<{
 		rows: Record<string, string>[];
 		columnTypes: Record<string, string>;
 		invalidCells: Record<string, Set<number>>;
 		toggledColumns: Record<string, boolean>;
-		transformedData: Record<string, string>[];
 	}>();
 
 	// let toggledColumns = $state<Record<string, boolean>>({});
