@@ -77,21 +77,26 @@
 				const value = row[header]?.trim();
 				if (!value) continue;
 
-				// Find the appropriate handler for this type
+				// Find handler that can convert this value
 				const handler = typeDetectors.find(
-					(d) => d.handler.validateAndFormat(header, value).type === type
+					(d) => d.handler.validateAndFormat(header, value).isValid
 				)?.handler;
 
 				if (handler) {
 					const result = handler.validateAndFormat(header, value);
-					if (!result.isValid) {
+
+					// Store the converted value
+					newRow[header] = result.formattedValue || value;
+
+					// Only mark invalid if no handler could convert it to the right type
+					if (result.type !== type) {
 						if (!newInvalidCells[header]) newInvalidCells[header] = new Set();
 						newInvalidCells[header].add(rowIndex);
-					} else {
-						newRow[header] = result.formattedValue;
 					}
 				} else {
-					// String type or unknown - pass through
+					// No handler could convert this - mark as invalid
+					if (!newInvalidCells[header]) newInvalidCells[header] = new Set();
+					newInvalidCells[header].add(rowIndex);
 					newRow[header] = value;
 				}
 			}
