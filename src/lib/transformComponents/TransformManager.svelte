@@ -69,6 +69,13 @@
 
 			for (const [header, type] of Object.entries(columnTypes)) {
 				const value = row[header] || '';
+
+				// Skip validation for blank cells
+				if (!value.trim()) {
+					newRow[header] = value;
+					continue;
+				}
+
 				console.log(`Processing ${header} (type: ${type}) value: ${value}`);
 
 				// String columns accept everything
