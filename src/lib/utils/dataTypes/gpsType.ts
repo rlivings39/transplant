@@ -1,4 +1,6 @@
-// GPS TYPE 🌎️🌎️🌎️🌎️🌎️🌎️🌎️🌎️🌎️🌎️🌎️🌎️🌎️🌎️🌎️🌎️🌎️🌎️🌎️🌎️🌎️🌎️🌎️🌎️🌎️🌎️🌎️🌎️🌎️
+import { convertDMSToDecimal, isDMSFormat } from './dmsConverter';
+
+// GPS TYPE 🌎️🌎️🌎️🌎️🌎️🌎️🌎️🌎️🌎️🌎️🌎️🌎️🌎️🌎️🌎️🌎️🌎️🌎️🌎️🌎️🌎️🌎️🌎️🌎️🌎️🌎️🌎️🌎️
 export interface GpsCoordinate {
 	latitude: number;
 	longitude: number;
@@ -49,21 +51,21 @@ export function formatGpsCoordinate(coord: GpsCoordinate | null): string {
 	return `${coord.latitude.toFixed(6)}, ${coord.longitude.toFixed(6)}`;
 }
 
-// LATITUDE AND LONGITUDE 🌐️🌐️🌐️🌐️🌐️🌐️🌐️🌐️🌐️🌐️🌐️🌐️🌐️🌐️🌐️🌐️🌐️🌐️🌐️🌐️🌐️🌐️🌐️🌐️🌐️🌐️
-
+// LATITUDE AND LONGITUDE 🌐️🌐️🌐️🌐️🌐️🌐️🌐️🌐️🌐️🌐️🌐️🌐️🌐️🌐️🌐️🌐️🌐️🌐️🌐️🌐️🌐️🌐️🌐️🌐️🌐️🌐️🌐️
 // Core validation functions
 export function isValidLatitude(value: string | number): boolean {
-	if (!value && value !== 0) return false; // Allow 0 but not empty/null/undefined
+	if (!value && value !== 0) return false;
 
-	// If it's already a number, validate it directly
 	if (typeof value === 'number') {
 		return !isNaN(value) && value >= -90 && value <= 90;
 	}
 
 	// Try parsing as DMS first
-	const dmsValue = parseDMS(value);
-	if (dmsValue !== null) {
-		return dmsValue >= -90 && dmsValue <= 90;
+	if (isDMSFormat(value)) {
+		const decimal = convertDMSToDecimal(value);
+		if (decimal !== null) {
+			return decimal >= -90 && decimal <= 90;
+		}
 	}
 
 	// Fall back to decimal degrees
@@ -182,14 +184,26 @@ function parseCoordinate(value: string): number | null {
 // Type handlers that TransformManager can use
 export const latitudeHandler = {
 	validate: isValidLatitude,
-	format: (value: string) => parseFloat(value).toFixed(6),
+	format: (value: string) => {
+		if (isDMSFormat(value)) {
+			const decimal = convertDMSToDecimal(value);
+			return decimal !== null ? decimal.toFixed(6) : value;
+		}
+		return parseFloat(value).toFixed(6);
+	},
 	detect: (samples: string[], header?: string) =>
 		detectCoordinateType(header || '', samples) === 'latitude'
 };
 
 export const longitudeHandler = {
 	validate: isValidLongitude,
-	format: (value: string) => parseFloat(value).toFixed(6),
+	format: (value: string) => {
+		if (isDMSFormat(value)) {
+			const decimal = convertDMSToDecimal(value);
+			return decimal !== null ? decimal.toFixed(6) : value;
+		}
+		return parseFloat(value).toFixed(6);
+	},
 	detect: (samples: string[], header?: string) =>
 		detectCoordinateType(header || '', samples) === 'longitude'
 };
@@ -212,28 +226,26 @@ export function validateAndFormat(header: string, value: string): ValidationResu
 
 	// Check if it's latitude
 	const headerLower = header.toLowerCase();
-	if (/lat|latitude/.test(headerLower) && isValidLatitude(value)) {
-		return {
-			type: 'latitude',
-			isValid: true,
-			formattedValue: parseFloat(value).toFixed(6)
-		};
+	if (/lat|latitude/.test(headerLower)) {
+		if (isValidLatitude(value)) {
+			return {
+				type: 'latitude',
+				isValid: true,
+				formattedValue: latitudeHandler.format(value)
+			};
+		}
+		return { type: 'latitude', isValid: false, formattedValue: value };
 	}
 
 	// Check if it's longitude
-	if (/lon|longitude/.test(headerLower) && isValidLongitude(value)) {
-		return {
-			type: 'longitude',
-			isValid: true,
-			formattedValue: parseFloat(value).toFixed(6)
-		};
-	}
-
-	// If header suggests it should be lat/lon but value is invalid
-	if (/lat|latitude/.test(headerLower)) {
-		return { type: 'latitude', isValid: false, formattedValue: value };
-	}
 	if (/lon|longitude/.test(headerLower)) {
+		if (isValidLongitude(value)) {
+			return {
+				type: 'longitude',
+				isValid: true,
+				formattedValue: longitudeHandler.format(value)
+			};
+		}
 		return { type: 'longitude', isValid: false, formattedValue: value };
 	}
 
