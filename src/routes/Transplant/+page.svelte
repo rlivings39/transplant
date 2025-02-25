@@ -13,7 +13,7 @@
 				transformedData = data;
 				headers = storedHeaders;
 			} catch (error) {
-				console.error('Error loading data:', error);
+				// // console.error('Error loading data:', error);
 			}
 		}
 	});
@@ -22,7 +22,6 @@
 <div class="container">
 	<h3>Transformed Data</h3>
 	<TransplantDataTable data={transformedData} {headers} />
-
 </div>
 
 <style>

@@ -11,6 +11,7 @@
 
 	const dispatch = createEventDispatcher<{
 		dataLoaded: { data: Record<string, string>[] };
+		error: { error: any };
 	}>();
 
 	function handleNavigate() {
@@ -45,7 +46,7 @@
 			skipEmptyLines: true,
 			complete: (results) => {
 				if (results.errors.length > 0) {
-					console.error('CSV parsing errors:', results.errors);
+					// console.error('CSV parsing errors:', results.errors);
 				}
 
 				rawData = results.data.filter(
@@ -58,7 +59,9 @@
 				dispatch('dataLoaded', { data: rawData });
 			},
 			error: (error) => {
-				console.error('CSV parsing failed:', error);
+				// console.error('CSV parsing failed:', error);
+				isFileLoaded = false;
+				dispatch('error', { error });
 			}
 		});
 	}

@@ -188,7 +188,7 @@
 	// ➡️️➡️️➡️️➡️️➡️️ final pushToTransplant - push to TRANSPLANT app ➡️️➡️️➡️️
 	async function pushToTransplant() {
 		if (!canTransform) {
-			console.error('Data not ready for transformation');
+			// // console.error('Data not ready for transformation');
 			return;
 		}
 
@@ -197,7 +197,7 @@
 			sessionStorage.setItem('transformedData', JSON.stringify(transformed));
 			await import('$app/navigation').then(({ goto }) => goto('/transplant'));
 		} catch (error) {
-			console.error('Error in transform:', error);
+			// // console.error('Error in transform:', error);
 		}
 	}
 </script>

@@ -466,13 +466,13 @@
           header: true,
         });
       } catch (e) {
-        console.error(`CSV processing failed at stage: ${processingStage}`, e);
+        // // console.error(`CSV processing failed at stage: ${processingStage}`, e);
         errorMessage = `CSV Processing Error: ${e.message}`;
         return;
       }
       // Add required field check
       if (!previewData.some(d => d.land_name && d.crop_name)) {
-        console.error('Missing required land_name/crop_name in:', previewData);
+        // // console.error('Missing required land_name/crop_name in:', previewData);
         errorMessage = 'CSV missing required land_name or crop_name columns';
         return;
       }
@@ -907,459 +907,459 @@
     }
   };
 
-  
+
 </script>
 
 <div class="csv-mapper">
-  {#if errorMessage}
-    <div
-      class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative mb-4"
-      role="alert"
-    >
-      <span class="block sm:inline">{errorMessage}</span>
-    </div>
-  {/if}
-  <main class="container">
-    <div class="flex justify-between items-center mb-4">
-      <h1 class="text-2xl font-bold">TransPlant</h1>
-      <div class="flex gap-4">
-        <label
-          class="bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded cursor-pointer"
-          for="csvUpload"
-        >
-          Upload CSV
-          <input
-            id="csvUpload"
-            type="file"
-            accept=".csv"
-            on:change={handleFileSelect}
-            class="hidden"
-          />
-        </label>
-      </div>
-    </div>
+	{#if errorMessage}
+		<div
+			class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative mb-4"
+			role="alert"
+		>
+			<span class="block sm:inline">{errorMessage}</span>
+		</div>
+	{/if}
+	<main class="container">
+		<div class="flex justify-between items-center mb-4">
+			<h1 class="text-2xl font-bold">TransPlant</h1>
+			<div class="flex gap-4">
+				<label
+					class="bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded cursor-pointer"
+					for="csvUpload"
+				>
+					Upload CSV
+					<input
+						id="csvUpload"
+						type="file"
+						accept=".csv"
+						on:change={handleFileSelect}
+						class="hidden"
+					/>
+				</label>
+			</div>
+		</div>
 
-    {#if csvData}
-      <div class="table-container">
-        <h2 class="text-lg font-bold" style="margin: 0; padding: 0;">Import Table</h2>
-        <div class="overflow-x-auto">
-          <!-- Mapping Dropdowns Row -->
-          <div
-            class="grid"
-            style="margin-bottom: 0.25rem; grid-template-columns: repeat({orderedCsvColumns.length}, var(--column-width));"
-          >
-            {#each orderedCsvColumns as csvColumn, i (csvColumn)}
-              <ColumnHeader
-                name={csvColumn}
-                excluded={excludedColumns.has(csvColumn)}
-                onExclude={(isExcluded) => {
-                  if (isExcluded) {
-                    excludedColumns.add(csvColumn);
-                  } else {
-                    excludedColumns.delete(csvColumn);
-                  }
-                  // Trigger reactivity by creating a new array
-                  excludedColumns = [...excludedColumns];
+		{#if csvData}
+			<div class="table-container">
+				<h2 class="text-lg font-bold" style="margin: 0; padding: 0;">Import Table</h2>
+				<div class="overflow-x-auto">
+					<!-- Mapping Dropdowns Row -->
+					<div
+						class="grid"
+						style="margin-bottom: 0.25rem; grid-template-columns: repeat({orderedCsvColumns.length}, var(--column-width));"
+					>
+						{#each orderedCsvColumns as csvColumn, i (csvColumn)}
+							<ColumnHeader
+								name={csvColumn}
+								excluded={excludedColumns.has(csvColumn)}
+								onExclude={(isExcluded) => {
+									if (isExcluded) {
+										excludedColumns.add(csvColumn);
+									} else {
+										excludedColumns.delete(csvColumn);
+									}
+									// Trigger reactivity by creating a new array
+									excludedColumns = [...excludedColumns];
 
-                  // Reorder columns
-                  const nonExcluded = orderedCsvColumns.filter((col) => !excludedColumns.has(col));
-                  const excluded = orderedCsvColumns.filter((col) => excludedColumns.has(col));
-                  orderedCsvColumns = [...nonExcluded, ...excluded];
-                }}
-                {mappings}
-                {databaseFields}
-              />
-            {/each}
-          </div>
+									// Reorder columns
+									const nonExcluded = orderedCsvColumns.filter((col) => !excludedColumns.has(col));
+									const excluded = orderedCsvColumns.filter((col) => excludedColumns.has(col));
+									orderedCsvColumns = [...nonExcluded, ...excluded];
+								}}
+								{mappings}
+								{databaseFields}
+							/>
+						{/each}
+					</div>
 
-          <table style="width: fit-content;">
-            <thead>
-              <tr class="flex flex-row flex-nowrap" style="width: fit-content;">
-                {#each orderedCsvColumns as csvColumn}
-                  <th
-                    class="p-2 bg-gray-800 text-white border-b border-gray-700 font-medium text-left"
-                    style="width: var(--column-width); flex: 0 0 var(--column-width);"
-                    draggable="true"
-                    on:dragstart={(e) => handleDragStart(e, csvColumn)}
-                    data-mapped={mappings[csvColumn]}
-                  >
-                    {csvColumn}
-                  </th>
-                {/each}
-              </tr>
-            </thead>
-            <tbody>
-              {#each csvData?.slice(0, 5) || [] as row}
-                <tr class="flex flex-row flex-nowrap">
-                  {#each orderedCsvColumns as column}
-                    <td
-                      draggable="true"
-                      on:dragstart={(e) => handleDragStart(e, column)}
-                      class="p-2 bg-gray-800 text-white border-b border-gray-700 cursor-move hover:bg-gray-700 flex-shrink-0"
-                      style="width: var(--column-width); {row[`${column}_valid`] === false
-                        ? 'background-color: #4a1414;'
-                        : ''}"
-                      data-mapped={mappings[column]}
-                      title={row[`${column}_valid`] === false ? 'Invalid number format' : ''}
-                    >
-                      {row[column] || ''}
-                      {#if row[`${column}_valid`] === false}
-                        <span class="text-red-500 text-xs"> (invalid)</span>
-                      {/if}
-                    </td>
-                  {/each}
-                </tr>
-              {/each}
-            </tbody>
-          </table>
-        </div>
-      </div>
+					<table style="width: fit-content;">
+						<thead>
+							<tr class="flex flex-row flex-nowrap" style="width: fit-content;">
+								{#each orderedCsvColumns as csvColumn}
+									<th
+										class="p-2 bg-gray-800 text-white border-b border-gray-700 font-medium text-left"
+										style="width: var(--column-width); flex: 0 0 var(--column-width);"
+										draggable="true"
+										on:dragstart={(e) => handleDragStart(e, csvColumn)}
+										data-mapped={mappings[csvColumn]}
+									>
+										{csvColumn}
+									</th>
+								{/each}
+							</tr>
+						</thead>
+						<tbody>
+							{#each csvData?.slice(0, 5) || [] as row}
+								<tr class="flex flex-row flex-nowrap">
+									{#each orderedCsvColumns as column}
+										<td
+											draggable="true"
+											on:dragstart={(e) => handleDragStart(e, column)}
+											class="p-2 bg-gray-800 text-white border-b border-gray-700 cursor-move hover:bg-gray-700 flex-shrink-0"
+											style="width: var(--column-width); {row[`${column}_valid`] === false
+												? 'background-color: #4a1414;'
+												: ''}"
+											data-mapped={mappings[column]}
+											title={row[`${column}_valid`] === false ? 'Invalid number format' : ''}
+										>
+											{row[column] || ''}
+											{#if row[`${column}_valid`] === false}
+												<span class="text-red-500 text-xs"> (invalid)</span>
+											{/if}
+										</td>
+									{/each}
+								</tr>
+							{/each}
+						</tbody>
+					</table>
+				</div>
+			</div>
 
-      <div class="database-tables">
-        {#each ['Planted', 'Crop', 'Land'] as tableName}
-          <div class="table-info">
-            <h2 class="text-lg font-bold" style="margin: 0; padding: 0;">{tableName} Table</h2>
-            <div class="table-preview">
-              <table
-                style="background: {tableName !== 'Planted'
-                  ? '#333333'
-                  : 'inherit'} ; color: {tableName !== 'Planted' ? 'white' : 'inherit'} ;"
-              >
-                <thead>
-                  <tr>
-                    {#each tableHeaders[tableName] || [] as header}
-                      <th
-                        style="background: {tableName !== 'Planted' ? '#333333' : 'inherit'} ;
+			<div class="database-tables">
+				{#each ['Planted', 'Crop', 'Land'] as tableName}
+					<div class="table-info">
+						<h2 class="text-lg font-bold" style="margin: 0; padding: 0;">{tableName} Table</h2>
+						<div class="table-preview">
+							<table
+								style="background: {tableName !== 'Planted'
+									? '#333333'
+									: 'inherit'} ; color: {tableName !== 'Planted' ? 'white' : 'inherit'} ;"
+							>
+								<thead>
+									<tr>
+										{#each tableHeaders[tableName] || [] as header}
+											<th
+												style="background: {tableName !== 'Planted' ? '#333333' : 'inherit'} ;
                                color: {tableName !== 'Planted' ? 'white' : 'inherit'} ;"
-                        draggable={tableName === 'Planted'}
-                        on:dragstart={tableName === 'Planted'
-                          ? (e) => handleMappingDragStart(e, tableName, header)
-                          : null}
-                        on:dragend={tableName === 'Planted'
-                          ? (e) => handleMappingDragEnd(e, tableName, header)
-                          : null}
-                        on:dragover={tableName === 'Planted' ? handleDragOver : null}
-                        on:drop={tableName === 'Planted'
-                          ? (e) => handleDrop(e, tableName, header)
-                          : (e) => e.preventDefault()}
-                        class={tableName === 'Planted' ? 'droppable-column hover:bg-blue-50' : ''}
-                        data-table={tableName}
-                        data-required={[
-                          'land_name',
-                          'crop_name',
-                          'planted',
-                          'gps_lat',
-                          'gps_lon',
-                        ].includes(header)}
-                        data-mapped={Object.entries(mappings).some(
-                          ([col, mapping]) => mapping === `${tableName}.${header}`
-                        )}
-                      >
-                        {header}
-                      </th>
-                    {/each}
-                  </tr>
-                </thead>
-                <tbody>
-                  {#each previewData[tableName] as row, rowIndex}
-                    <tr style="background: {tableName !== 'Planted' ? '#333333' : 'inherit'} ;">
-                      {#each tableHeaders[tableName] || [] as header}
-                        <td
-                          style="background: {tableName !== 'Planted' ? '#333333' : 'inherit'} ;
+												draggable={tableName === 'Planted'}
+												on:dragstart={tableName === 'Planted'
+													? (e) => handleMappingDragStart(e, tableName, header)
+													: null}
+												on:dragend={tableName === 'Planted'
+													? (e) => handleMappingDragEnd(e, tableName, header)
+													: null}
+												on:dragover={tableName === 'Planted' ? handleDragOver : null}
+												on:drop={tableName === 'Planted'
+													? (e) => handleDrop(e, tableName, header)
+													: (e) => e.preventDefault()}
+												class={tableName === 'Planted' ? 'droppable-column hover:bg-blue-50' : ''}
+												data-table={tableName}
+												data-required={[
+													'land_name',
+													'crop_name',
+													'planted',
+													'gps_lat',
+													'gps_lon'
+												].includes(header)}
+												data-mapped={Object.entries(mappings).some(
+													([col, mapping]) => mapping === `${tableName}.${header}`
+												)}
+											>
+												{header}
+											</th>
+										{/each}
+									</tr>
+								</thead>
+								<tbody>
+									{#each previewData[tableName] as row, rowIndex}
+										<tr style="background: {tableName !== 'Planted' ? '#333333' : 'inherit'} ;">
+											{#each tableHeaders[tableName] || [] as header}
+												<td
+													style="background: {tableName !== 'Planted' ? '#333333' : 'inherit'} ;
                                  color: {tableName !== 'Planted' ? 'white' : 'inherit'} ;"
-                          draggable={tableName === 'Planted'}
-                          on:dragstart={tableName === 'Planted'
-                            ? (e) => handleMappingDragStart(e, tableName, header)
-                            : null}
-                          on:dragend={tableName === 'Planted'
-                            ? (e) => handleMappingDragEnd(e, tableName, header)
-                            : null}
-                          on:dragover={tableName === 'Planted' ? handleDragOver : null}
-                          on:drop={tableName === 'Planted'
-                            ? (e) => handleDrop(e, tableName, header)
-                            : (e) => e.preventDefault()}
-                          class={tableName === 'Planted' ? 'droppable-column hover:bg-blue-50' : ''}
-                          class:invalid={tableName === 'Planted' &&
-                            previewValidation?.[tableName]?.[header] === false}
-                          data-row-index={rowIndex}
-                          title={tableName === 'Planted' &&
-                          previewValidation?.[tableName]?.[header] === false
-                            ? tableFieldTypes[tableName]?.[header]?.type === 'number'
-                              ? 'Number required'
-                              : 'Invalid value'
-                            : ''}
-                        >
-                          <div class="flex items-center justify-between w-full">
-                            <span
-                              style="color: {row[header] === 'Number required'
-                                ? '#ef4444'
-                                : 'inherit'}"
-                            >
-                              {row[header] || ''}
-                            </span>
-                          </div>
-                        </td>
-                      {/each}
-                    </tr>
-                  {/each}
-                </tbody>
-              </table>
-            </div>
-          </div>
-        {/each}
-      </div>
-    {/if}
-  </main>
+													draggable={tableName === 'Planted'}
+													on:dragstart={tableName === 'Planted'
+														? (e) => handleMappingDragStart(e, tableName, header)
+														: null}
+													on:dragend={tableName === 'Planted'
+														? (e) => handleMappingDragEnd(e, tableName, header)
+														: null}
+													on:dragover={tableName === 'Planted' ? handleDragOver : null}
+													on:drop={tableName === 'Planted'
+														? (e) => handleDrop(e, tableName, header)
+														: (e) => e.preventDefault()}
+													class={tableName === 'Planted' ? 'droppable-column hover:bg-blue-50' : ''}
+													class:invalid={tableName === 'Planted' &&
+														previewValidation?.[tableName]?.[header] === false}
+													data-row-index={rowIndex}
+													title={tableName === 'Planted' &&
+													previewValidation?.[tableName]?.[header] === false
+														? tableFieldTypes[tableName]?.[header]?.type === 'number'
+															? 'Number required'
+															: 'Invalid value'
+														: ''}
+												>
+													<div class="flex items-center justify-between w-full">
+														<span
+															style="color: {row[header] === 'Number required'
+																? '#ef4444'
+																: 'inherit'}"
+														>
+															{row[header] || ''}
+														</span>
+													</div>
+												</td>
+											{/each}
+										</tr>
+									{/each}
+								</tbody>
+							</table>
+						</div>
+					</div>
+				{/each}
+			</div>
+		{/if}
+	</main>
 </div>
 
 <div class="container mx-auto p-4">
-  {#if data.error}
-    <div class="bg-red-100 p-4 rounded mb-4">
-      <p class="text-red-700">{data.error}</p>
-    </div>
-  {:else}
-    <!-- Land Section -->
-    <section class="mb-8">
-      <h2 class="text-2xl font-bold mb-4">Land Table</h2>
-      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-        {#each data.lands || [] as land}
-          {@debug land}
-          <div class="bg-white p-4 rounded shadow">
-            <h3 class="font-bold text-lg">{land.name}</h3>
-            <p>Hectares: {land.hectares || 'N/A'}</p>
-            {#if land.notes}
-              <p class="text-gray-600 mt-2">{land.notes}</p>
-            {/if}
-          </div>
-        {/each}
-      </div>
-    </section>
+	{#if data.error}
+		<div class="bg-red-100 p-4 rounded mb-4">
+			<p class="text-red-700">{data.error}</p>
+		</div>
+	{:else}
+		<!-- Land Section -->
+		<section class="mb-8">
+			<h2 class="text-2xl font-bold mb-4">Land Table</h2>
+			<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+				{#each data.lands || [] as land}
+					{@debug land}
+					<div class="bg-white p-4 rounded shadow">
+						<h3 class="font-bold text-lg">{land.name}</h3>
+						<p>Hectares: {land.hectares || 'N/A'}</p>
+						{#if land.notes}
+							<p class="text-gray-600 mt-2">{land.notes}</p>
+						{/if}
+					</div>
+				{/each}
+			</div>
+		</section>
 
-    <!-- Crop Section -->
-    <section>
-      <h2 class="text-2xl font-bold mb-4">Crop Table</h2>
-      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-        {#each data.crops || [] as crop}
-          <div class="bg-white p-4 rounded shadow">
-            <h3 class="font-bold text-lg">{crop.name}</h3>
-            <p>Seedlot: {crop.seedlot || 'N/A'}</p>
-            <p>Stock: {crop.stock || 0}</p>
-          </div>
-        {/each}
-      </div>
-    </section>
-  {/if}
+		<!-- Crop Section -->
+		<section>
+			<h2 class="text-2xl font-bold mb-4">Crop Table</h2>
+			<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+				{#each data.crops || [] as crop}
+					<div class="bg-white p-4 rounded shadow">
+						<h3 class="font-bold text-lg">{crop.name}</h3>
+						<p>Seedlot: {crop.seedlot || 'N/A'}</p>
+						<p>Stock: {crop.stock || 0}</p>
+					</div>
+				{/each}
+			</div>
+		</section>
+	{/if}
 </div>
 
 <!-- CSS variable, control all widths! -->
 <style>
-  :root {
-    --column-width: 12.5rem; /* 200px equivalent */
-    --row-height: 1.5rem; /* Even more compact row height */
-    --cell-padding: 0.25rem;
-    --required-border: #ff6b6b;
-    --mapped-border: #4fff4f;
-  }
+	:root {
+		--column-width: 12.5rem; /* 200px equivalent */
+		--row-height: 1.5rem; /* Even more compact row height */
+		--cell-padding: 0.25rem;
+		--required-border: #ff6b6b;
+		--mapped-border: #4fff4f;
+	}
 
-  /* Table layout */
-  .table-container {
-    display: block;
-    overflow-x: auto;
-    width: fit-content;
-  }
+	/* Table layout */
+	.table-container {
+		display: block;
+		overflow-x: auto;
+		width: fit-content;
+	}
 
-  /* Grid layout for dropdowns */
-  .grid {
-    display: grid;
-    gap: 0;
-    width: fit-content;
-  }
+	/* Grid layout for dropdowns */
+	.grid {
+		display: grid;
+		gap: 0;
+		width: fit-content;
+	}
 
-  /* Table cells */
-  .table-container th,
-  .table-container td,
-  .table-preview th,
-  .table-preview td {
-    width: var(--column-width);
-    min-width: var(--column-width);
-  }
+	/* Table cells */
+	.table-container th,
+	.table-container td,
+	.table-preview th,
+	.table-preview td {
+		width: var(--column-width);
+		min-width: var(--column-width);
+	}
 
-  /* Table rows */
-  .table-container tr {
-    display: grid;
-    grid-auto-flow: column;
-    width: fit-content;
-  }
+	/* Table rows */
+	.table-container tr {
+		display: grid;
+		grid-auto-flow: column;
+		width: fit-content;
+	}
 
-  .droppable-column {
-    transition: all 0.2s ease;
-  }
+	.droppable-column {
+		transition: all 0.2s ease;
+	}
 
-  .container {
-    max-width: 1200px;
-    margin: 0 auto;
-  }
+	.container {
+		max-width: 1200px;
+		margin: 0 auto;
+	}
 
-  .file-upload {
-    border: 2px dashed #ccc;
-    border-radius: 0.25rem;
-    padding: 0.5rem;
-    text-align: center;
-    margin: 0.5rem 0;
-  }
+	.file-upload {
+		border: 2px dashed #ccc;
+		border-radius: 0.25rem;
+		padding: 0.5rem;
+		text-align: center;
+		margin: 0.5rem 0;
+	}
 
-  .table-container {
-    overflow-x: auto;
-    margin: 0;
-    padding: 0;
-    width: 100%;
-  }
+	.table-container {
+		overflow-x: auto;
+		margin: 0;
+		padding: 0;
+		width: 100%;
+	}
 
-  table {
-    width: auto;
-    border-collapse: collapse;
-    table-layout: fixed;
-  }
+	table {
+		width: auto;
+		border-collapse: collapse;
+		table-layout: fixed;
+	}
 
-  /* Consistent row heights for all tables */
-  tr {
-    height: var(--row-height);
-    line-height: var(--row-height);
-  }
+	/* Consistent row heights for all tables */
+	tr {
+		height: var(--row-height);
+		line-height: var(--row-height);
+	}
 
-  th,
-  td {
-    min-width: var(--column-width);
-    max-width: var(--column-width);
-    width: var(--column-width);
-    height: var(--row-height);
-    line-height: var(--row-height);
-    padding: 0 var(--cell-padding);
-    text-align: left;
-    border: 1px solid #ddd;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-    vertical-align: middle;
-    box-sizing: border-box;
-  }
+	th,
+	td {
+		min-width: var(--column-width);
+		max-width: var(--column-width);
+		width: var(--column-width);
+		height: var(--row-height);
+		line-height: var(--row-height);
+		padding: 0 var(--cell-padding);
+		text-align: left;
+		border: 1px solid #ddd;
+		overflow: hidden;
+		text-overflow: ellipsis;
+		white-space: nowrap;
+		vertical-align: middle;
+		box-sizing: border-box;
+	}
 
-  /* Required fields - only in Planted table */
-  .table-preview:has(th[data-table='Planted']) th[data-required='true'] {
-    border: 2px solid var(--required-border);
-  }
+	/* Required fields - only in Planted table */
+	.table-preview:has(th[data-table='Planted']) th[data-required='true'] {
+		border: 2px solid var(--required-border);
+	}
 
-  /* Mapped fields - only in Import and Planted tables */
-  .table-container th[data-mapped='true'],
-  .table-container td[data-mapped='true'],
-  .table-preview:has(th[data-table='Planted']) th[data-mapped='true'] {
-    border: 2px solid var(--mapped-border);
-  }
+	/* Mapped fields - only in Import and Planted tables */
+	.table-container th[data-mapped='true'],
+	.table-container td[data-mapped='true'],
+	.table-preview:has(th[data-table='Planted']) th[data-mapped='true'] {
+		border: 2px solid var(--mapped-border);
+	}
 
-  th {
-    font-size: 0.875rem;
-  }
+	th {
+		font-size: 0.875rem;
+	}
 
-  .database-tables {
-    margin: 0;
-    padding: 0;
-  }
+	.database-tables {
+		margin: 0;
+		padding: 0;
+	}
 
-  .table-info {
-    margin: 0;
-    padding: 0;
-  }
+	.table-info {
+		margin: 0;
+		padding: 0;
+	}
 
-  .table-preview {
-    overflow-x: auto;
-    margin: 0;
-    padding: 0;
-  }
+	.table-preview {
+		overflow-x: auto;
+		margin: 0;
+		padding: 0;
+	}
 
-  .table-preview table {
-    width: auto;
-    border-collapse: collapse;
-    table-layout: fixed;
-  }
+	.table-preview table {
+		width: auto;
+		border-collapse: collapse;
+		table-layout: fixed;
+	}
 
-  .table-preview th,
-  .table-preview td {
-    width: var(--column-width);
-    min-width: var(--column-width);
-    max-width: var(--column-width);
-    height: var(--row-height);
-    line-height: var(--row-height);
-    padding: 0 var(--cell-padding);
-    text-align: left;
-    border: 1px solid #ddd;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-    background-color: var(--background-color, #1e1e1e);
-    color: var(--text-color, #ffffff);
-    vertical-align: middle;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-  }
+	.table-preview th,
+	.table-preview td {
+		width: var(--column-width);
+		min-width: var(--column-width);
+		max-width: var(--column-width);
+		height: var(--row-height);
+		line-height: var(--row-height);
+		padding: 0 var(--cell-padding);
+		text-align: left;
+		border: 1px solid #ddd;
+		overflow: hidden;
+		text-overflow: ellipsis;
+		white-space: nowrap;
+		background-color: var(--background-color, #1e1e1e);
+		color: var(--text-color, #ffffff);
+		vertical-align: middle;
+		text-overflow: ellipsis;
+		white-space: nowrap;
+	}
 
-  .table-preview th {
-    /* background: #f5f5f5; */
-    font-size: 0.875rem;
-  }
+	.table-preview th {
+		/* background: #f5f5f5; */
+		font-size: 0.875rem;
+	}
 
-  .cursor-move {
-    cursor: move;
-  }
+	.cursor-move {
+		cursor: move;
+	}
 
-  .droppable-column {
-    cursor: pointer; /* Changed to pointer to indicate interactivity */
-    position: relative;
-  }
+	.droppable-column {
+		cursor: pointer; /* Changed to pointer to indicate interactivity */
+		position: relative;
+	}
 
-  /* When mapped, show grab cursor */
-  .droppable-column[draggable='true'] {
-    cursor: grab;
-  }
+	/* When mapped, show grab cursor */
+	.droppable-column[draggable='true'] {
+		cursor: grab;
+	}
 
-  .droppable-column[draggable='true']:active {
-    cursor: grabbing;
-  }
+	.droppable-column[draggable='true']:active {
+		cursor: grabbing;
+	}
 
-  /* Update hover states to be visible in dark mode */
+	/* Update hover states to be visible in dark mode */
 
-  .droppable-column.hover\:bg-blue-50:hover::after {
-    background-color: rgba(59, 130, 246, 0.2); /* More visible in dark mode */
-    border: 2px dashed #60a5fa; /* Brighter blue for dark mode */
-  }
+	.droppable-column.hover\:bg-blue-50:hover::after {
+		background-color: rgba(59, 130, 246, 0.2); /* More visible in dark mode */
+		border: 2px dashed #60a5fa; /* Brighter blue for dark mode */
+	}
 
-  /* Invalid number field styling */
-  td.invalid {
-    background-color: #4a1c1c;
-    position: relative;
-  }
+	/* Invalid number field styling */
+	td.invalid {
+		background-color: #4a1c1c;
+		position: relative;
+	}
 
-  td.invalid::after {
-    content: 'number required';
-    color: #ff6b6b;
-    margin-left: 0.5rem;
-    position: absolute;
-    right: 0.5rem;
-    top: 50%;
-    transform: translateY(-50%);
-  }
+	td.invalid::after {
+		content: 'number required';
+		color: #ff6b6b;
+		margin-left: 0.5rem;
+		position: absolute;
+		right: 0.5rem;
+		top: 50%;
+		transform: translateY(-50%);
+	}
 
-  /* Invalid cell styling */
-  .invalid {
-    background-color: #4a1c1c;
-    position: relative;
-  }
+	/* Invalid cell styling */
+	.invalid {
+		background-color: #4a1c1c;
+		position: relative;
+	}
 
-  .invalid::after {
-    content: 'number required';
-    color: #ff6b6b;
-    position: absolute;
-    right: 0.5rem;
-    top: 50%;
-    transform: translateY(-50%);
-  }
+	.invalid::after {
+		content: 'number required';
+		color: #ff6b6b;
+		position: absolute;
+		right: 0.5rem;
+		top: 50%;
+		transform: translateY(-50%);
+	}
 </style>

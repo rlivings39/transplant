@@ -1,4 +1,4 @@
-<!-- <script lang="ts">
+<script lang="ts">
 	import { parseGpsCoordinate, detectCoordinateType } from '$lib/utils/dataTypes/gpsType';
 
 	const { row, columnHeaders, columnTypes, toggledColumns, invalidCells, rowIndex } = $props<{
@@ -19,9 +19,8 @@
 	function tryGetGpsValue(ignoreToggle = false): string {
 		// Get valid columns (optionally ignoring toggle state)
 		const activeColumns = columnHeaders.filter(
-			(header) => isValidCell(header, ignoreToggle) && row[header]?.trim()
+			(header: string) => isValidCell(header, ignoreToggle) && row[header]?.trim()
 		);
- Know.
 		// First try columns already validated as GPS type
 		for (const header of activeColumns) {
 			if (columnTypes[header] === 'gps' && parseGpsCoordinate(row[header])) {
@@ -31,10 +30,10 @@
 
 		// Then try latitude/longitude pairs
 		const latColumns = activeColumns.filter(
-			(header) => detectCoordinateType(header, row[header]) === 'latitude'
+			(header: string) => detectCoordinateType(header, row[header]) === 'latitude'
 		);
 		const lonColumns = activeColumns.filter(
-			(header) => detectCoordinateType(header, row[header]) === 'longitude'
+			(header: string) => detectCoordinateType(header, row[header]) === 'longitude'
 		);
 
 		// Return first valid lat/lon pair
@@ -64,4 +63,3 @@
 <td class="gps-column" class:invalid={!displayValue}>
 	{displayValue}
 </td>
- -->
