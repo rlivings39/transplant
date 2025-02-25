@@ -1,10 +1,26 @@
+export type DateType = 'date';
+
 export interface ValidationResult {
-    type: 'date' | 'string';
+	type: DateType | null;
 	isValid: boolean;
 	formattedValue: string;
 }
 
-export function validate(value: string): boolean {
+// Detect if a column of samples is a date type
+export function detectType(header: string, samples: string[]): DateType | null {
+	if (!samples.length) return null;
+
+	// If all non-empty samples are valid dates, it's a date column
+	const validSamples = samples.filter((s) => s?.trim());
+	if (validSamples.every(validate)) {
+		return 'date';
+	}
+
+	return null;
+}
+
+// Validate a single value
+function validate(value: string): boolean {
 	if (!value?.trim()) return true;
 
 	// If it's a year in range
@@ -18,7 +34,8 @@ export function validate(value: string): boolean {
 	return !isNaN(date.getTime());
 }
 
-export function format(value: string): string {
+// Format a value that's already been validated
+function format(value: string): string {
 	if (!value?.trim()) return value;
 
 	// If it's a year in range, format as year date
@@ -32,23 +49,16 @@ export function format(value: string): string {
 	return !isNaN(date.getTime()) ? date.toISOString() : value;
 }
 
-export function detect(samples: string[]): boolean {
-	return samples.every((value) => validate(value));
-}
-
+// Process a single value, returning validation result
 export function validateAndFormat(header: string, value: string): ValidationResult {
 	if (!value?.trim()) {
 		return { type: null, isValid: true, formattedValue: value };
 	}
 
 	const isValid = validate(value);
-	if (!isValid) {
-		return { type: 'date', isValid: false, formattedValue: value };
-	}
-
 	return {
-		type: 'date',
-		isValid: true,
-		formattedValue: format(value)
+		type: isValid ? 'date' : null,
+		isValid,
+		formattedValue: isValid ? format(value) : value
 	};
 }

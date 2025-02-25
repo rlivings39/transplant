@@ -106,7 +106,7 @@
 				</svg>
 				<h2>Drop your CSV file here</h2>
 				<p>or</p>
-				<button class="import-simple-button" onclick={() => fileInput.click()}>Upload File</button>
+				<button class="import-simple-button" onclick={() => fileInput.click()}>UPLOAD CSV</button>
 			</div>
 		</div>
 	{:else}

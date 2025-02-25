@@ -1,4 +1,5 @@
 import { convertDMSToDecimal, isDMSFormat } from './dmsConverter';
+import { nonBlankValidSampleCount } from './validationSampleCount';
 
 // GPS TYPE 🌎️🌎️🌎️🌎️🌎️🌎️🌎️🌎️🌎️🌎️🌎️🌎️🌎️🌎️🌎️🌎️🌎️🌎️🌎️🌎️🌎️🌎️🌎️🌎️🌎️🌎️🌎️🌎️
 export interface GpsCoordinate {
@@ -11,6 +12,8 @@ export interface ValidationResult {
 	isValid: boolean;
 	formattedValue: string;
 }
+
+export type GpsTypes = 'gps' | 'latitude' | 'longitude';
 
 // GPS Detection & Validation
 export function parseGpsCoordinate(value: string): GpsCoordinate | null {
@@ -103,11 +106,51 @@ export function detectCoordinateType(
 	const latPattern = /l.*?a.*?t/;
 	const lonPattern = /l.*?o.*?n/;
 
-	if (latPattern.test(headerLower)) {
-		return 'latitude';
+	const isLatHeader = latPattern.test(headerLower);
+	const isLonHeader = lonPattern.test(headerLower);
+
+	if (!isLatHeader && !isLonHeader) return null;
+
+	// Get first N non-empty samples
+	const validSamples = samples.filter((s) => s?.trim());
+	const samplesToCheck = validSamples.slice(
+		0,
+		Math.min(nonBlankValidSampleCount, validSamples.length)
+	);
+	if (!samplesToCheck.length) return null;
+
+	// If any value passes validation, it's definitely that type
+	const anyValid = samplesToCheck.some((value) =>
+		isLatHeader ? isValidLatitude(value) : isValidLongitude(value)
+	);
+
+	if (anyValid) {
+		return isLatHeader ? 'latitude' : 'longitude';
 	}
-	if (lonPattern.test(headerLower)) {
-		return 'longitude';
+
+	return null;
+}
+
+// Auto-detect the type of a column based on header and samples
+export function detectType(header: string, samples: string[]): GpsTypes | null {
+	// First check if it's a GPS coordinate pair
+	const validSamples = samples.filter((s) => s?.trim());
+	if (!validSamples.length) return null;
+
+	const samplesToCheck = validSamples.slice(
+		0,
+		Math.min(nonBlankValidSampleCount, validSamples.length)
+	);
+
+	// Check if any sample is a valid GPS coordinate pair
+	if (samplesToCheck.some((value) => parseGpsCoordinate(value) !== null)) {
+		return 'gps';
+	}
+
+	// Check if it's latitude or longitude
+	const coordinateType = detectCoordinateType(header, samplesToCheck);
+	if (coordinateType) {
+		return coordinateType;
 	}
 
 	return null;
@@ -181,6 +224,43 @@ function parseCoordinate(value: string): number | null {
 	return parseDMS(value);
 }
 
+// Validate and format a value based on its detected type
+export function validateAndFormat(
+	header: string,
+	value: string
+): {
+	type: GpsTypes | null;
+	isValid: boolean;
+	formattedValue: string;
+} {
+	if (!value?.trim()) {
+		return { type: null, isValid: true, formattedValue: value };
+	}
+
+	// Check if it's a GPS coordinate pair
+	const gpsCoord = parseGpsCoordinate(value);
+	if (gpsCoord) {
+		return {
+			type: 'gps',
+			isValid: true,
+			formattedValue: formatGpsCoordinate(gpsCoord)
+		};
+	}
+
+	// Check if it's latitude or longitude
+	const type = detectCoordinateType(header, [value]);
+	if (type) {
+		const isValid = type === 'latitude' ? isValidLatitude(value) : isValidLongitude(value);
+		return {
+			type,
+			isValid,
+			formattedValue: value
+		};
+	}
+
+	return { type: null, isValid: true, formattedValue: value };
+}
+
 // Type handlers that TransformManager can use
 export const latitudeHandler = {
 	validate: isValidLatitude,
@@ -207,48 +287,3 @@ export const longitudeHandler = {
 	detect: (samples: string[], header?: string) =>
 		detectCoordinateType(header || '', samples) === 'longitude'
 };
-
-// The main validation and formatting function for TransformManager
-export function validateAndFormat(header: string, value: string): ValidationResult {
-	if (!value?.trim()) {
-		return { type: null, isValid: true, formattedValue: value };
-	}
-
-	// Check if it's a GPS coordinate pair
-	const gpsCoord = parseGpsCoordinate(value);
-	if (gpsCoord) {
-		return {
-			type: 'gps',
-			isValid: true,
-			formattedValue: formatGpsCoordinate(gpsCoord)
-		};
-	}
-
-	// Check if it's latitude
-	const headerLower = header.toLowerCase();
-	if (/lat|latitude/.test(headerLower)) {
-		if (isValidLatitude(value)) {
-			return {
-				type: 'latitude',
-				isValid: true,
-				formattedValue: latitudeHandler.format(value)
-			};
-		}
-		return { type: 'latitude', isValid: false, formattedValue: value };
-	}
-
-	// Check if it's longitude
-	if (/lon|longitude/.test(headerLower)) {
-		if (isValidLongitude(value)) {
-			return {
-				type: 'longitude',
-				isValid: true,
-				formattedValue: longitudeHandler.format(value)
-			};
-		}
-		return { type: 'longitude', isValid: false, formattedValue: value };
-	}
-
-	// Not a GPS-related value
-	return { type: null, isValid: true, formattedValue: value };
-}

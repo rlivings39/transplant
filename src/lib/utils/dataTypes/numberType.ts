@@ -1,5 +1,7 @@
+export type NumberType = 'number';
+
 export interface ValidationResult {
-    type: 'number' | 'string';
+	type: NumberType | null;
 	isValid: boolean;
 	formattedValue: string;
 }
@@ -29,8 +31,9 @@ export function format(value: string): string {
 	return decimal ? `${formattedWhole}.${decimal}` : formattedWhole;
 }
 
-export function detect(samples: string[]): boolean {
-	return samples.every((value) => validate(value));
+export function detectType(header: string, samples: string[]): NumberType | null {
+	if (!samples.length) return null;
+	return samples.every(validate) ? 'number' : null;
 }
 
 export function validateAndFormat(header: string, value: string): ValidationResult {
@@ -39,13 +42,9 @@ export function validateAndFormat(header: string, value: string): ValidationResu
 	}
 
 	const isValid = validate(value);
-	if (!isValid) {
-		return { type: 'number', isValid: false, formattedValue: value };
-	}
-
 	return {
-		type: 'number',
-		isValid: true,
-		formattedValue: format(value)
+		type: isValid ? 'number' : null,
+		isValid,
+		formattedValue: isValid ? format(value) : value
 	};
 }

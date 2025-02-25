@@ -2,204 +2,135 @@
 	import * as dateType from '$lib/utils/dataTypes/dateType';
 	import * as numberType from '$lib/utils/dataTypes/numberType';
 	import * as gpsType from '$lib/utils/dataTypes/gpsType';
+	import { nonBlankValidSampleCount } from '$lib/utils/dataTypes/validationSampleCount';
 	import CSVImporter from './CSVImporter.svelte';
 	import DataPreviewTable from './DataPreviewTable.svelte';
 	import type { CsvPreviewEvent } from '$lib/types/transformTypes';
 
-	// All the states, in order, raw, columnTypes State
-	let originalData = $state<Record<string, string>[]>([]); // original data for undo
-	let data = $state<Record<string, string>[]>([]); // Moving data state that gets modified.
-	let columnTypes = $state<Record<string, string>>({}); // mapping headers to types
-	let toggledColumns = $state<Record<string, boolean>>({}); // tracks toggled off
-	let invalidCells = $state<Record<string, Set<number>>>({}); // tracks invalid cells
-	let transformedData = $state<Record<string, string>[]>([]); // transformed data for display
-	let canTransform = $state(false); // tracks if data is ready for transformation
+	// States
+	let originalData = $state<Record<string, string>[]>([]);
+	let data = $state<Record<string, string>[]>([]);
+	let columnTypes = $state<Record<string, string>>({});
+	let toggledColumns = $state<Record<string, boolean>>({});
+	let invalidCells = $state<Record<string, Set<number>>>({});
+	let transformedData = $state<Record<string, string>[]>([]);
+	let canTransform = $state(false);
 
 	// Update canTransform whenever data or invalidCells changes
 	$effect(() => {
 		canTransform = data.length > 0 && Object.keys(invalidCells).length === 0;
 	});
 
-	// Available types and their validation/formatting functions
-	const types = ['string', 'number', 'date', 'gps', 'latitude', 'longitude', 'delete'] as const;
-	type ValidType = (typeof types)[number];
+	// Type detection pipeline in priority order
+	const typeDetectors = [
+		{ detect: gpsType.detectType, handler: gpsType },
+		{ detect: dateType.detectType, handler: dateType },
+		{ detect: numberType.detectType, handler: numberType }
+	];
 
 	function csvDataLoad(event: CsvPreviewEvent<'csvLoaded'>) {
 		originalData = event.detail.data.map((row) => ({ ...row }));
 		data = originalData;
 	}
 
-	// Let each type handler validate and format its own data
-	function validateAndFormatData(
-		header: string,
-		value: string
-	): {
-		type: ValidType;
-		isValid: boolean;
-		formattedValue: string;
-	} {
-		// Try GPS types first
-		const gpsResult = gpsType.validateAndFormat(header, value);
-		if (gpsResult.type) {
-			return gpsResult;
-		}
-
-		// Try date
-		const dateResult = dateType.validateAndFormat(header, value);
-		if (dateResult.type) {
-			return dateResult;
-		}
-
-		// Try number
-		const numberResult = numberType.validateAndFormat(header, value);
-		if (numberResult.type) {
-			return numberResult;
-		}
-
-		// Default to string
-		return {
-			type: 'string',
-			isValid: true,
-			formattedValue: value
-		};
-	}
-
-	// Column validation
-	function validateColumns() {
-		const newInvalidCells: Record<string, Set<number>> = {};
-
-		for (const [header, type] of Object.entries(columnTypes)) {
-			if (type === 'delete' || toggledColumns[header]) continue;
-
-			const invalidSet = new Set<number>();
-			data.forEach((row, index) => {
-				const value = row[header]?.trim();
-				if (!value) return;
-
-				const result = validateAndFormatData(header, value);
-				if (!result.isValid) {
-					invalidSet.add(index);
-				}
-			});
-
-			if (invalidSet.size > 0) {
-				newInvalidCells[header] = invalidSet;
-			}
-		}
-
-		invalidCells = newInvalidCells;
-	}
-
-	// Handle type changes
-	function handleTypeChange(event: CsvPreviewEvent<'columnTypeChange'>) {
-		const { columnHeader, type } = event.detail;
-		columnTypes = { ...columnTypes, [columnHeader]: type };
-		validateColumns();
-		transformedData = formatDataForDisplay();
-	}
-
-	function handleColumnToggle(event: CsvPreviewEvent<'columnToggle'>) {
-		const { columnHeader, isActive } = event.detail;
-		toggledColumns = { ...toggledColumns, [columnHeader]: !isActive };
-	}
-
 	// Initialize types and validation on data change
 	$effect(() => {
 		if (!data.length) return;
 
-		// Detect types for new columns
 		const headers = Object.keys(data[0]);
 		headers.forEach((header) => {
 			if (columnTypes[header]) return; // Skip if type already set
 
-			// Get first 5 non-empty values for this column
+			// Get samples for type detection
 			const samples = data
 				.map((row) => row[header]?.trim())
-				.filter((value) => value) // Remove empty/null values
-				.slice(0, 5);
+				.filter((value) => value)
+				.slice(0, nonBlankValidSampleCount);
 
-			// First check for latitude/longitude in header
-			const headerLower = header.toLowerCase();
-			const latPattern = /\b(lat|latitude)\b/;
-			const lonPattern = /\b(lon|long|longitude)\b/;
+			// Run through type detection pipeline
+			let detectedType: string | null = null;
+			for (const { detect } of typeDetectors) {
+				detectedType = detect(header, samples);
+				if (detectedType) break;
+			}
 
-			if (
-				latPattern.test(headerLower) &&
-				samples.every((value) => gpsType.isValidLatitude(value))
-			) {
-				columnTypes[header] = 'latitude';
-			} else if (
-				lonPattern.test(headerLower) &&
-				samples.every((value) => gpsType.isValidLongitude(value))
-			) {
-				columnTypes[header] = 'longitude';
-			} else if (gpsType.detect(samples)) {
-				columnTypes[header] = 'gps';
-			} else if (dateType.detect(samples)) {
-				columnTypes[header] = 'date';
-			} else if (numberType.detect(samples)) {
-				columnTypes[header] = 'number';
-			} else {
-				columnTypes[header] = 'string';
+			// Default to string if no type detected
+			columnTypes[header] = detectedType || 'string';
+		});
+
+		validateAndTransformData();
+	});
+
+	// Single-pass validation and transformation
+	function validateAndTransformData() {
+		const newInvalidCells: Record<string, Set<number>> = {};
+		const newTransformedData: Record<string, string>[] = [];
+
+		// Process each row
+		data.forEach((row, rowIndex) => {
+			const newRow: Record<string, string> = {};
+
+			// Process each column
+			for (const [header, type] of Object.entries(columnTypes)) {
+				if (type === 'delete' || toggledColumns[header]) continue;
+
+				const value = row[header]?.trim();
+				if (!value) continue;
+
+				// Find the appropriate handler for this type
+				const handler = typeDetectors.find(
+					(d) => d.handler.validateAndFormat(header, value).type === type
+				)?.handler;
+
+				if (handler) {
+					const result = handler.validateAndFormat(header, value);
+					if (!result.isValid) {
+						if (!newInvalidCells[header]) newInvalidCells[header] = new Set();
+						newInvalidCells[header].add(rowIndex);
+					} else {
+						newRow[header] = result.formattedValue;
+					}
+				} else {
+					// String type or unknown - pass through
+					newRow[header] = value;
+				}
+			}
+
+			if (Object.keys(newRow).length > 0) {
+				newTransformedData.push(newRow);
 			}
 		});
 
-		validateColumns();
-		transformedData = formatDataForDisplay();
-	});
+		invalidCells = newInvalidCells;
+		transformedData = newTransformedData;
+	}
 
-	function changeDataType() {
-		// Filter out deleted and toggled-off columns
-		const headers = Object.keys(data[0]);
-		const validHeaders = headers.filter(
-			(header) => columnTypes[header] !== 'delete' && !toggledColumns[header]
-		);
+	// Handle manual type selection change
+	function handleTypeChange(event: CsvPreviewEvent<'columnTypeChange'>) {
+		const { columnHeader, type } = event.detail;
+		columnTypes = { ...columnTypes, [columnHeader]: type };
+		validateAndTransformData();
+	}
 
-		// Create transformed dataset
-		const transformedDataset = data
-			.map((row, index) => {
-				const newRow: Record<string, any> = {};
+	// Handle column toggle
+	function handleColumnToggle(event: CsvPreviewEvent<'columnToggle'>) {
+		const { columnHeader, isActive } = event.detail;
+		toggledColumns = { ...toggledColumns, [columnHeader]: !isActive };
+		validateAndTransformData();
+	}
 
-				for (const header of validHeaders) {
-					// Skip if cell is invalid
-					if (invalidCells[header]?.has(index)) continue;
-
-					const value = row[header]?.trim();
-					if (!value) continue;
-
-					const result = validateAndFormatData(header, value);
-					newRow[header] = result.formattedValue;
-				}
-				return newRow;
-			})
-			.filter((row) => Object.keys(row).length > 0);
-
+	// Get final transformed data for export
+	function getTransformedData() {
 		return {
-			data: transformedDataset,
-			headers: validHeaders,
+			data: transformedData,
+			headers: Object.keys(data[0]).filter(
+				(header) => columnTypes[header] !== 'delete' && !toggledColumns[header]
+			),
 			types: columnTypes
 		};
 	}
 
-	//  📺️📺️📺️📺️  display DataPreviewTable 📺️📺️📺️
-	function formatDataForDisplay(): Record<string, string>[] {
-		return data.map((row) => {
-			const formattedRow: Record<string, string> = {};
-			for (const [key, value] of Object.entries(row)) {
-				if (toggledColumns[key] || !value?.trim()) {
-					formattedRow[key] = value;
-					continue;
-				}
-
-				// Get formatted value from type handlers
-				const result = validateAndFormatData(key, value);
-				formattedRow[key] = result.formattedValue;
-			}
-			return formattedRow;
-		});
-	}
-
-	// ➡️️➡️️➡️️➡️️➡️️ final pushToTransplant - push to TRANSPLANT app ➡️️➡️️➡️️
+	// ➡️️➡️️➡️️➡️️ final pushToTransplant - push to TRANSPLANT app ➡️️➡️️➡️️
 	async function pushToTransplant() {
 		if (!canTransform) {
 			// // console.error('Data not ready for transformation');
@@ -207,7 +138,7 @@
 		}
 
 		try {
-			const transformed = changeDataType();
+			const transformed = getTransformedData();
 			sessionStorage.setItem('transformedData', JSON.stringify(transformed));
 			await import('$app/navigation').then(({ goto }) => goto('/transplant'));
 		} catch (error) {
@@ -224,7 +155,6 @@
 			{invalidCells}
 			{columnTypes}
 			{toggledColumns}
-			{transformedData}
 			on:columnTypeChange={handleTypeChange}
 			on:columnToggle={handleColumnToggle}
 		/>
