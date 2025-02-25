@@ -214,31 +214,6 @@ function parseDMS(value: string): number | null {
 	return null;
 }
 
-// Parse any coordinate format
-function parseCoordinate(value: string): number | null {
-	if (!value?.trim()) return null;
-
-	// Try DMS format first
-	if (isDMSFormat(value)) {
-		const dmsValue = convertDMSToDecimal(value);
-		if (dmsValue !== null) {
-			return dmsValue;
-		}
-	}
-
-	// Fall back to decimal degrees
-	const ddValue = parseFloat(value);
-	if (!isNaN(ddValue)) {
-		const direction = value
-			.trim()
-			.match(/[NSEWnsew]$/)?.[0]
-			?.toUpperCase();
-		return direction === 'S' || direction === 'W' ? -ddValue : ddValue;
-	}
-
-	return null;
-}
-
 // Validate and format a value based on its detected type
 export function validateAndFormat(
 	header: string,

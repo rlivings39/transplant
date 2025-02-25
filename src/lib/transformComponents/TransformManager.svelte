@@ -142,7 +142,7 @@
 			sessionStorage.setItem('transformedData', JSON.stringify(transformed));
 			await import('$app/navigation').then(({ goto }) => goto('/transplant'));
 		} catch (error) {
-			// // console.error('Error in transform:', error);
+			// console.error('Error in transform:', error);
 		}
 	}
 </script>
