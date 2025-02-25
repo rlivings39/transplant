@@ -4,7 +4,7 @@
 	import * as gpsType from '$lib/utils/dataTypes/gpsType';
 	import CSVImporter from './CSVImporter.svelte';
 	import DataPreviewTable from './DataPreviewTable.svelte';
-	import type { CsvPreviewEvent } from '$lib/types/globalTypes';
+	import type { CsvPreviewEvent } from '$lib/types/transformTypes';
 
 	// All the states, in order, raw, columnTypes State
 	let originalData = $state<Record<string, string>[]>([]); // original data for undo

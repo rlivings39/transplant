@@ -1,5 +1,5 @@
 <script lang="ts">
-	import TransformManager from '$lib/components2/TransformManager.svelte';
+	import TransformManager from '$lib/transformComponents/TransformManager.svelte';
 	import { goto } from '$app/navigation';
 
 	function pushToTransplant() {

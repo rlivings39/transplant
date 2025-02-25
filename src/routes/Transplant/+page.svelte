@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
-	import TransplantDataTable from '$lib/components2/transplantDataTable.svelte';
+	import TransplantDataTable from '$lib/transplantComponents/transplantDataTable.svelte';
 
 	let transformedData = $state([]);
 	let headers = $state([]);
