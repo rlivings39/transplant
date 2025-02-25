@@ -49,12 +49,10 @@
 								<select
 									value={columnTypes[columnHeader]}
 									onchange={(e) => {
-										const select = e.currentTarget;
-										const event = new window.CustomEvent('columnTypeChange', {
-											detail: { columnHeader, type: select.value },
-											bubbles: true
+										dispatch('columnTypeChange', {
+											columnHeader,
+											type: e.currentTarget.value
 										});
-										select.dispatchEvent(event);
 									}}
 								>
 									<option value="string">Text</option>
