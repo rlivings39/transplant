@@ -14,9 +14,10 @@ const DATE_FORMATS = [
 ];
 
 function isValidDate(dateStr: string): boolean {
-	// Don't accept plain numbers as dates
+	// Check if it's a year number between 1850-2035
 	if (/^\d+$/.test(dateStr)) {
-		return false;
+		const year = parseInt(dateStr);
+		return year >= 1850 && year <= 2035;
 	}
 
 	// Try parsing as ISO date first
@@ -43,6 +44,15 @@ function isValidDate(dateStr: string): boolean {
 }
 
 function formatDate(dateStr: string): string {
+	// If it's a year number, format as January 1st of that year
+	if (/^\d+$/.test(dateStr)) {
+		const year = parseInt(dateStr);
+		if (year >= 1850 && year <= 2035) {
+			return `${year}-01-01T00:00:00.000Z`;
+		}
+	}
+
+	// Otherwise format as ISO date
 	const date = new Date(dateStr);
 	if (!isNaN(date.getTime())) {
 		return date.toISOString();
