@@ -1,5 +1,6 @@
 <script lang="ts">
-	import type { DragEvent } from 'svelte/elements';
+	/// <reference lib="dom" />
+	// import type { DragEvent } from 'svelte/elements';
 	import Papa from 'papaparse';
 	import { goto } from '$app/navigation';
 	import { createEventDispatcher } from 'svelte';

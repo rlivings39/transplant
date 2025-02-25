@@ -24,14 +24,25 @@ export default [
 				window: true,
 				document: true,
 				Event: true,
-				HTMLInputElement: true
+				DragEvent: true,
+				HTMLElement: true,
+				HTMLInputElement: true,
+				File: true,
+				sessionStorage: true
 			}
 		},
 
 		rules: {
 			// TypeScript rules
 			'@typescript-eslint/no-explicit-any': 'warn',
-			'@typescript-eslint/no-unused-vars': ['warn', { argsIgnorePattern: '^_' }],
+			'@typescript-eslint/no-unused-vars': [
+				'warn',
+				{
+					argsIgnorePattern: '^_',
+					varsIgnorePattern: '^\\$'
+				}
+			],
+			'no-unused-vars': 'off', // Turn off base rule
 
 			// Svelte rules
 			'svelte/valid-compile': 'error',
@@ -44,7 +55,6 @@ export default [
 		}
 	},
 	{
-		// Special config for Svelte files
 		files: ['**/*.svelte'],
 		languageOptions: {
 			parser: svelteParser,

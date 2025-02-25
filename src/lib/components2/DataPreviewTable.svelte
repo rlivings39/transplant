@@ -2,21 +2,26 @@
 	/* eslint-env browser */
 	/// <reference types="svelte" />
 	/// <reference lib="dom" />
-
 	import ToggleOff from './toggleOff.svelte';
 	import GpsColumn from './GpsColumn.svelte';
-
-	const { rows, invalidCells, columnTypes } = $props<{
-		rows: Record<string, string>[];
-		invalidCells: Record<string, Set<number>>;
-		columnTypes: Record<string, string>;
+	import { createEventDispatcher } from 'svelte';
+	const dispatch = createEventDispatcher<{
+		columnTypeChange: { columnHeader: string; type: string };
+		columnToggle: { columnHeader: string; isActive: boolean };
 	}>();
 
-	let toggledColumns = $state<Record<string, boolean>>({});
+	const { rows, columnTypes, invalidCells, toggledColumns, transformedData } = $props<{
+		rows: Record<string, string>[];
+		columnTypes: Record<string, string>;
+		invalidCells: Record<string, Set<number>>;
+		toggledColumns: Record<string, boolean>;
+		transformedData: Record<string, string>[];
+	}>();
+
+	// let toggledColumns = $state<Record<string, boolean>>({});
 
 	function handleColumnToggle(columnHeader: string, isActive: boolean) {
-		toggledColumns = { ...toggledColumns, [columnHeader]: !isActive };
-		console.log('Column toggled:', columnHeader, isActive);
+		dispatch('columnToggle', { columnHeader, isActive });
 	}
 
 	let columnHeaders = $derived(rows.length > 0 ? Object.keys(rows[0]) : []);

@@ -13,6 +13,12 @@
 	let toggledColumns = $state<Record<string, boolean>>({}); // tracks toggled off
 	let invalidCells = $state<Record<string, Set<number>>>({}); // tracks invalid cells
 	let transformedData = $state<Record<string, string>[]>([]); // transformed data for display
+	let canTransform = $state(false); // tracks if data is ready for transformation
+
+	// Update canTransform whenever data or invalidCells changes
+	$effect(() => {
+		canTransform = data.length > 0 && Object.keys(invalidCells).length === 0;
+	});
 
 	// Available types and their validation/formatting functions
 	const types = ['string', 'number', 'date', 'gps', 'latitude', 'longitude', 'delete'] as const;
@@ -85,17 +91,16 @@
 	}
 
 	// Handle type changes
-	function handleTypeChange(event: CsvPreviewEvent<'typeChange'>) {
+	function handleTypeChange(event: CsvPreviewEvent<'columnTypeChange'>) {
 		const { columnHeader, type } = event.detail;
 		columnTypes = { ...columnTypes, [columnHeader]: type };
 		validateColumns();
 		transformedData = formatDataForDisplay();
 	}
 
-	function handleColumnToggle(header: string, isActive: boolean) {
-		toggledColumns = { ...toggledColumns, [header]: !isActive };
-		validateColumns();
-		transformedData = formatDataForDisplay();
+	function handleColumnToggle(event: CsvPreviewEvent<'columnToggle'>) {
+		const { columnHeader, isActive } = event.detail;
+		toggledColumns = { ...toggledColumns, [columnHeader]: !isActive };
 	}
 
 	// Initialize types and validation on data change
@@ -182,7 +187,7 @@
 
 	// ➡️️➡️️➡️️➡️️➡️️ final pushToTransplant - push to TRANSPLANT app ➡️️➡️️➡️️
 	async function pushToTransplant() {
-		if (!canTransform()) {
+		if (!canTransform) {
 			console.error('Data not ready for transformation');
 			return;
 		}
@@ -198,14 +203,15 @@
 </script>
 
 <div class="transform-manager">
-	<!-- {@const debug = console.log('Rendering TransformManager, data length:', data.length)} -->
 	<CSVImporter on:dataLoaded={csvDataLoad} />
 	{#if data.length}
 		<DataPreviewTable
 			rows={transformedData}
 			{invalidCells}
 			{columnTypes}
-			on:typeChange={handleTypeChange}
+			{toggledColumns}
+			{transformedData}
+			on:columnTypeChange={handleTypeChange}
 			on:columnToggle={handleColumnToggle}
 		/>
 	{/if}
