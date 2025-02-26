@@ -10,29 +10,38 @@
 		rowIndex: number;
 	}>();
 
-	function isValidCell(header: string): boolean {
-		const isInvalid = invalidCells?.[header]?.has(rowIndex) ?? false;
-		const isToggled = toggledColumns[header];
-		return !isInvalid && !isToggled;
-	}
-
 	function getGpsValue(): string {
-		try {
-			const activeColumns = columnHeaders.filter(
-				(header) => isValidCell(header) && row[header]?.trim()
-			);
+		// Get all GPS-type columns
+		const gpsColumns = columnHeaders.filter(header => columnTypes[header] === 'gps');
+		const allGpsToggledOff = gpsColumns.length > 0 && 
+			gpsColumns.every(header => toggledColumns[header]);
 
-			for (const header of activeColumns) {
-				if (columnTypes[header] === 'gps' && parseGpsCoordinate(row[header])) {
-					return row[header].trim();
-				}
+		// Get active columns considering override condition
+		const activeColumns = columnHeaders.filter(header => {
+			const isInvalid = invalidCells?.[header]?.has(rowIndex) ?? false;
+			const isToggled = toggledColumns[header];
+			const isGpsType = columnTypes[header] === 'gps';
+			
+			// Override toggle if all GPS columns are off and this is a GPS column
+			const overrideToggle = allGpsToggledOff && isGpsType;
+			
+			return !isInvalid && (overrideToggle || !isToggled) && row[header]?.trim();
+		});
+
+		// First try GPS-type columns
+		for (const header of activeColumns) {
+			if (columnTypes[header] === 'gps' && parseGpsCoordinate(row[header])) {
+				return row[header].trim();
 			}
+		}
 
+		// Then try lat/lon pairs (only if not all GPS columns are toggled off)
+		if (!allGpsToggledOff) {
 			const latColumns = activeColumns.filter(
-				(header) => detectCoordinateType(header, row[header]) === 'latitude'
+				header => detectCoordinateType(header, row[header]) === 'latitude'
 			);
 			const lonColumns = activeColumns.filter(
-				(header) => detectCoordinateType(header, row[header]) === 'longitude'
+				header => detectCoordinateType(header, row[header]) === 'longitude'
 			);
 
 			for (const latCol of latColumns) {
@@ -44,9 +53,8 @@
 					}
 				}
 			}
-		} catch (error) {
-			console.error('GPS validation error:', error);
 		}
+
 		return '';
 	}
 
