@@ -61,7 +61,7 @@
 									<option value="gps">GPS</option>
 									<option value="latitude">Latitude</option>
 									<option value="longitude">Longitude</option>
-									<option value="delete">Delete</option>
+									<!-- <option value="delete">Delete</option> -->
 								</select>
 							</div>
 							<div class="header-name">

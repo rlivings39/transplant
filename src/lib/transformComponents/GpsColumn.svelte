@@ -10,56 +10,49 @@
 		rowIndex: number;
 	}>();
 
-	function isValidCell(header: string, ignoreToggle = false): boolean {
+	function isValidCell(header: string): boolean {
 		const isInvalid = invalidCells?.[header]?.has(rowIndex) ?? false;
 		const isToggled = toggledColumns[header];
-		return ignoreToggle ? !isInvalid : !isInvalid && !isToggled;
+		return !isInvalid && !isToggled;
 	}
 
-	function tryGetGpsValue(ignoreToggle = false): string {
-		// Get valid columns (optionally ignoring toggle state)
-		const activeColumns = columnHeaders.filter(
-			(header: string) => isValidCell(header, ignoreToggle) && row[header]?.trim()
-		);
-		// First try columns already validated as GPS type
-		for (const header of activeColumns) {
-			if (columnTypes[header] === 'gps' && parseGpsCoordinate(row[header])) {
-				return row[header].trim();
+	function getGpsValue(): string {
+		try {
+			const activeColumns = columnHeaders.filter(
+				(header) => isValidCell(header) && row[header]?.trim()
+			);
+
+			for (const header of activeColumns) {
+				if (columnTypes[header] === 'gps' && parseGpsCoordinate(row[header])) {
+					return row[header].trim();
+				}
 			}
-		}
 
-		// Then try latitude/longitude pairs
-		const latColumns = activeColumns.filter(
-			(header: string) => detectCoordinateType(header, row[header]) === 'latitude'
-		);
-		const lonColumns = activeColumns.filter(
-			(header: string) => detectCoordinateType(header, row[header]) === 'longitude'
-		);
+			const latColumns = activeColumns.filter(
+				(header) => detectCoordinateType(header, row[header]) === 'latitude'
+			);
+			const lonColumns = activeColumns.filter(
+				(header) => detectCoordinateType(header, row[header]) === 'longitude'
+			);
 
-		// Return first valid lat/lon pair
-		for (const latCol of latColumns) {
-			const lat = row[latCol].trim();
-			for (const lonCol of lonColumns) {
-				const lon = row[lonCol].trim();
-				return `${lat}, ${lon}`;
+			for (const latCol of latColumns) {
+				const lat = row[latCol].trim();
+				for (const lonCol of lonColumns) {
+					const lon = row[lonCol].trim();
+					if (parseGpsCoordinate(`${lat}, ${lon}`)) {
+						return `${lat}, ${lon}`;
+					}
+				}
 			}
+		} catch (error) {
+			console.error('GPS validation error:', error);
 		}
-
 		return '';
 	}
 
-	function getGpsDisplayValue(): string {
-		// First try with toggle rules enforced
-		const value = tryGetGpsValue(false);
-		if (value) return value;
-
-		// If nothing found, try again ignoring toggle state
-		return tryGetGpsValue(true);
-	}
-
-	let displayValue = $derived(getGpsDisplayValue);
+	let displayValue = $derived(getGpsValue());
 </script>
 
-<td class="gps-column" class:invalid={!displayValue}>
+<td class="gps-column">
 	{displayValue}
 </td>

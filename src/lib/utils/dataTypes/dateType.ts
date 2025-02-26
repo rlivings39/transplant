@@ -6,15 +6,27 @@ export interface ValidationResult {
 	formattedValue: string;
 }
 
-// Common date formats
+// Common date formats - ordered from most to least specific
 const DATE_FORMATS = [
-	/^\d{4}-\d{2}-\d{2}$/, // YYYY-MM-DD
-	/^\d{1,2}[-/]\d{1,2}[-/]\d{4}$/, // DD-MM-YYYY or MM-DD-YYYY
-	/^\d{1,2}\s+(?:Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)[a-z]*\s+\d{4}$/i // DD MMM YYYY
+	/^\d{4}-\d{2}-\d{2}$/, // YYYY-MM-DD (ISO)
+	/^\d{4}\/\d{2}\/\d{2}$/, // YYYY/MM/DD
+	/^\d{4}\.\d{2}\.\d{2}$/, // YYYY.MM.DD
+	/^(January|February|March|April|May|June|July|August|September|October|November|December)\s+\d{4}$/i, // Month YYYY
+	/^\d{1,2}\s+(January|February|March|April|May|June|July|August|September|October|November|December)\s+\d{4}$/i, // DD Month YYYY
+	/^(January|February|March|April|May|June|July|August|September|October|November|December)\s+\d{1,2},\s+\d{4}$/i, // Month DD, YYYY
+	/^\d{1,2}-(?:Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)-\d{4}$/i, // DD-MMM-YYYY
+	/^\d{4}-(?:Q[1-4])$/, // YYYY-Q[1-4] (Quarter)
+	/^\d{4}-W(?:0[1-9]|[1-4][0-9]|5[0-3])$/ // YYYY-W[01-53] (ISO week)
 ];
 
 function isValidDate(dateStr: string): boolean {
 	// Check if it's a year number between 1850-2035
+	// First reject if it contains a decimal point
+	if (dateStr.includes('.')) {
+		return false;
+	}
+
+	// Check for valid integer year
 	if (/^\d+$/.test(dateStr)) {
 		const year = parseInt(dateStr);
 		return year >= 1850 && year <= 2035;

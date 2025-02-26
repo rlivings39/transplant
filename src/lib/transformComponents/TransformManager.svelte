@@ -29,6 +29,15 @@
 	];
 
 	function csvDataLoad(event: CsvPreviewEvent<'csvLoaded'>) {
+		// Reset all state
+		columnTypes = {};
+		toggledColumns = {};
+		invalidCells = {};
+		transformedData = [];
+		data = [];
+		originalData = [];
+
+		// Load the new data
 		originalData = event.detail.data.map((row) => ({ ...row }));
 		data = originalData;
 	}
