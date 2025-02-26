@@ -11,20 +11,18 @@
 	}>();
 
 	function getGpsValue(): string {
-		// Get all GPS-type columns
-		const gpsColumns = columnHeaders.filter(header => columnTypes[header] === 'gps');
-		const allGpsToggledOff = gpsColumns.length > 0 && 
-			gpsColumns.every(header => toggledColumns[header]);
+		// Get all GPS-type columns with explicit string type
+		const gpsColumns = columnHeaders.filter((header: string) => columnTypes[header] === 'gps');
+		const allGpsToggledOff =
+			gpsColumns.length > 0 && gpsColumns.every((header: string) => toggledColumns[header]);
 
-		// Get active columns considering override condition
-		const activeColumns = columnHeaders.filter(header => {
+		// Explicitly type the filter callback parameter
+		const activeColumns = columnHeaders.filter((header: string) => {
 			const isInvalid = invalidCells?.[header]?.has(rowIndex) ?? false;
 			const isToggled = toggledColumns[header];
 			const isGpsType = columnTypes[header] === 'gps';
-			
-			// Override toggle if all GPS columns are off and this is a GPS column
+
 			const overrideToggle = allGpsToggledOff && isGpsType;
-			
 			return !isInvalid && (overrideToggle || !isToggled) && row[header]?.trim();
 		});
 
@@ -37,13 +35,15 @@
 
 		// Then try lat/lon pairs (only if not all GPS columns are toggled off)
 		if (!allGpsToggledOff) {
+			// Explicitly type filter callbacks
 			const latColumns = activeColumns.filter(
-				header => detectCoordinateType(header, row[header]) === 'latitude'
+				(header: string) => detectCoordinateType(header, row[header]) === 'latitude'
 			);
 			const lonColumns = activeColumns.filter(
-				header => detectCoordinateType(header, row[header]) === 'longitude'
+				(header: string) => detectCoordinateType(header, row[header]) === 'longitude'
 			);
 
+			// Type the loop variables
 			for (const latCol of latColumns) {
 				const lat = row[latCol].trim();
 				for (const lonCol of lonColumns) {
@@ -54,7 +54,6 @@
 				}
 			}
 		}
-
 		return '';
 	}
 
