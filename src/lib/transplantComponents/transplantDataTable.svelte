@@ -1,35 +1,33 @@
 <script lang="ts">
 	const { data, headers } = $props<{
-		data: Record<string, string>[];
+		data: Record<string, string | number | null>[];
 		headers: string[];
 	}>();
 </script>
 
-<div>
-	<div class="table-container">
-		<table>
-			<thead>
-				<tr class="header-text">
+<div class="table-container">
+	<table>
+		<thead>
+			<tr>
+				{#each headers as header}
+					<th style="background: #333333 !important; color: white !important;">
+						<div class="header-name">{header}</div>
+					</th>
+				{/each}
+			</tr>
+		</thead>
+		<tbody>
+			{#each data as row}
+				<tr>
 					{#each headers as header}
-						<th>
-							<div class="header-name">{header}</div>
-						</th>
+						<td>{row[header] ?? ''}</td>
 					{/each}
 				</tr>
-			</thead>
-			<tbody>
-				{#each data as row}
-					<tr>
-						{#each headers as header}
-							<td>{row[header]}</td>
-						{/each}
-					</tr>
-				{/each}
-			</tbody>
-		</table>
-	</div>
+			{/each}
+		</tbody>
+	</table>
 </div>
-<!-- 
+
 <style>
 	.table-container {
 		overflow-x: auto;
@@ -37,29 +35,32 @@
 	}
 
 	table {
-		width: 100%;
 		border-collapse: collapse;
 		margin-bottom: 1rem;
+		table-layout: fixed;
 	}
 
-	.header-text {
-		background-color: #333333;
-		color: white;
+	th,
+	td {
+		width: 12.5rem;
+		padding: 0.5rem;
+		text-align: left;
+		border: 1px solid #ddd;
+		white-space: nowrap;
+		overflow: hidden;
+		text-overflow: ellipsis;
 	}
 
 	.header-name {
-		padding: 0.5rem;
-		border: 1px solid var(--border-color);
-		text-align: left;
+		padding: 0.25rem;
+		font-weight: bold;
 	}
 
 	tr:nth-child(even) {
-		background-color: var(--surface-color);
+		background-color: #f9f9f9;
 	}
 
-	tr td {
-		padding: 0.5rem;
-		border: 1px solid var(--border-color);
-		text-align: left;
+	tr:hover {
+		background-color: #f5f5f5;
 	}
-</style> -->
+</style>
