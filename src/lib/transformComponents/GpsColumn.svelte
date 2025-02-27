@@ -10,56 +10,50 @@
 		rowIndex: number;
 	}>();
 
+	function isValidCell(header: string): boolean {
+		const isInvalid = invalidCells?.[header]?.has(rowIndex) ?? false;
+		const isToggled = toggledColumns[header];
+		return !isInvalid && !isToggled;
+	}
+
 	function getGpsValue(): string {
-		// Get all GPS-type columns with explicit string type
-		const gpsColumns = columnHeaders.filter((header: string) => columnTypes[header] === 'gps');
-		const allGpsToggledOff =
-			gpsColumns.length > 0 && gpsColumns.every((header: string) => toggledColumns[header]);
+		// Only consider non-greyed out columns (valid and not toggled off)
+		const activeColumns = columnHeaders.filter(
+			(header: string) => isValidCell(header) && row[header]?.trim()
+		);
 
-		// Explicitly type the filter callback parameter
-		const activeColumns = columnHeaders.filter((header: string) => {
-			const isInvalid = invalidCells?.[header]?.has(rowIndex) ?? false;
-			const isToggled = toggledColumns[header];
-			const isGpsType = columnTypes[header] === 'gps';
-
-			const overrideToggle = allGpsToggledOff && isGpsType;
-			return !isInvalid && (overrideToggle || !isToggled) && row[header]?.trim();
-		});
-
-		// First try GPS-type columns
+		// First try columns already validated as GPS type
 		for (const header of activeColumns) {
 			if (columnTypes[header] === 'gps' && parseGpsCoordinate(row[header])) {
 				return row[header].trim();
 			}
 		}
 
-		// Then try lat/lon pairs (only if not all GPS columns are toggled off)
-		if (!allGpsToggledOff) {
-			// Explicitly type filter callbacks
-			const latColumns = activeColumns.filter(
-				(header: string) => detectCoordinateType(header, row[header]) === 'latitude'
-			);
-			const lonColumns = activeColumns.filter(
-				(header: string) => detectCoordinateType(header, row[header]) === 'longitude'
-			);
+		// Then try latitude/longitude pairs
+		const latColumns = activeColumns.filter(
+			(header: string) => detectCoordinateType(header, row[header]) === 'latitude'
+		);
+		const lonColumns = activeColumns.filter(
+			(header: string) => detectCoordinateType(header, row[header]) === 'longitude'
+		);
 
-			// Type the loop variables
-			for (const latCol of latColumns) {
-				const lat = row[latCol].trim();
-				for (const lonCol of lonColumns) {
-					const lon = row[lonCol].trim();
-					if (parseGpsCoordinate(`${lat}, ${lon}`)) {
-						return `${lat}, ${lon}`;
-					}
+		// Return first valid lat/lon pair
+		for (const latCol of latColumns) {
+			const lat = row[latCol].trim();
+			for (const lonCol of lonColumns) {
+				const lon = row[lonCol].trim();
+				if (parseGpsCoordinate(`${lat}, ${lon}`)) {
+					return `${lat}, ${lon}`;
 				}
 			}
 		}
+
 		return '';
 	}
 
-	let displayValue = $derived(getGpsValue());
+	let displayValue = $derived(getGpsValue);
 </script>
 
-<td class="gps-column">
+<td class="gps-column" class:invalid={!displayValue}>
 	{displayValue}
 </td>
