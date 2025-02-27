@@ -16,26 +16,45 @@ export interface ValidationResult {
 export type GpsTypes = 'gps' | 'latitude' | 'longitude';
 
 // GPS Detection & Validation
+function looksLikeFormattedNumber(value: string): boolean {
+	// Check for pattern like 1,234 or 1,234.56 but not like 45,123.456 (too many decimals for typical thousands separator)
+	const match = value.trim().match(/^-?\d{1,3}(,\d{3})*(\.\d+)?$/);
+	if (!match) return false;
+
+	// If it has decimals, check if there are more than 2 decimal places (typical for currency/quantities)
+	const decimals = match[2];
+	if (decimals && decimals.length > 3) return false;
+
+	return true;
+}
+
 export function parseGpsCoordinate(value: string): GpsCoordinate | null {
 	if (!value?.trim()) return null;
+
+	// If the entire value is a single formatted number, it's not a GPS coordinate
+	if (looksLikeFormattedNumber(value)) return null;
 
 	// Try to split on comma first
 	const parts = value.split(',').map((p) => p.trim());
 
 	if (parts.length === 2) {
-		// Try to parse each part as a number first
-		let lat = Number(parts[0]);
-		let lon = Number(parts[1]);
-
-		// If either part isn't a valid number, it might be DMS
-		if (isNaN(lat) || isNaN(lon)) {
-			const converted = convertCoordinatePair(value);
-			if (converted) {
-				const [latStr, lonStr] = converted.split(',').map((p) => p.trim());
-				lat = Number(latStr);
-				lon = Number(lonStr);
+		// Try DMS conversion first
+		const converted = convertCoordinatePair(value);
+		if (converted) {
+			const [latStr, lonStr] = converted.split(',').map((p) => p.trim());
+			const lat = Number(latStr);
+			const lon = Number(lonStr);
+			if (!isNaN(lat) && !isNaN(lon) && isValidLatitude(lat) && isValidLongitude(lon)) {
+				return { latitude: lat, longitude: lon };
 			}
 		}
+
+		// If both parts look like formatted numbers, this is probably not a GPS coordinate
+		if (parts.every(looksLikeFormattedNumber)) return null;
+
+		// Try to parse as decimal coordinates
+		let lat = Number(parts[0]);
+		let lon = Number(parts[1]);
 
 		if (!isNaN(lat) && !isNaN(lon) && isValidLatitude(lat) && isValidLongitude(lon)) {
 			return { latitude: lat, longitude: lon };
@@ -155,7 +174,16 @@ export function detectType(header: string, samples: string[]): GpsTypes | null {
 		return 'gps';
 	}
 
-	// Check if it's latitude or longitude
+	// Check if it's latitude or longitude - be more aggressive about detection
+	const headerLower = header.toLowerCase();
+	if (headerLower.includes('lat')) {
+		return 'latitude';
+	}
+	if (headerLower.includes('lon') || headerLower.includes('lng')) {
+		return 'longitude';
+	}
+
+	// If not found by header, try to detect by value patterns
 	const coordinateType = detectCoordinateType(header, samplesToCheck);
 	if (coordinateType) {
 		return coordinateType;

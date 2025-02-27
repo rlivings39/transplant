@@ -6,17 +6,22 @@ export interface ValidationResult {
 	formattedValue: string;
 }
 
+// Helper function to remove commas from number strings
+function removeCommas(value: string): string {
+	return value?.trim() ? value.replace(/,/g, '') : value;
+}
+
 export function validate(value: string): boolean {
 	if (!value?.trim()) return true;
+	const cleanValue = removeCommas(value);
 	const numberRegex = /^-?\d*\.?\d+$/;
-	return numberRegex.test(value.trim());
+	return numberRegex.test(cleanValue.trim());
 }
 
 export function format(value: string): string {
 	if (!value?.trim()) return value;
 
-	// Remove existing commas
-	const cleanValue = value.replace(/,/g, '');
+	const cleanValue = removeCommas(value);
 	const num = Number(cleanValue);
 
 	if (isNaN(num)) return value;
