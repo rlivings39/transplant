@@ -6,6 +6,8 @@
 	import CSVImporter from './CSVImporter.svelte';
 	import DataPreviewTable from './DataPreviewTable.svelte';
 	import type { CsvPreviewEvent } from '$lib/types/transformTypes';
+	import { goto } from '$app/navigation';
+	import { saveTransformedData } from '$lib/stores/transformStore';
 
 	// States
 	let originalData = $state<Record<string, string>[]>([]);
@@ -170,6 +172,56 @@
 		};
 	}
 
+	// SIMPLE function to create a clean copy of the data and save to store
+	function handleTransformClick() {
+		if (!canTransform) {
+			console.warn('Cannot transform - data not ready');
+			return;
+		}
+
+		console.log('Creating clean copy of transformed data');
+
+		// Get only visible columns (not toggled off)
+		const visibleHeaders = Object.keys(data[0]).filter((header) => !toggledColumns[header]);
+		console.log('Visible headers:', visibleHeaders);
+
+		// Create clean data (only visible columns, no invalid cells)
+		const cleanData = data.map((row, rowIndex) => {
+			const cleanRow = {};
+			visibleHeaders.forEach((header) => {
+				// Skip if invalid
+				if (invalidCells[header]?.has(rowIndex)) {
+					console.log(`Skipping invalid cell: ${header} at row ${rowIndex}`);
+					return;
+				}
+
+				// Add to clean row
+				cleanRow[header] = row[header];
+			});
+			return cleanRow;
+		});
+
+		// Create a copy with only the needed information
+		const transformedCopy = {
+			records: cleanData,
+			columnTypes: { ...columnTypes }
+		};
+
+		console.log('Final transformed data object:', transformedCopy);
+
+		// SIMPLEST SOLUTION: Use a global variable to store the data
+		// @ts-ignore - Using global window object
+		window.transplantData = transformedCopy;
+		console.log('Data saved to global window.transplantData');
+
+		// Log to verify
+		console.log('Data verification before navigation:', window.transplantData);
+
+		// Navigate to transplant page
+		console.log('Navigating to transplant page...');
+		goto('/transplant');
+	}
+
 	// ➡️️➡️️➡️️➡️️ final pushToTransplant - push to TRANSPLANT app ➡️️➡️️➡️️
 	async function pushToTransplant() {
 		if (!canTransform) {
@@ -189,6 +241,17 @@
 
 <div class="transform-manager">
 	<CSVImporter on:dataLoaded={csvDataLoad} />
+
+	<!-- Add help text that explains the workflow -->
+	<div class="workflow-guide">
+		<h3>TransPlant Workflow:</h3>
+		<ol>
+			<li>Upload a CSV file using the interface above</li>
+			<li>Review and adjust column types in the data preview</li>
+			<li>Click "Transform" to send validated data to the Transplant page</li>
+		</ol>
+	</div>
+
 	{#if data.length}
 		<DataPreviewTable
 			rows={transformedData}
@@ -198,6 +261,56 @@
 			on:columnTypeChange={handleTypeChange}
 			on:columnToggle={handleColumnToggle}
 		/>
+	{:else}
+		<div class="no-data-message">
+			<p>No data loaded. Please upload a CSV file to begin.</p>
+		</div>
 	{/if}
-	<button onclick={pushToTransplant}>Transform</button>
+
+	<button onclick={handleTransformClick} disabled={!canTransform}>
+		Transform {!canTransform ? '(Upload CSV first)' : ''}
+	</button>
+
+	<!-- Fallback debug button - this will log data to console -->
+	<button
+		onclick={() => {
+			console.log('DEBUG: Dumping current data');
+			console.log('Data:', data);
+			console.log('Column Types:', columnTypes);
+
+			// Create and save data directly
+			const cleanData = data.map((row) => {
+				const newRow = {};
+				Object.keys(row).forEach((key) => {
+					newRow[key] = row[key];
+				});
+				return newRow;
+			});
+
+			// Save to window
+			window.transplantData = {
+				records: cleanData,
+				columnTypes: { ...columnTypes }
+			};
+
+			console.log('Data saved to window.transplantData:', window.transplantData);
+			console.log('Now navigate to /transplant to see data');
+		}}>Debug: Save Data</button
+	>
+
+	<!-- Direct link to transplant -->
+	<a href="/transplant" class="link-button">Go to Transplant Page</a>
 </div>
+
+<style>
+	/* Add this to style the link like a button */
+	.link-button {
+		display: inline-block;
+		padding: 10px 15px;
+		margin: 10px 0;
+		background-color: #4caf50;
+		color: white;
+		text-decoration: none;
+		border-radius: 4px;
+	}
+</style>
