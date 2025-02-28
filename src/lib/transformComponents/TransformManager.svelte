@@ -8,7 +8,6 @@
 	import type { CsvPreviewEvent } from '$lib/types/transformTypes';
 	import { goto } from '$app/navigation';
 	import { transformedDataService } from '$lib/stores/transformStore';
-	
 
 	// States
 	let originalData = $state<Record<string, string>[]>([]);
@@ -224,19 +223,80 @@
 	}
 
 	// ➡️️➡️️➡️️➡️️ final pushToTransplant - push to TRANSPLANT app ➡️️➡️️➡️️
-	async function pushToTransplant() {
+	function pushToTransplant() {
 		if (!canTransform) {
-			// // console.error('Data not ready for transformation');
+			console.warn('Cannot transform - data not ready');
 			return;
 		}
 
 		try {
-			const transformed = getTransformedData();
-			transformedDataService.set(transformed);
-			await import('$app/navigation').then(({ goto }) => goto('/transplant'));
+			const validatedData = getValidatedData();
+			console.log('Pushing validated data to TransPlant:', validatedData);
+			transformedDataService.set(validatedData);
+			goto('/transplant');
 		} catch (error) {
-			// console.error('Error in transform:', error);
+			console.error('Error in transform:', error);
 		}
+	}
+
+	// Check if a value is valid for a given type
+	function isValidForType(value: string, type: string): boolean {
+		// Skip validation for blank cells
+		if (!value || !value.trim()) return true;
+
+		// String type accepts everything
+		if (type === 'string') return true;
+
+		// For GPS types
+		if (type === 'gps' || type === 'latitude' || type === 'longitude') {
+			const result = gpsType.validateAndFormat('', value);
+			return result.isValid && result.type === type;
+		}
+
+		// For date type
+		if (type === 'date') {
+			const result = dateType.validateAndFormat('', value);
+			return result.isValid && result.type === 'date';
+		}
+
+		// For number type
+		if (type === 'number') {
+			const result = numberType.validateAndFormat('', value);
+			return result.isValid && result.type === 'number';
+		}
+
+		// Unknown type
+		return false;
+	}
+
+	function getValidatedData(): TransformedData {
+		// Get only visible columns (not toggled off)
+		const visibleHeaders = Object.keys(data[0] || {}).filter((header) => !toggledColumns[header]);
+		console.log('Visible headers for validation:', visibleHeaders);
+
+		// Create clean data (only visible columns, no invalid cells)
+		const validRecords = transformedData.map((row, rowIndex) => {
+			const validRow: Record<string, any> = {};
+
+			visibleHeaders.forEach((header) => {
+				// Skip if invalid
+				if (invalidCells[header]?.has(rowIndex)) {
+					console.log(`Skipping invalid cell: ${header} at row ${rowIndex}`);
+					return;
+				}
+
+				// Add to valid row
+				validRow[header] = row[header];
+			});
+
+			return validRow;
+		});
+
+		// Create a copy with only the needed information
+		return {
+			records: validRecords,
+			columnTypes: Object.fromEntries(visibleHeaders.map((header) => [header, columnTypes[header]]))
+		};
 	}
 </script>
 
