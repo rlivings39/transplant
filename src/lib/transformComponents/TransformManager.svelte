@@ -7,7 +7,8 @@
 	import DataPreviewTable from './DataPreviewTable.svelte';
 	import type { CsvPreviewEvent } from '$lib/types/transformTypes';
 	import { goto } from '$app/navigation';
-	import { saveTransformedData } from '$lib/stores/transformStore';
+	import { transformedDataService } from '$lib/stores/transformStore';
+	
 
 	// States
 	let originalData = $state<Record<string, string>[]>([]);
@@ -17,6 +18,11 @@
 	let invalidCells = $state<Record<string, Set<number>>>({});
 	let transformedData = $state<Record<string, string>[]>([]);
 	let canTransform = $state(false);
+
+	interface TransformedData {
+		records: Array<Record<string, any>>;
+		columnTypes: Record<string, string>;
+	}
 
 	// Update canTransform whenever data or invalidCells changes
 	$effect(() => {
@@ -202,20 +208,15 @@
 		});
 
 		// Create a copy with only the needed information
-		const transformedCopy = {
+		const transformedCopy: TransformedData = {
 			records: cleanData,
 			columnTypes: { ...columnTypes }
 		};
 
 		console.log('Final transformed data object:', transformedCopy);
 
-		// SIMPLEST SOLUTION: Use a global variable to store the data
-		// @ts-ignore - Using global window object
-		window.transplantData = transformedCopy;
-		console.log('Data saved to global window.transplantData');
-
-		// Log to verify
-		console.log('Data verification before navigation:', window.transplantData);
+		// Save to transformed data service
+		transformedDataService.set(transformedCopy);
 
 		// Navigate to transplant page
 		console.log('Navigating to transplant page...');
@@ -231,7 +232,7 @@
 
 		try {
 			const transformed = getTransformedData();
-			sessionStorage.setItem('transformedData', JSON.stringify(transformed));
+			transformedDataService.set(transformed);
 			await import('$app/navigation').then(({ goto }) => goto('/transplant'));
 		} catch (error) {
 			// console.error('Error in transform:', error);
@@ -287,13 +288,13 @@
 				return newRow;
 			});
 
-			// Save to window
-			window.transplantData = {
+			// Save to transformed data service
+			transformedDataService.set({
 				records: cleanData,
 				columnTypes: { ...columnTypes }
-			};
+			});
 
-			console.log('Data saved to window.transplantData:', window.transplantData);
+			console.log('Data saved to transformed data service');
 			console.log('Now navigate to /transplant to see data');
 		}}>Debug: Save Data</button
 	>
