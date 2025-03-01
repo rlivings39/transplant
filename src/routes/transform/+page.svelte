@@ -48,17 +48,37 @@
 				return;
 			}
 
-			// Get headers from the first row
+			// First, identify which columns are toggled off (completely disabled)
+			const toggledOffColumns = new Set();
 			const headerRow = tableRows[0];
+			const headerCells = headerRow.querySelectorAll('th');
+
+			// Check each header's toggle checkbox
+			headerCells.forEach((th) => {
+				const headerNameDiv = th.querySelector('.header-name');
+				if (!headerNameDiv) return;
+
+				const headerName = headerNameDiv.textContent?.trim() || '';
+				if (headerName === 'GPS' || headerName === '') return;
+
+				// Check if the column has its checkbox unchecked
+				const checkbox = th.querySelector('input[type="checkbox"]');
+				if (checkbox && !checkbox.checked) {
+					toggledOffColumns.add(headerName);
+					console.log(`Column "${headerName}" is toggled off`);
+				}
+			});
+
+			// Get headers from the first row, excluding toggled-off columns
 			const headers = Array.from(headerRow.querySelectorAll('th'))
 				.map((th) => {
 					// Get the header name div which contains the actual text
 					const headerNameDiv = th.querySelector('.header-name');
 					return headerNameDiv ? headerNameDiv.textContent?.trim() || '' : '';
 				})
-				.filter((header) => header !== 'GPS' && header !== ''); // Filter out the GPS column and empty headers
+				.filter((header) => header !== 'GPS' && header !== '' && !toggledOffColumns.has(header)); // Filter out GPS, empty headers, and toggled-off columns
 
-			console.log('Headers found:', headers);
+			console.log('Headers after filtering toggled-off columns:', headers);
 
 			// Get data from remaining rows
 			const records = [];
@@ -66,20 +86,37 @@
 				const row = tableRows[i];
 				const cells = row.querySelectorAll('td');
 
-				// Skip the first cell which is the GPS column
+				// Create a new record
 				const record = {};
 				let hasValidData = false;
 
-				// Start from index 1 to skip the GPS column
-				for (let j = 1; j < cells.length && j - 1 < headers.length; j++) {
-					const cell = cells[j];
-					const header = headers[j - 1];
-
-					// Skip cells with the greyed-out class
-					if (cell.classList.contains('greyed-out')) {
-						continue;
+				// Process each header and find its corresponding cell
+				headers.forEach((header, headerIndex) => {
+					// Find the index of this header in the original table
+					let cellIndex = -1;
+					for (let j = 0; j < headerCells.length; j++) {
+						const headerNameDiv = headerCells[j].querySelector('.header-name');
+						if (headerNameDiv && headerNameDiv.textContent?.trim() === header) {
+							cellIndex = j;
+							break;
+						}
 					}
 
+					// Skip if we couldn't find the header
+					if (cellIndex === -1) return;
+
+					// Get the corresponding cell (add 1 to account for GPS column)
+					const cell = cells[cellIndex];
+					if (!cell) return;
+
+					// Check if this cell is greyed out due to type validation failure
+					if (cell.classList.contains('greyed-out')) {
+						// For type validation failures, set value to null but keep the column
+						record[header] = null;
+						return;
+					}
+
+					// Cell is valid, extract its value
 					const value = cell.textContent?.trim() || '';
 
 					// Try to convert to number if it looks like one
@@ -90,10 +127,10 @@
 					}
 
 					hasValidData = true;
-				}
+				});
 
 				// Only add records that have at least one valid cell
-				if (hasValidData && Object.keys(record).length > 0) {
+				if (hasValidData) {
 					records.push(record);
 				}
 			}
