@@ -38,21 +38,27 @@
 		if (transformedRecords.length === 0) {
 			console.log('No transformed data in state, trying to get data from table');
 
-			// Get all visible table rows (not greyed out)
-			const tableRows = document.querySelectorAll('table tr:not(.greyed-out)');
+			// Get all table rows
+			const tableRows = document.querySelectorAll('table tr');
 
 			if (tableRows.length <= 1) {
 				// Account for header row
-				console.log('No visible rows found in table');
+				console.log('No rows found in table');
 				alert('No data available. Please transform data first.');
 				return;
 			}
 
 			// Get headers from the first row
 			const headerRow = tableRows[0];
-			const headers = Array.from(headerRow.querySelectorAll('th')).map(
-				(th) => th.textContent?.trim() || ''
-			);
+			const headers = Array.from(headerRow.querySelectorAll('th'))
+				.map((th) => {
+					// Get the header name div which contains the actual text
+					const headerNameDiv = th.querySelector('.header-name');
+					return headerNameDiv ? headerNameDiv.textContent?.trim() || '' : '';
+				})
+				.filter((header) => header !== 'GPS' && header !== ''); // Filter out the GPS column and empty headers
+
+			console.log('Headers found:', headers);
 
 			// Get data from remaining rows
 			const records = [];
@@ -60,24 +66,34 @@
 				const row = tableRows[i];
 				const cells = row.querySelectorAll('td');
 
-				if (cells.length === headers.length) {
-					const record = {};
+				// Skip the first cell which is the GPS column
+				const record = {};
+				let hasValidData = false;
 
-					headers.forEach((header, index) => {
-						// Skip empty headers
-						if (!header) return;
+				// Start from index 1 to skip the GPS column
+				for (let j = 1; j < cells.length && j - 1 < headers.length; j++) {
+					const cell = cells[j];
+					const header = headers[j - 1];
 
-						const cell = cells[index];
-						const value = cell.textContent?.trim() || '';
+					// Skip cells with the greyed-out class
+					if (cell.classList.contains('greyed-out')) {
+						continue;
+					}
 
-						// Try to convert to number if it looks like one
-						if (/^-?\d+(\.\d+)?$/.test(value)) {
-							record[header] = parseFloat(value);
-						} else {
-							record[header] = value;
-						}
-					});
+					const value = cell.textContent?.trim() || '';
 
+					// Try to convert to number if it looks like one
+					if (/^-?\d+(\.\d+)?$/.test(value)) {
+						record[header] = parseFloat(value);
+					} else {
+						record[header] = value;
+					}
+
+					hasValidData = true;
+				}
+
+				// Only add records that have at least one valid cell
+				if (hasValidData && Object.keys(record).length > 0) {
 					records.push(record);
 				}
 			}
