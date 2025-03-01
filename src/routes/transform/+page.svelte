@@ -16,6 +16,7 @@
 	// Local state using runes
 	let transformedRecords = $state([]);
 	let columnTypeMap = $state({});
+	let csvDataLoaded = $state(false);
 
 	// Function to receive data from TransformManager component
 	function handleTransformedData(event) {
@@ -28,6 +29,11 @@
 		// Update local state
 		transformedRecords = records;
 		columnTypeMap = columnTypes;
+	}
+
+	// Function to handle CSV data loaded event
+	function handleCsvLoaded() {
+		csvDataLoaded = true;
 	}
 
 	// Function to send data to TransPlant
@@ -177,28 +183,23 @@
 <div class="transform-container">
 	<div class="transform-header">
 		<h1>TransForm Data Import</h1>
+		{#if csvDataLoaded}
+			<button class="send-to-transplant-button" onclick={sendToTransplant}>
+				Send Transformed Data to TransPlant
+			</button>
+		{/if}
 	</div>
-	<TransformManager on:dataTransformed={handleTransformedData} />
-
-	<div class="validation-controls">
-		<button class="send-to-transplant-button" on:click={sendToTransplant}>
-			Send Transformed Data to TransPlant
-		</button>
-		<p class="help-text">
-			This button will send the transformed data to the TransPlant page for mapping and import.
-		</p>
-	</div>
+	<TransformManager on:dataTransformed={handleTransformedData} on:csvLoaded={handleCsvLoaded} />
 </div>
 
 <style>
-	.transform-container {
-		width: 100%;
-	}
-
 	.transform-header {
 		width: 100%;
 		padding: 1rem 0;
 		margin-bottom: 1rem;
+		display: flex;
+		justify-content: space-between;
+		align-items: center;
 	}
 
 	h1 {
@@ -206,32 +207,22 @@
 		font-size: 2rem;
 	}
 
-	.validation-controls {
-		margin-top: 2rem;
-		padding: 1rem;
-		background-color: #e3f2fd;
-		border-radius: 4px;
-		border-left: 4px solid #2196f3;
-	}
-
-	.help-text {
-		margin-top: 0.5rem;
-		font-size: 0.9rem;
-		color: #666;
-	}
-
 	.send-to-transplant-button {
 		background-color: #2196f3;
 		color: white;
-		padding: 10px 15px;
 		border: none;
+		padding: 0.5rem 1rem;
 		border-radius: 4px;
 		cursor: pointer;
 		font-weight: bold;
-		font-size: 1rem;
 	}
 
 	.send-to-transplant-button:hover {
-		background-color: #0b7dda;
+		background-color: #0d8aee;
+	}
+
+	.send-to-transplant-button:disabled {
+		background-color: #ccc;
+		cursor: not-allowed;
 	}
 </style>

@@ -11,7 +11,10 @@
 	import { createEventDispatcher } from 'svelte';
 
 	// Create event dispatcher
-	const dispatch = createEventDispatcher();
+	const dispatch = createEventDispatcher<{
+		dataTransformed: TransformedData;
+		csvLoaded: void;
+	}>();
 
 	// States
 	let originalData = $state<Record<string, string>[]>([]);
@@ -51,6 +54,9 @@
 		// Load the new data
 		originalData = event.detail.data.map((row) => ({ ...row }));
 		data = originalData;
+
+		// Dispatch csvLoaded event
+		dispatch('csvLoaded');
 	}
 
 	// Initialize types and validation on data change
@@ -314,16 +320,6 @@
 <div class="transform-manager">
 	<CSVImporter on:dataLoaded={csvDataLoad} />
 
-	<!-- Add help text that explains the workflow -->
-	<div class="workflow-guide">
-		<h3>TransPlant Workflow:</h3>
-		<ol>
-			<li>Upload a CSV file using the interface above</li>
-			<li>Review and adjust column types in the data preview</li>
-			<li>Click "Transform" to send validated data to the Transplant page</li>
-		</ol>
-	</div>
-
 	{#if data.length}
 		<DataPreviewTable
 			rows={transformedData}
@@ -335,15 +331,15 @@
 		/>
 	{:else}
 		<div class="no-data-message">
-			<p>No data loaded. Please upload a CSV file to begin.</p>
+			<p></p>
 		</div>
 	{/if}
-
+	<!-- 	
 	<button onclick={handleTransformClick} disabled={!canTransform}>
 		Transform {!canTransform ? '(Upload CSV first)' : ''}
 	</button>
 
-	<!-- Fallback debug button - this will log data to console -->
+	//  Fallback debug button - this will log data to console
 	<button
 		onclick={() => {
 			console.log('DEBUG: Dumping current data');
@@ -369,9 +365,7 @@
 			console.log('Now navigate to /transplant to see data');
 		}}>Debug: Save Data</button
 	>
-
-	<!-- Direct link to transplant -->
-	<a href="/transplant" class="link-button">Go to Transplant Page</a>
+-->
 </div>
 
 <style>
