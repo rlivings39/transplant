@@ -1,101 +1,112 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
 	import { transformedDataService } from '$lib/stores/transformStore';
+	import { goto } from '$app/navigation';
 
-	// Define the TransformedData interface
-	interface TransformedData {
-		records: Array<Record<string, any>>;
-		columnTypes: Record<string, string>;
-	}
-
-	// Local state using runes
-	let localData = $state<TransformedData | null>(null);
-	let dataSource = $state('none');
-	let debug = $state('Waiting for data...');
-
-	// Filter valid data function
-	function filterValidData(data: TransformedData): TransformedData {
-		if (!data || !data.records || !data.columnTypes) {
-			console.log('No data to filter');
-			return data;
-		}
-
-		console.log('Filtering data with original record count:', data.records.length);
-
-		// Filter out rows with null or undefined values
-		const filteredRecords = data.records.filter((record, recordIndex) => {
-			console.log(`Checking record ${recordIndex}:`, record);
-
-			// Check each field in the record
-			const validFields = Object.entries(record).filter(([key, value]) => {
-				// Skip columns that aren't in columnTypes
-				if (!data.columnTypes[key]) {
-					console.log(`  Field ${key}: No column type defined, accepting`);
-					return true;
-				}
-
-				// Check if value exists
-				if (value === null || value === undefined || value === '') {
-					console.log(`  Field ${key}: Empty value, rejecting`);
-					return false;
-				}
-
-				// For now, accept all values to see what data we have
-				console.log(`  Field ${key}: Value ${value}, accepting`);
-				return true;
-			});
-
-			// Record is valid if it has at least one valid field
-			const isValid = validFields.length > 0;
-			console.log(
-				`Record ${recordIndex} is ${isValid ? 'valid' : 'invalid'} with ${validFields.length} valid fields`
-			);
-			return isValid;
-		});
-
-		console.log('Filtered down to record count:', filteredRecords.length);
-
-		// If we filtered everything, return the original data for debugging
-		if (filteredRecords.length === 0) {
-			console.log('WARNING: All records were filtered out. Using original data for debugging.');
-			return data;
-		}
-
-		return {
-			records: filteredRecords,
-			columnTypes: data.columnTypes
+	// Define the ValidatedTransformData interface
+	interface ValidatedTransformData {
+		records: Array<{
+			[key: string]: string | number | null;
+		}>;
+		columnTypes: {
+			[key: string]: 'string' | 'number' | 'date' | 'gps' | 'latitude' | 'longitude';
 		};
 	}
 
-	// Single onMount function that uses filterValidData
+	// Local state using runes
+	let localData = $state<ValidatedTransformData | null>(null);
+	let dataSource = $state('none');
+	let debug = $state('Waiting for data...');
+
+	// Function to return to transform page
+	function returnToTransform() {
+		// Clear data and navigate back
+		transformedDataService.clear();
+		goto('/transform');
+	}
+
+	// Single onMount function to load and validate data
 	onMount(() => {
 		console.log('Transplant page mounted, checking for data');
 
-		// Get data from service
-		const rawData = transformedDataService.getData();
+		// Try both methods to get data from service
+		let rawData = transformedDataService.get();
+
+		// If get() didn't work, try getData()
+		if (!rawData) {
+			console.log('get() returned null, trying getData()');
+			rawData = transformedDataService.getData();
+		}
+
 		console.log('Raw data received:', rawData);
 
-		if (rawData) {
-			console.log('Raw data records:', rawData.records?.length);
+		if (rawData && rawData.records && rawData.records.length > 0) {
+			console.log('Raw data records:', rawData.records.length);
 			console.log('Raw data column types:', rawData.columnTypes);
 
-			// Filter the data to ensure only valid data is used
-			const filteredData = filterValidData(rawData);
-			console.log('After filtering - records:', filteredData.records?.length);
-			console.log('After filtering - sample record:', filteredData.records?.[0]);
+			try {
+				// Make a clean copy of the data to avoid Svelte 5 proxy issues
+				const cleanData = {
+					records: JSON.parse(JSON.stringify(rawData.records)),
+					columnTypes: JSON.parse(JSON.stringify(rawData.columnTypes))
+				};
 
-			localData = filteredData;
-			dataSource = 'store';
-			console.log('Found and filtered data:', localData);
-			debug = 'Data found in store and filtered for validity';
+				console.log('Clean data created:', cleanData);
 
-			// Check if we have records after setting localData
-			console.log('LocalData after assignment:', localData?.records?.length);
+				// Validate the data structure
+				const isValidStructure = validateDataStructure(cleanData);
+
+				if (isValidStructure) {
+					localData = cleanData;
+					dataSource = 'store';
+					console.log('Valid data found:', localData);
+					debug = 'Data successfully loaded from Transform stage';
+				} else {
+					console.error('Data structure validation failed');
+					debug = 'Error: Invalid data structure received from Transform stage';
+				}
+			} catch (error) {
+				console.error('Error processing data:', error);
+				debug = 'Error processing data: ' + error.message;
+			}
 		} else {
 			console.log('No data found');
 			debug = 'No data found. Please go to transform page first.';
 		}
 	});
+
+	// Function to validate the data structure
+	function validateDataStructure(data: any): boolean {
+		console.log('Validating data structure');
+
+		// Check if data has the required properties
+		if (!data || !data.records || !data.columnTypes) {
+			console.error('Missing required properties in data');
+			return false;
+		}
+
+		// Check if records is an array
+		if (!Array.isArray(data.records)) {
+			console.error('Records is not an array');
+			return false;
+		}
+
+		// Check if we have any records
+		if (data.records.length === 0) {
+			console.error('No records found');
+			return false;
+		}
+
+		// Check if columnTypes is an object
+		if (typeof data.columnTypes !== 'object' || data.columnTypes === null) {
+			console.error('ColumnTypes is not an object');
+			return false;
+		}
+
+		// Skip detailed type validation - just make sure the basic structure is correct
+		console.log('Data structure validation passed');
+		return true;
+	}
 </script>
 
 <div class="container">

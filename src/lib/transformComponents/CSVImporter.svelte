@@ -41,25 +41,37 @@
 	}
 
 	function processFile(file: File) {
+		console.log('Processing file:', file.name);
+
 		Papa.parse(file, {
 			header: true,
 			skipEmptyLines: true,
 			complete: (results) => {
 				if (results.errors.length > 0) {
-					// console.error('CSV parsing errors:', results.errors);
+					console.error('CSV parsing errors:', results.errors);
 				}
 
+				// Filter out rows with incorrect number of columns
 				rawData = results.data.filter(
 					(row) =>
 						Object.keys(row as object).length ===
 						Object.keys((results.data[0] || {}) as object).length
 				) as Record<string, string>[];
 
-				isFileLoaded = true;
-				dispatch('dataLoaded', { data: rawData });
+				console.log('CSV data loaded successfully:', rawData.length, 'rows');
+
+				// Check if we actually have data
+				if (rawData.length > 0) {
+					isFileLoaded = true;
+					dispatch('dataLoaded', { data: rawData });
+					console.log('dataLoaded event dispatched with', rawData.length, 'rows');
+				} else {
+					console.warn('No valid data rows found in CSV');
+					isFileLoaded = false;
+				}
 			},
 			error: (error) => {
-				// console.error('CSV parsing failed:', error);
+				console.error('CSV parsing failed:', error);
 				isFileLoaded = false;
 				dispatch('error', { error });
 			}
@@ -112,11 +124,8 @@
 	{:else}
 		<div class="button-container">
 			<div class="import-simple-input-container">
-				<button class="import-simple-button" onclick={() => fileInput.click()}>Choose File</button>
 			</div>
-			<button class="transform-button" type="button" onclick={handleNavigate}>
-				Go to Transplant
-			</button>
+		
 		</div>
 	{/if}
 	<input

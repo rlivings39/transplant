@@ -13,98 +13,110 @@
 		};
 	}
 
-	// Direct scraping function that captures visible table data
-	function scrapeAndSendVisibleData() {
-		console.log('Starting direct table scraping process');
+	// Local state using runes
+	let transformedRecords = $state([]);
+	let columnTypeMap = $state({});
 
-		// Get all table rows from the DOM (excluding header row)
-		const tableRows = document.querySelectorAll('.table-container tbody tr');
-		console.log(`Found ${tableRows.length} visible table rows`);
+	// Function to receive data from TransformManager component
+	function handleTransformedData(event) {
+		// Get the data from the event
+		const { records, columnTypes } = event.detail;
 
-		if (tableRows.length === 0) {
-			alert('No visible data found. Please upload and transform data first.');
-			return;
-		}
-
-		// Get column headers and types from the DOM
-		const headerCells = document.querySelectorAll('.table-container thead th');
-		const columnHeaders = [];
-		const columnTypes = {};
-
-		// Skip the first header cell (GPS column)
-		for (let i = 1; i < headerCells.length; i++) {
-			const headerCell = headerCells[i];
-			const headerName = headerCell.querySelector('.header-name')?.textContent?.trim();
-
-			if (headerName) {
-				// Get the selected type from the dropdown
-				const typeSelect = headerCell.querySelector('select');
-				const type = typeSelect ? typeSelect.value : 'string';
-
-				columnHeaders.push(headerName);
-				columnTypes[headerName] = type;
-			}
-		}
-
-		console.log('Column headers:', columnHeaders);
+		console.log('Received transformed data:', records);
 		console.log('Column types:', columnTypes);
 
-		// Extract data from visible rows
-		const records = [];
+		// Update local state
+		transformedRecords = records;
+		columnTypeMap = columnTypes;
+	}
 
-		tableRows.forEach((row, rowIndex) => {
-			const record = {};
-			let hasValidData = false;
+	// Function to send data to TransPlant
+	function sendToTransplant() {
+		console.log('Push Data to Console button clicked');
 
-			// Get all cells in the row (skip the first GPS visualization cell)
-			const cells = row.querySelectorAll('td');
+		// Try to get data from the table directly if no transformed data is available
+		if (transformedRecords.length === 0) {
+			console.log('No transformed data in state, trying to get data from table');
 
-			// Start from index 1 to skip GPS visualization cell
-			for (let i = 1; i < cells.length; i++) {
-				const cell = cells[i];
-				const columnHeader = columnHeaders[i - 1];
+			// Get all visible table rows (not greyed out)
+			const tableRows = document.querySelectorAll('table tr:not(.greyed-out)');
 
-				// Skip greyed out cells
-				if (cell.classList.contains('greyed-out')) {
-					continue;
-				}
-
-				// Get cell value
-				const value = cell.textContent?.trim();
-
-				// Skip empty cells
-				if (!value) {
-					continue;
-				}
-
-				// Add to record
-				record[columnHeader] = value;
-				hasValidData = true;
+			if (tableRows.length <= 1) {
+				// Account for header row
+				console.log('No visible rows found in table');
+				alert('No data available. Please transform data first.');
+				return;
 			}
 
-			// Only add records with at least one valid field
-			if (hasValidData) {
-				records.push(record);
-			}
-		});
+			// Get headers from the first row
+			const headerRow = tableRows[0];
+			const headers = Array.from(headerRow.querySelectorAll('th')).map(
+				(th) => th.textContent?.trim() || ''
+			);
 
-		console.log(`Scraped ${records.length} records with visible data`);
+			// Get data from remaining rows
+			const records = [];
+			for (let i = 1; i < tableRows.length; i++) {
+				const row = tableRows[i];
+				const cells = row.querySelectorAll('td');
+
+				if (cells.length === headers.length) {
+					const record = {};
+
+					headers.forEach((header, index) => {
+						// Skip empty headers
+						if (!header) return;
+
+						const cell = cells[index];
+						const value = cell.textContent?.trim() || '';
+
+						// Try to convert to number if it looks like one
+						if (/^-?\d+(\.\d+)?$/.test(value)) {
+							record[header] = parseFloat(value);
+						} else {
+							record[header] = value;
+						}
+					});
+
+					records.push(record);
+				}
+			}
+
+			// Get column types from the data - all as strings to avoid validation issues
+			const columnTypes = {};
+			headers.forEach((header) => {
+				// Default all to string to avoid validation issues
+				columnTypes[header] = 'string';
+			});
+
+			console.log('Scraped records:', records);
+			console.log('Detected column types:', columnTypes);
+
+			// Update local state
+			transformedRecords = records;
+			columnTypeMap = columnTypes;
+		}
+
+		// Create a clean copy of the data without Svelte 5 proxies
+		const cleanRecords = JSON.parse(JSON.stringify(transformedRecords));
+		const cleanColumnTypes = JSON.parse(JSON.stringify(columnTypeMap));
 
 		// Create validated data object
-		const validatedData: ValidatedTransformData = {
-			records: records,
-			columnTypes: columnTypes
+		const validatedData = {
+			records: cleanRecords,
+			columnTypes: cleanColumnTypes
 		};
+
+		// Log the data to console in a clean format
+		console.log('CLEAN DATA BEING SENT:');
+		console.log('Records:', JSON.stringify(cleanRecords, null, 2));
+		console.log('Column Types:', JSON.stringify(cleanColumnTypes, null, 2));
 
 		// Save to store
 		transformedDataService.set(validatedData);
-		console.log('Scraped data saved to store:', validatedData);
+		console.log('Clean transformed data saved to store:', validatedData);
 
 		// Navigate to TransPlant
-		goto('/transplant');
-	}
-
-	function pushToTransplant() {
 		goto('/transplant');
 	}
 </script>
@@ -113,15 +125,14 @@
 	<div class="transform-header">
 		<h1>TransForm Data Import</h1>
 	</div>
-	<TransformManager />
+	<TransformManager on:dataTransformed={handleTransformedData} />
 
 	<div class="validation-controls">
-		<button class="direct-scrape-button" on:click={scrapeAndSendVisibleData}>
-			Scrape Visible Data & Send to TransPlant
+		<button class="send-to-transplant-button" on:click={sendToTransplant}>
+			Send Transformed Data to TransPlant
 		</button>
 		<p class="help-text">
-			This button will scrape only the currently visible (non-greyed out) data from the table and
-			send it directly to TransPlant.
+			This button will send the transformed data to the TransPlant page for mapping and import.
 		</p>
 	</div>
 </div>
@@ -145,11 +156,18 @@
 	.validation-controls {
 		margin-top: 2rem;
 		padding: 1rem;
-		background-color: #f5f5f5;
+		background-color: #e3f2fd;
 		border-radius: 4px;
+		border-left: 4px solid #2196f3;
 	}
 
-	.direct-scrape-button {
+	.help-text {
+		margin-top: 0.5rem;
+		font-size: 0.9rem;
+		color: #666;
+	}
+
+	.send-to-transplant-button {
 		background-color: #2196f3;
 		color: white;
 		padding: 10px 15px;
@@ -157,15 +175,10 @@
 		border-radius: 4px;
 		cursor: pointer;
 		font-weight: bold;
+		font-size: 1rem;
 	}
 
-	.direct-scrape-button:hover {
+	.send-to-transplant-button:hover {
 		background-color: #0b7dda;
-	}
-
-	.help-text {
-		margin-top: 0.5rem;
-		font-size: 0.9rem;
-		color: #666;
 	}
 </style>

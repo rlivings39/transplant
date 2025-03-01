@@ -8,6 +8,10 @@
 	import type { CsvPreviewEvent } from '$lib/types/transformTypes';
 	import { goto } from '$app/navigation';
 	import { transformedDataService } from '$lib/stores/transformStore';
+	import { createEventDispatcher } from 'svelte';
+
+	// Create event dispatcher
+	const dispatch = createEventDispatcher();
 
 	// States
 	let originalData = $state<Record<string, string>[]>([]);
@@ -217,6 +221,9 @@
 		// Save to transformed data service
 		transformedDataService.set(transformedCopy);
 
+		// Dispatch event with transformed data
+		dispatch('dataTransformed', transformedCopy);
+
 		// Navigate to transplant page
 		console.log('Navigating to transplant page...');
 		goto('/transplant');
@@ -233,6 +240,10 @@
 			const validatedData = getValidatedData();
 			console.log('Pushing validated data to TransPlant:', validatedData);
 			transformedDataService.set(validatedData);
+
+			// Dispatch event with transformed data
+			dispatch('dataTransformed', validatedData);
+
 			goto('/transplant');
 		} catch (error) {
 			console.error('Error in transform:', error);
