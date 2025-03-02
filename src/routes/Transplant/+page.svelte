@@ -112,7 +112,7 @@
 <div class="container">
 	<h1>Transplant Data</h1>
 
-	<div class="debug-info">
+	<!-- <div class="debug-info">
 		<h3>Debug Information</h3>
 		<p><strong>Data source:</strong> {dataSource}</p>
 		<p><strong>Debug status:</strong> {debug}</p>
@@ -121,7 +121,7 @@
 			<p><strong>Records:</strong> {localData.records?.length || 0}</p>
 			<p><strong>Column types:</strong> {Object.keys(localData.columnTypes || {}).length}</p>
 		{/if}
-	</div>
+	</div> -->
 
 	{#if localData && localData.records && localData.records.length > 0}
 		<table>
@@ -143,10 +143,10 @@
 			</tbody>
 		</table>
 
-		<div class="data-summary">
+		<!-- <div class="data-summary">
 			<h3>Data Summary</h3>
 			<p>Total records: {localData.records.length}</p>
 			<p>Columns: {Object.keys(localData.columnTypes).join(', ')}</p>
-		</div>
+		</div> -->
 	{/if}
 </div>
