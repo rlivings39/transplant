@@ -8,8 +8,8 @@
 <nav>
 	<div class="container-fluid p-1">
 		<a href="/">Home</a>
+		<a href="/transform">Transform</a>
 		<a href="/transplant">Transplant</a>
-		<a href="/transform">TransForm</a>
 		<br />
 		<br />
 	</div>
