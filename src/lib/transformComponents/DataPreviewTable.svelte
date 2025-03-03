@@ -99,7 +99,7 @@
 	</div>
 </div>
 
-<!-- <style>
+<style>
 	.table-container {
 		overflow-x: auto;
 		max-width: 100%;
@@ -124,4 +124,4 @@
 		align-items: center;
 		width: 100%;
 	}
-</style> -->
+</style>
