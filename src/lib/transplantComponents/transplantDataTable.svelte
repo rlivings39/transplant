@@ -112,7 +112,12 @@
 			<thead>
 				<tr>
 					{#each Object.keys(localData.records[0]) as header}
-						<th>{header} ({localData.columnTypes[header]})</th>
+						<th>
+							<div class="header-controls">
+								<span class="type-display">{localData.columnTypes[header]}</span>
+								<span class="header-text">{header}</span>
+							</div>
+						</th>
 					{/each}
 				</tr>
 			</thead>
@@ -142,39 +147,3 @@
 		<p>Columns: {Object.keys(localData.columnTypes).join(', ')}</p>
 	</div>
 {/if} -->
-
-<style>
-	.table-container {
-		overflow-x: auto;
-		max-width: 100%;
-	}
-
-	table {
-		border-collapse: collapse;
-		margin-bottom: 1rem;
-		table-layout: fixed;
-	}
-
-	th,
-	td {
-		width: 12.5rem;
-		padding: 0.5rem;
-		text-align: left;
-		border: 1px solid #ddd;
-		white-space: nowrap;
-		overflow: hidden;
-		text-overflow: ellipsis;
-	}
-
-	tr:nth-child(even) {
-		background-color: #f9f9f9;
-	}
-
-	tr:hover {
-		background-color: #f5f5f5;
-	}
-
-	button {
-		margin-left: 0.5rem;
-	}
-</style>
