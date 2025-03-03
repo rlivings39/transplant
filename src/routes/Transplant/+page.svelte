@@ -27,22 +27,22 @@
 
 	// Single onMount function to load and validate data
 	onMount(() => {
-		console.log('Transplant page mounted, checking for data');
+		// console.log('Transplant page mounted, checking for data');
 
 		// Try both methods to get data from service
 		let rawData = transformedDataService.get();
 
 		// If get() didn't work, try getData()
 		if (!rawData) {
-			console.log('get() returned null, trying getData()');
+			// console.log('get() returned null, trying getData()');
 			rawData = transformedDataService.getData();
 		}
 
-		console.log('Raw data received:', rawData);
+		// console.log('Raw data received:', rawData);
 
 		if (rawData && rawData.records && rawData.records.length > 0) {
-			console.log('Raw data records:', rawData.records.length);
-			console.log('Raw data column types:', rawData.columnTypes);
+			// console.log('Raw data records:', rawData.records.length);
+			// console.log('Raw data column types:', rawData.columnTypes);
 
 			try {
 				// Make a clean copy of the data to avoid Svelte 5 proxy issues
@@ -51,7 +51,7 @@
 					columnTypes: JSON.parse(JSON.stringify(rawData.columnTypes))
 				};
 
-				console.log('Clean data created:', cleanData);
+				// console.log('Clean data created:', cleanData);
 
 				// Validate the data structure
 				const isValidStructure = validateDataStructure(cleanData);
@@ -59,7 +59,7 @@
 				if (isValidStructure) {
 					localData = cleanData;
 					dataSource = 'store';
-					console.log('Valid data found:', localData);
+					// console.log('Valid data found:', localData);
 					debug = 'Data successfully loaded from Transform stage';
 				} else {
 					console.error('Data structure validation failed');
@@ -70,14 +70,14 @@
 				debug = 'Error processing data: ' + error.message;
 			}
 		} else {
-			console.log('No data found');
+			// console.log('No data found');
 			debug = 'No data found. Please go to transform page first.';
 		}
 	});
 
 	// Function to validate the data structure
 	function validateDataStructure(data: any): boolean {
-		console.log('Validating data structure');
+		// console.log('Validating data structure');
 
 		// Check if data has the required properties
 		if (!data || !data.records || !data.columnTypes) {
@@ -104,7 +104,7 @@
 		}
 
 		// Skip detailed type validation - just make sure the basic structure is correct
-		console.log('Data structure validation passed');
+		// console.log('Data structure validation passed');
 		return true;
 	}
 </script>

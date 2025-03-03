@@ -184,7 +184,7 @@
 	<div class="transform-header">
 		<h1>Transform Data</h1>
 		{#if csvDataLoaded}
-			<button onclick={sendToTransplant}> Send Transformed Data to TransPlant </button>
+			<button onclick={sendToTransplant}> Transform </button>
 		{/if}
 	</div>
 	<TransformManager on:dataTransformed={handleTransformedData} on:csvLoaded={handleCsvLoaded} />

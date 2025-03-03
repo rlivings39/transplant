@@ -49,6 +49,7 @@ table {
 	// border: 1px solid var(--color-white);
 }
 
+
 /* Table Header Styles */
 thead {
 	position: sticky;
@@ -107,9 +108,11 @@ td:first-child {
 	background-color: var(--pico-background-color);
 }
 
-// .gps-column {
-//  position: relative;
-// }
+/* Target the inner elements */
+thead th .header-controls,
+thead th .header-name {
+  background-color: var(--color-purple);
+}
 
 th,
 td {

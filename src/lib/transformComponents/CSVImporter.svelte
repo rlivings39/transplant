@@ -25,7 +25,7 @@
 			processFile(file);
 		}
 	}
-
+	
 	function handleDragOver(event: DragEvent) {
 		event.preventDefault();
 		if (event.currentTarget instanceof HTMLElement) {
@@ -123,9 +123,7 @@
 		</div>
 	{:else}
 		<div class="button-container">
-			<div class="import-simple-input-container">
-			</div>
-		
+			<div class="import-simple-input-container"></div>
 		</div>
 	{/if}
 	<input
