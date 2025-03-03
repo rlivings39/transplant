@@ -17,6 +17,7 @@
 	let localData = $state<ValidatedTransformData | null>(null);
 	let dataSource = $state('none');
 	let debug = $state('Waiting for data...');
+	let totalRecords = $state(0); // Track total number of records
 
 	// Function to return to transform page
 	function returnToTransform() {
@@ -48,6 +49,7 @@
 
 				if (isValidStructure) {
 					localData = cleanData;
+					totalRecords = cleanData.records.length; // Store total record count
 					dataSource = 'store';
 					debug = 'Data successfully loaded from Transform stage';
 				} else {
@@ -122,7 +124,7 @@
 				</tr>
 			</thead>
 			<tbody>
-				{#each localData.records as record}
+				{#each localData.records.slice(0, 5) as record}
 					<tr>
 						{#each Object.keys(record) as key}
 							<td>{record[key]}</td>
@@ -131,6 +133,11 @@
 				{/each}
 			</tbody>
 		</table>
+		{#if totalRecords > 5}
+			<div class="record-count-info">
+				<p>Showing 5 of {totalRecords} records</p>
+			</div>
+		{/if}
 	{:else}
 		<p>
 			No data available to display. <button on:click={returnToTransform}>Return to Transform</button
@@ -147,3 +154,12 @@
 		<p>Columns: {Object.keys(localData.columnTypes).join(', ')}</p>
 	</div>
 {/if} -->
+
+<style>
+	.record-count-info {
+		font-size: 0.8rem;
+		color: var(--color-light-grey);
+		text-align: right;
+		padding: 0.5rem;
+	}
+</style>

@@ -176,22 +176,28 @@ td:first-child {
 	background-color: var(--pico-background-color) !important;
 }
 
-
+th:first-child {
+	position: sticky !important;
+	left: 0;
+	top: 0;
+	z-index: 999 !important;
+	background-color: var(--header-background) !important;
+}
 
 thead th:first-child {
-    position: sticky !important;
-    left: 0;
-    top: 0;
-    z-index: 999 !important;
-    background-color: var(--header-background) !important;
+	position: sticky !important;
+	left: 0;
+	top: 0;
+	z-index: 999 !important;
+	background-color: var(--header-background) !important;
 }
 
 /* Regular header cells */
 thead th {
-    position: sticky !important;
-    top: 0;
-    z-index: 998 !important;
-    background-color: var(--header-background) !important;
+	position: sticky !important;
+	top: 0;
+	z-index: 998 !important;
+	background-color: var(--header-background) !important;
 }
 
 /* Sticky First Column */
@@ -396,4 +402,15 @@ thead th {
 	// 	margin: 0;
 	// 	padding: 0;
 	// }
+}
+
+/* Safari and Brave sticky fix */
+thead,
+th:first-child,
+td:first-child,
+thead th,
+thead th:first-child {
+	/* Force hardware acceleration */
+	transform: translateZ(0);
+	-webkit-transform: translateZ(0);
 }
