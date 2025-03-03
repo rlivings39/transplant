@@ -11,8 +11,8 @@
 	--color-grey: #212121;
 	--color-black: #121212;
 	--color-white: #e0e0e0 --input-max-width: 28rem;
-	--button-max-width: 28rem;
 	--column-width: 7rem;
+	--button-max-width: 28rem;
 	--bright-border: 1px solid #e0e0e0;
 	--button-background: transparent;
 	--button-color: white;
@@ -22,6 +22,7 @@
 	--button-radius: 0.5rem;
 	--button-font-size: 1rem;
 	--button-transition: all 0.3s ease;
+	--header-background: color-mix(in srgb, var(--color-purple) 20%, transparent);
 }
 
 nav a {
@@ -48,7 +49,6 @@ table {
 	border-spacing: 0;
 	// border: 1px solid var(--color-white);
 }
-
 
 /* Table Header Styles */
 thead {
@@ -107,11 +107,15 @@ td:first-child {
 	z-index: 1;
 	background-color: var(--pico-background-color);
 }
+/* Target the table headers directly to fill the entire cell */
+table thead th {
+	padding: 0;
+	border: 0.5px solid var(--color-light-grey);
+}
 
-/* Target the inner elements */
-thead th .header-controls,
-thead th .header-name {
-  background-color: var(--color-purple);
+/* Adjust the inner elements to maintain proper spacing */
+table thead th > div {
+	padding: 0.4rem;
 }
 
 th,
@@ -127,7 +131,7 @@ td {
 	// vertical-align: top;
 	padding: 1px;
 	background-color: var(--pico-background-color);
-	border: 0.5px solid var(--color-grey);
+	border: 0.5px solid var(--color-light-grey);
 
 	&:hover {
 		background-color: rgb(55, 55, 55);
@@ -136,18 +140,18 @@ td {
 
 th.removed,
 td.removed {
-	background-color: rgba(128, 128, 128, 0.2) !important;
-	color: rgba(224, 224, 224, 0.5) !important;
+	background-color: rgba(128, 128, 128, 0.2);
+	color: rgba(224, 224, 224, 0.5);
 
 	&:hover {
-		background-color: rgba(128, 128, 128, 0.3) !important;
+		background-color: rgba(128, 128, 128, 0.3);
 	}
 }
 
 table.numeric,
 td.numeric,
 th.numeric {
-	text-align: right !important; /* Right-align only numeric cells */
+	text-align: right; /* Right-align only numeric cells */
 }
 
 td {
@@ -160,13 +164,15 @@ td:first-child {
 
 thead th:first-child {
 	z-index: 4;
-	background-color: var(--background-color, #172b18);
+	// background-color: var(--background-color, #172b18);
+	background-color: var(--header-background) !important;
 }
 
 /* Regular header cells */
 thead th {
 	z-index: 3;
-	background-color: var(--background-color, #172b18);
+	// background-color: var(--background-color, #172b18);
+	background-color: var(--header-background) !important;
 }
 
 /* Sticky First Column */
@@ -251,10 +257,6 @@ button,
 	transition: var(--button-transition);
 }
 
-.transform-button:hover {
-	filter: brightness(1.1) !important;
-}
-
 .header-container {
 	display: flex;
 	justify-content: space-between;
@@ -264,9 +266,7 @@ button,
 }
 
 .import-dropzone {
-	background-color: rgba(128, 40, 222, 0.2); // #8028de with 50% opacity
-	color: var(--color-text);
-	margin: 1rem 0;
+	background-color: var(--header-background) !important;
 }
 
 // 📱️📱️📱️📱️📱️📱️📱️📱️📱️📱️📱️📱️📱️📱️📱️📱️📱️📱️📱️📱️📱️📱️📱️📱️📱️📱️📱️📱️📱️📱️📱️📱️📱️📱️📱️📱️📱️📱️📱️📱️📱️📱️📱️📱️📱️📱️📱️📱️📱️📱️📱️📱️📱️📱️📱️📱️📱️📱️

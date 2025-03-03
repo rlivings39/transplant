@@ -216,7 +216,7 @@
     });
   }
   let mappings: Record<string, string> = {};
-  $: console.log('Mappings updated:', mappings);
+  $: // console.log('Mappings updated:', mappings);
   let validMappings: Record<string, boolean[]> = {};
   let previewValidation: Record<string, Record<string, boolean[]>> = {};
 
@@ -422,7 +422,7 @@
           complete: (results: Papa.ParseResult<CsvRow>) => {
             processingStage = 'mapping';
             csvData = results.data;
-            console.log('Parsed CSV Data:', csvData);
+            // console.log('Parsed CSV Data:', csvData);
             
             // Get column headers
             if (results.data.length > 0) {
@@ -435,7 +435,7 @@
               Crop: Array(5).fill().map(() => ({})),
               Planted: Array(5).fill().map(() => ({}))
             };
-            console.log('Preview Data after init:', JSON.parse(JSON.stringify(previewData)));
+            // console.log('Preview Data after init:', JSON.parse(JSON.stringify(previewData)));
 
             // Initialize mappings
             mappings = {};
@@ -445,7 +445,7 @@
             schema.forEach(table => {
               tableHeaders[table.name] = table.fields.map(f => f.name);
             });
-            console.log('Table Headers after init:', tableHeaders);
+            // console.log('Table Headers after init:', tableHeaders);
             
             // Show first 5 rows in the import table
             typedCsvData = results.data.slice(0, 5).map(row => {
@@ -466,13 +466,13 @@
           header: true,
         });
       } catch (e) {
-        // // console.error(`CSV processing failed at stage: ${processingStage}`, e);
+        // // // console.error(`CSV processing failed at stage: ${processingStage}`, e);
         errorMessage = `CSV Processing Error: ${e.message}`;
         return;
       }
       // Add required field check
       if (!previewData.some(d => d.land_name && d.crop_name)) {
-        // // console.error('Missing required land_name/crop_name in:', previewData);
+        // // // console.error('Missing required land_name/crop_name in:', previewData);
         errorMessage = 'CSV missing required land_name or crop_name columns';
         return;
       }
@@ -482,9 +482,9 @@
   function reorderColumns() {
     if (!csvData || csvData.length === 0) return;
     
-    console.log('=== Starting column reorder ===');
-    console.log('Current columns:', [...orderedCsvColumns]);
-    console.log('Current mappings:', { ...mappings });
+    // console.log('=== Starting column reorder ===');
+    // console.log('Current columns:', [...orderedCsvColumns]);
+    // console.log('Current mappings:', { ...mappings });
 
     // Create arrays to hold columns in their new order
     const newOrder = [];
@@ -517,26 +517,26 @@
     newOrder.push(...mappedColumns);
     newOrder.push(...unmappedColumns);
 
-    console.log('Mapped columns in order:', [...newOrder]);
-    console.log('Unmapped columns:', unmappedColumns);
+    // console.log('Mapped columns in order:', [...newOrder]);
+    // console.log('Unmapped columns:', unmappedColumns);
 
-    console.log('Proposed new order:', newOrder);
+    // console.log('Proposed new order:', newOrder);
 
     // Check if order actually changed
     const orderChanged = newOrder.some((col, i) => col !== orderedCsvColumns[i]);
-    console.log('Order changed:', orderChanged);
+    // console.log('Order changed:', orderChanged);
 
     if (orderChanged) {
-      console.log('Applying new column order');
+      // console.log('Applying new column order');
       orderedCsvColumns = [...newOrder];
       // Force reactivity
       orderedCsvColumns = [...orderedCsvColumns];
     } else {
-      console.log('No change needed in column order');
+      // console.log('No change needed in column order');
     }
 
-    console.log('Final column order:', [...orderedCsvColumns]);
-    console.log('=== Finished column reorder ===');
+    // console.log('Final column order:', [...orderedCsvColumns]);
+    // console.log('=== Finished column reorder ===');
   }
 
   // Validate numeric fields
@@ -579,7 +579,7 @@
    */
   function handleDragStart(event: DragEvent, csvColumn: string) {
     if (event.dataTransfer) {
-      console.log(`Starting drag for column: ${csvColumn}`);
+      // console.log(`Starting drag for column: ${csvColumn}`);
       event.dataTransfer.setData('text/plain', csvColumn);
       event.dataTransfer.effectAllowed = 'move';
       const target = /** @type {HTMLElement} */ (event.target);
@@ -609,11 +609,11 @@
    */
   function handleDrop(event: DragEvent, table: string, field: string) {
     event.preventDefault();
-    console.log('=== Handle Drop Start ===');
+    // console.log('=== Handle Drop Start ===');
 
     // Immediately return if not Planted table
     if (table !== 'Planted') {
-      console.log('Dropping only allowed on Planted table');
+      // console.log('Dropping only allowed on Planted table');
       return;
     }
 
@@ -621,16 +621,16 @@
     (target as HTMLElement).classList.remove('drag-over');
 
     const csvColumn = event.dataTransfer?.getData('text/plain');
-    console.log(`Dropped ${csvColumn} onto ${table}.${field}`);
+    // console.log(`Dropped ${csvColumn} onto ${table}.${field}`);
 
     if (csvColumn && csvData) {
-      console.log('Before mappings:', { ...mappings });
-      console.log('Before columns:', [...orderedCsvColumns]);
+      // console.log('Before mappings:', { ...mappings });
+      // console.log('Before columns:', [...orderedCsvColumns]);
 
       // Clear any existing mappings to this target field
       Object.entries(mappings).forEach(([col, mapping]) => {
         if (mapping === `${table}.${field}`) {
-          console.log(`Clearing existing mapping for ${col}`);
+          // console.log(`Clearing existing mapping for ${col}`);
           mappings[col] = '';
         }
       });
@@ -648,13 +648,13 @@
         });
 
         if (hasNonNumeric) {
-          console.log('Warning: Some rows contain non-numeric values');
+          // console.log('Warning: Some rows contain non-numeric values');
           // Update validation state but don't proceed with mapping
           if (!previewValidation[table]) {
             previewValidation[table] = {};
           }
           previewValidation[table][field] = false;
-          console.log('Updated previewValidation:', previewValidation);
+          // console.log('Updated previewValidation:', previewValidation);
 
           // Update preview data to show error state
           previewData[table] = previewData[table].map((row) => ({
@@ -672,7 +672,7 @@
         ...existingMappings,
         [csvColumn]: `${table}.${field}`
       };
-      console.log('MAPPING DEBUG:', {
+      // console.log('MAPPING DEBUG:', {
         csvColumn,
         table,
         field,
@@ -684,11 +684,11 @@
 
       // Update preview data for all tables
       if (csvData) {
-        console.log('CSV Data type:', typeof csvData, Array.isArray(csvData));
-        console.log('First row:', csvData[0]);
-        console.log('csvColumn:', csvColumn);
-        console.log('field:', field);
-        console.log('Raw value:', csvData[0][csvColumn]);
+        // console.log('CSV Data type:', typeof csvData, Array.isArray(csvData));
+        // console.log('First row:', csvData[0]);
+        // console.log('csvColumn:', csvColumn);
+        // console.log('field:', field);
+        // console.log('Raw value:', csvData[0][csvColumn]);
 
         // Get all current Planted mappings
         const plantedMappings = new Map();
@@ -707,12 +707,12 @@
         // Create preview rows with all mapped fields
         const validationErrors: Record<string, string[]> = {};
         previewData.Planted = csvData.slice(0, 5).map((row, index) => {
-          console.log(`Processing row ${index}:`, row);
+          // console.log(`Processing row ${index}:`, row);
           const previewRow = {};
           validationErrors[index] = [];
           plantedMappings.forEach((csvCol, mapField) => {
             const rawValue = row[csvCol];
-            console.log(`Row ${index} - ${mapField} from ${csvCol}:`, {
+            // console.log(`Row ${index} - ${mapField} from ${csvCol}:`, {
               rawValue,
               type: typeof rawValue,
               row,
@@ -736,7 +736,7 @@
           return previewRow;
         });
 
-        console.log('Preview data after update:', previewData.Planted);
+        // console.log('Preview data after update:', previewData.Planted);
 
         // Force reactivity
         previewData = { ...previewData };
@@ -751,8 +751,8 @@
 
       // Force reactivity
       orderedCsvColumns = [...orderedCsvColumns];
-      console.log('Final columns:', [...orderedCsvColumns]);
-      console.log('=== Handle Drop End ===');
+      // console.log('Final columns:', [...orderedCsvColumns]);
+      // console.log('=== Handle Drop End ===');
 
       // Get unique land names and their fields
       const uniqueLands = new Map();

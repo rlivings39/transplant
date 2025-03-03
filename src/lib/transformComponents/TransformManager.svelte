@@ -102,7 +102,7 @@
 					continue;
 				}
 
-				// console.log(`Processing ${header} (type: ${type}) value: ${value}`);
+				// // // console.log(`Processing ${header} (type: ${type}) value: ${value}`);
 
 				// String columns accept everything
 				if (type === 'string') {
@@ -149,7 +149,7 @@
 				}
 
 				// Unknown type
-				console.warn(`Unknown type: ${type}`);
+				// console.warn(`Unknown type: ${type}`);
 				if (!newInvalidCells[header]) newInvalidCells[header] = new Set();
 				newInvalidCells[header].add(rowIndex);
 				newRow[header] = value;
@@ -194,11 +194,11 @@
 			return;
 		}
 
-		// console.log('Creating clean copy of transformed data');
+		// // // console.log('Creating clean copy of transformed data');
 
 		// Get only visible columns (not toggled off)
 		const visibleHeaders = Object.keys(data[0]).filter((header) => !toggledColumns[header]);
-		// console.log('Visible headers:', visibleHeaders);
+		// // // console.log('Visible headers:', visibleHeaders);
 
 		// Create clean data (only visible columns, no invalid cells)
 		const cleanData = data.map((row, rowIndex) => {
@@ -206,7 +206,7 @@
 			visibleHeaders.forEach((header) => {
 				// Skip if invalid
 				if (invalidCells[header]?.has(rowIndex)) {
-					// console.log(`Skipping invalid cell: ${header} at row ${rowIndex}`);
+					// // // console.log(`Skipping invalid cell: ${header} at row ${rowIndex}`);
 					return;
 				}
 
@@ -222,7 +222,7 @@
 			columnTypes: { ...columnTypes }
 		};
 
-		// console.log('Final transformed data object:', transformedCopy);
+		// // // console.log('Final transformed data object:', transformedCopy);
 
 		// Save to transformed data service
 		transformedDataService.set(transformedCopy);
@@ -231,7 +231,7 @@
 		dispatch('dataTransformed', transformedCopy);
 
 		// Navigate to transplant page
-		// console.log('Navigating to transplant page...');
+		// // // console.log('Navigating to transplant page...');
 		goto('/transplant');
 	}
 
@@ -244,7 +244,7 @@
 
 		try {
 			const validatedData = getValidatedData();
-			// console.log('Pushing validated data to TransPlant:', validatedData);
+			// // // console.log('Pushing validated data to TransPlant:', validatedData);
 			transformedDataService.set(validatedData);
 
 			// Dispatch event with transformed data
@@ -252,7 +252,7 @@
 
 			goto('/transplant');
 		} catch (error) {
-			console.error('Error in transform:', error);
+			// console.error('Error in transform:', error);
 		}
 	}
 
@@ -289,7 +289,7 @@
 	function getValidatedData(): TransformedData {
 		// Get only visible columns (not toggled off)
 		const visibleHeaders = Object.keys(data[0] || {}).filter((header) => !toggledColumns[header]);
-		// console.log('Visible headers for validation:', visibleHeaders);
+		// // // console.log('Visible headers for validation:', visibleHeaders);
 
 		// Create clean data (only visible columns, no invalid cells)
 		const validRecords = transformedData.map((row, rowIndex) => {
@@ -298,7 +298,7 @@
 			visibleHeaders.forEach((header) => {
 				// Skip if invalid
 				if (invalidCells[header]?.has(rowIndex)) {
-					// console.log(`Skipping invalid cell: ${header} at row ${rowIndex}`);
+					// // // console.log(`Skipping invalid cell: ${header} at row ${rowIndex}`);
 					return;
 				}
 
@@ -342,9 +342,9 @@
 	//  Fallback debug button - this will log data to console
 	<button
 		onclick={() => {
-			// console.log('DEBUG: Dumping current data');
-			// console.log('Data:', data);
-			// console.log('Column Types:', columnTypes);
+			// // // console.log('DEBUG: Dumping current data');
+			// // // console.log('Data:', data);
+			// // // console.log('Column Types:', columnTypes);
 
 			// Create and save data directly
 			const cleanData = data.map((row) => {
@@ -361,8 +361,8 @@
 				columnTypes: { ...columnTypes }
 			});
 
-			// console.log('Data saved to transformed data service');
-			// console.log('Now navigate to /transplant to see data');
+			// // // console.log('Data saved to transformed data service');
+			// // // console.log('Now navigate to /transplant to see data');
 		}}>Debug: Save Data</button
 	>
 -->

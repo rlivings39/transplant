@@ -23,8 +23,8 @@
 		// Get the data from the event
 		const { records, columnTypes } = event.detail;
 
-		// console.log('Received transformed data:', records);
-		// console.log('Column types:', columnTypes);
+		// // console.log('Received transformed data:', records);
+		// // console.log('Column types:', columnTypes);
 
 		// Update local state
 		transformedRecords = records;
@@ -38,18 +38,18 @@
 
 	// Function to send data to TransPlant
 	function sendToTransplant() {
-		// console.log('Push Data to Console button clicked');
+		// // console.log('Push Data to Console button clicked');
 
 		// Try to get data from the table directly if no transformed data is available
 		if (transformedRecords.length === 0) {
-			// console.log('No transformed data in state, trying to get data from table');
+			// // console.log('No transformed data in state, trying to get data from table');
 
 			// Get all table rows
 			const tableRows = document.querySelectorAll('table tr');
 
 			if (tableRows.length <= 1) {
 				// Account for header row
-				// console.log('No rows found in table');
+				// // console.log('No rows found in table');
 				alert('No data available. Please transform data first.');
 				return;
 			}
@@ -71,7 +71,7 @@
 				const checkbox = th.querySelector('input[type="checkbox"]') as HTMLInputElement;
 				if (checkbox && !checkbox.checked) {
 					toggledOffColumns.add(headerName);
-					// console.log(`Column "${headerName}" is toggled off`);
+					// // console.log(`Column "${headerName}" is toggled off`);
 				}
 			});
 
@@ -84,7 +84,7 @@
 				})
 				.filter((header) => header !== 'GPS' && header !== '' && !toggledOffColumns.has(header)); // Filter out GPS, empty headers, and toggled-off columns
 
-			// console.log('Headers after filtering toggled-off columns:', headers);
+			// // console.log('Headers after filtering toggled-off columns:', headers);
 
 			// Get data from remaining rows
 			const records = [];
@@ -148,8 +148,8 @@
 				columnTypes[header] = 'string';
 			});
 
-			// console.log('Scraped records:', records);
-			// console.log('Detected column types:', columnTypes);
+			// // console.log('Scraped records:', records);
+			// // console.log('Detected column types:', columnTypes);
 
 			// Update local state
 			transformedRecords = records;
@@ -167,13 +167,13 @@
 		};
 
 		// Log the data to console in a clean format
-		// console.log('CLEAN DATA BEING SENT:');
-		// console.log('Records:', JSON.stringify(cleanRecords, null, 2));
-		// console.log('Column Types:', JSON.stringify(cleanColumnTypes, null, 2));
+		// // console.log('CLEAN DATA BEING SENT:');
+		// // console.log('Records:', JSON.stringify(cleanRecords, null, 2));
+		// // console.log('Column Types:', JSON.stringify(cleanColumnTypes, null, 2));
 
 		// Save to store
 		transformedDataService.set(validatedData);
-		// console.log('Clean transformed data saved to store:', validatedData);
+		// // console.log('Clean transformed data saved to store:', validatedData);
 
 		// Navigate to TransPlant
 		goto('/transplant');

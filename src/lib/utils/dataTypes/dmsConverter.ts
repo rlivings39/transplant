@@ -59,20 +59,20 @@ export function isDMSFormat(value: string): boolean {
 
 // Convert a coordinate pair from DMS to decimal degrees
 export function convertCoordinatePair(value: string): string | null {
-	// console.log('convertCoordinatePair input:', value);
+	// // // console.log('convertCoordinatePair input:', value);
 	if (!value?.trim()) return null;
 
 	// First split the raw string into coordinates
 	const parts = value.split(',').map((p) => p.trim());
-	// console.log('Split coordinates:', parts);
+	// // // console.log('Split coordinates:', parts);
 
 	if (parts.length !== 2) {
-		// console.log('Did not find exactly 2 parts');
+		// // // console.log('Did not find exactly 2 parts');
 		return null;
 	}
 
 	const [latStr, lonStr] = parts;
-	// console.log('Processing coordinates:', { lat: latStr, lon: lonStr });
+	// // // console.log('Processing coordinates:', { lat: latStr, lon: lonStr });
 
 	// Now process each coordinate separately
 	let lat: number | null = null;
@@ -80,12 +80,12 @@ export function convertCoordinatePair(value: string): string | null {
 
 	// Handle latitude
 	const cleanedLat = cleanDMSString(latStr);
-	// console.log('Cleaned latitude:', cleanedLat);
+	// // // console.log('Cleaned latitude:', cleanedLat);
 	if (isDMSFormat(cleanedLat)) {
 		const latParts = parseDMSParts(cleanedLat);
 		if (latParts) {
 			lat = dmsToDecimal(latParts);
-			// console.log('Converted lat from DMS:', {
+			// // // console.log('Converted lat from DMS:', {
 			// 	original: latStr,
 			// 	cleaned: cleanedLat,
 			// 	parts: latParts,
@@ -94,17 +94,17 @@ export function convertCoordinatePair(value: string): string | null {
 		}
 	} else {
 		lat = Number(cleanedLat);
-		// console.log('Parsed lat as number:', lat);
+		// // // console.log('Parsed lat as number:', lat);
 	}
 
 	// Handle longitude
 	const cleanedLon = cleanDMSString(lonStr);
-	// console.log('Cleaned longitude:', cleanedLon);
+	// // // console.log('Cleaned longitude:', cleanedLon);
 	if (isDMSFormat(cleanedLon)) {
 		const lonParts = parseDMSParts(cleanedLon);
 		if (lonParts) {
 			lon = dmsToDecimal(lonParts);
-			// console.log('Converted lon from DMS:', {
+			// // // console.log('Converted lon from DMS:', {
 			// 	original: lonStr,
 			// 	cleaned: cleanedLon,
 			// 	parts: lonParts,
@@ -113,16 +113,16 @@ export function convertCoordinatePair(value: string): string | null {
 		}
 	} else {
 		lon = Number(cleanedLon);
-		// console.log('Parsed lon as number:', lon);
+		// // // console.log('Parsed lon as number:', lon);
 	}
 
 	if (lat === null || lon === null || isNaN(lat) || isNaN(lon)) {
-		// console.log('Failed to convert coordinates:', { lat, lon });
+		// // // console.log('Failed to convert coordinates:', { lat, lon });
 		return null;
 	}
 
 	const result = `${lat.toFixed(6)}, ${lon.toFixed(6)}`;
-	// console.log('Final converted pair:', result);
+	// // // console.log('Final converted pair:', result);
 	return result;
 }
 

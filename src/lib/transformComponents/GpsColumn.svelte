@@ -48,7 +48,7 @@
 				}
 			}
 		} catch (error) {
-			console.error('Error in GPS calculation:', error);
+			// console.error('Error in GPS calculation:', error);
 		}
 		return '';
 	}

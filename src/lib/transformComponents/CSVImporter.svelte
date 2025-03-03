@@ -25,7 +25,7 @@
 			processFile(file);
 		}
 	}
-	
+
 	function handleDragOver(event: DragEvent) {
 		event.preventDefault();
 		if (event.currentTarget instanceof HTMLElement) {
@@ -41,14 +41,14 @@
 	}
 
 	function processFile(file: File) {
-		console.log('Processing file:', file.name);
+		// // console.log('Processing file:', file.name);
 
 		Papa.parse(file, {
 			header: true,
 			skipEmptyLines: true,
 			complete: (results) => {
 				if (results.errors.length > 0) {
-					console.error('CSV parsing errors:', results.errors);
+					// console.error('CSV parsing errors:', results.errors);
 				}
 
 				// Filter out rows with incorrect number of columns
@@ -58,20 +58,20 @@
 						Object.keys((results.data[0] || {}) as object).length
 				) as Record<string, string>[];
 
-				console.log('CSV data loaded successfully:', rawData.length, 'rows');
+				// // console.log('CSV data loaded successfully:', rawData.length, 'rows');
 
 				// Check if we actually have data
 				if (rawData.length > 0) {
 					isFileLoaded = true;
 					dispatch('dataLoaded', { data: rawData });
-					console.log('dataLoaded event dispatched with', rawData.length, 'rows');
+					// // console.log('dataLoaded event dispatched with', rawData.length, 'rows');
 				} else {
 					console.warn('No valid data rows found in CSV');
 					isFileLoaded = false;
 				}
 			},
 			error: (error) => {
-				console.error('CSV parsing failed:', error);
+				// console.error('CSV parsing failed:', error);
 				isFileLoaded = false;
 				dispatch('error', { error });
 			}
