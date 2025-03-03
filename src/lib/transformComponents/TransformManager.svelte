@@ -17,7 +17,7 @@
 	}>();
 
 	// States
-	let originalData = $state<vRecord<string, string>[]>([]);
+	let originalData = $state<Record<string, string>[]>([]);
 	let data = $state<Record<string, string>[]>([]);
 	let columnTypes = $state<Record<string, string>>({});
 	let toggledColumns = $state<Record<string, boolean>>({});

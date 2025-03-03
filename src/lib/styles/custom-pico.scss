@@ -93,6 +93,31 @@ thead {
 	}
 }
 
+.table-container {
+	overflow-x: auto;
+	max-width: 100%;
+}
+
+.number-cell {
+	text-align: right;
+}
+
+.greyed-out {
+	color: rgba(240, 240, 240, 0.25);
+	background-color: var(--pico-background-color);
+}
+
+// .header-container {
+// 	margin-bottom: 1rem;
+// }
+
+// .header-actions {
+// 	display: flex;
+// 	justify-content: space-between;
+// 	align-items: center;
+// 	width: 100%;
+// }
+
 /* First Column Sticky */
 td:first-child {
 	position: sticky;
@@ -183,18 +208,19 @@ td:first-child {
 }
 
 select {
-	// width: var(--column-width);
-	// background-color: var(--color-grey);
+	border-width: 0.1rem !important;
 	margin-bottom: -0.3rem;
-	font-size: 0.6rem;
+	font-size: 0.5rem;
 	// overflow-x: auto;
-	white-space: nowrap; /* Prevent wrapping */
-	background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='white' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
-	padding: 0.1rem 0.1rem ;
+	// white-space: nowrap; /* Prevent wrapping */
+	background-image: url("data:image/svg+xml;charset=UTF-8,%3csvs xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='white' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
+	// background-position: right 0.1rem center; /* Position the dropdown arrow */
+	padding: 0.2rem 1.5rem 0.2rem 0.4rem !important; /* Left/right padding to position text properly */
+
 	color: var(--color-white);
 	cursor: pointer;
 	&:hover {
-		background-color: var(--color-grey);
+		background-color: var(--color-light-grey);
 	}
 }
 
@@ -210,8 +236,6 @@ select {
 .toggled-off {
 	background-color: rgba(255, 0, 0, 0.2);
 }
-
-
 
 button,
 [type='button'],
@@ -257,7 +281,49 @@ button,
 	background-color: var(--header-background) !important;
 }
 
-// 📱️📱️📱️📱️📱️📱️📱️📱️📱️📱️📱️📱️📱️📱️📱️📱️📱️📱️📱️📱️📱️📱️📱️📱️📱️📱️📱️📱️📱️📱️📱️📱️📱️📱️📱️📱️📱️📱️📱️📱️📱️📱️📱️📱️📱️📱️📱️📱️📱️📱️📱️📱️📱️📱️📱️📱️📱️📱️
+/* Dark mode contrast improvements */
+:root {
+	/* Enhance contrast for better readability */
+	--color-white: #f0f0f0; /* Brighter white */
+	--color-light-grey: #3a3a3a; /* Slightly lighter for better contrast */
+	--color-grey: #212121; /* Keep as is */
+	--color-black: #121212; /* Keep as is */
+	--color-purple: #9a3aff; /* Brighter purple for better visibility */
+
+	/* Improve text contrast */
+	--pico-form-element-color: var(--color-white);
+	--pico-form-element-background-color: var(--color-grey);
+	--pico-form-element-border-color: #444444;
+
+	/* Enhance focus states */
+	--pico-form-element-focus-color: var(--color-purple);
+}
+
+/* Improve table contrast */
+table {
+	--border-color: #444444;
+	border-color: var(--border-color);
+}
+
+th,
+td {
+	border-color: var(--border-color);
+}
+
+/* Enhance select contrast */
+select {
+	background-color: var(--color-grey);
+	color: var(--color-white);
+	border-color: #444444 !important;
+
+	&:hover {
+		background-color: var(--color-light-grey);
+	}
+
+	&:focus {
+		border-color: var(--color-purple) !important;
+	}
+}
 
 /* Responsive Adjustment */
 @media (max-width: 768px) {
@@ -274,8 +340,6 @@ thead th {
 	z-index: 2;
 	padding: 0.3rem;
 }
-
-// 📱️📱️📱️📱️📱️📱️📱️📱️📱️📱️📱️📱️📱️📱️📱️📱️📱️📱️📱️📱️📱️📱️📱️📱️📱️📱️📱️📱️📱️📱️📱️📱️📱️📱️📱️📱️📱️📱️📱️📱️📱️📱️📱️📱️📱️📱️📱️📱️📱️📱️📱️📱️📱️📱️📱️📱️📱️
 
 @media (max-width: 480px) {
 	table {

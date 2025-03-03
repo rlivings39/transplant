@@ -31,6 +31,7 @@
 	}
 </script>
 
+
 <div>
 	<div class="header-container">
 		<div class="header-actions"></div>
@@ -100,7 +101,7 @@
 </div>
 
 <style>
-	.table-container {
+	/* .table-container {
 		overflow-x: auto;
 		max-width: 100%;
 	}
@@ -110,8 +111,8 @@
 	}
 
 	.greyed-out {
-		opacity: 0.5;
-		background-color: #f8f8f8;
+		opacity: 0.4;
+		background-color: #212425;
 	}
 
 	.header-container {
@@ -123,5 +124,5 @@
 		justify-content: space-between;
 		align-items: center;
 		width: 100%;
-	}
+	} */
 </style>
