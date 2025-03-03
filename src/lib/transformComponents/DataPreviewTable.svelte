@@ -100,29 +100,4 @@
 	</div>
 </div>
 
-<style>
-	/* .table-container {
-		overflow-x: auto;
-		max-width: 100%;
-	}
 
-	.number-cell {
-		text-align: right;
-	}
-
-	.greyed-out {
-		opacity: 0.4;
-		background-color: #212425;
-	}
-
-	.header-container {
-		margin-bottom: 1rem;
-	}
-
-	.header-actions {
-		display: flex;
-		justify-content: space-between;
-		align-items: center;
-		width: 100%;
-	} */
-</style>

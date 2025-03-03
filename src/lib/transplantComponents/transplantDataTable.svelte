@@ -1,32 +1,147 @@
 <script lang="ts">
-	const { data, headers } = $props<{
-		data: Record<string, string | number | null>[];
-		headers: string[];
-	}>();
+	import { onMount } from 'svelte';
+	import { transformedDataService } from '$lib/stores/transformStore';
+	import { goto } from '$app/navigation';
+
+	// Define the ValidatedTransformData interface
+	interface ValidatedTransformData {
+		records: Array<{
+			[key: string]: string | number | null;
+		}>;
+		columnTypes: {
+			[key: string]: 'string' | 'number' | 'date' | 'gps' | 'latitude' | 'longitude';
+		};
+	}
+
+	// Local state using runes
+	let localData = $state<ValidatedTransformData | null>(null);
+	let dataSource = $state('none');
+	let debug = $state('Waiting for data...');
+
+	// Function to return to transform page
+	function returnToTransform() {
+		// Clear data and navigate back
+		transformedDataService.clear();
+		goto('/transform');
+	}
+
+	// Load data on component mount
+	onMount(() => {
+		// Try both methods to get data from service
+		let rawData = transformedDataService.get();
+
+		// If get() didn't work, try getData()
+		if (!rawData) {
+			rawData = transformedDataService.getData();
+		}
+
+		if (rawData && rawData.records && rawData.records.length > 0) {
+			try {
+				// Make a clean copy of the data to avoid Svelte 5 proxy issues
+				const cleanData = {
+					records: JSON.parse(JSON.stringify(rawData.records)),
+					columnTypes: JSON.parse(JSON.stringify(rawData.columnTypes))
+				};
+
+				// Validate the data structure
+				const isValidStructure = validateDataStructure(cleanData);
+
+				if (isValidStructure) {
+					localData = cleanData;
+					dataSource = 'store';
+					debug = 'Data successfully loaded from Transform stage';
+				} else {
+					console.error('Data structure validation failed');
+					debug = 'Error: Invalid data structure received from Transform stage';
+				}
+			} catch (error) {
+				console.error('Error processing data:', error);
+				debug = 'Error processing data: ' + error.message;
+			}
+		} else {
+			debug = 'No data found. Please go to transform page first.';
+		}
+	});
+
+	// Function to validate the data structure
+	function validateDataStructure(data: any): boolean {
+		// Check if data has the required properties
+		if (!data || !data.records || !data.columnTypes) {
+			console.error('Missing required properties in data');
+			return false;
+		}
+
+		// Check if records is an array
+		if (!Array.isArray(data.records)) {
+			console.error('Records is not an array');
+			return false;
+		}
+
+		// Check if we have any records
+		if (data.records.length === 0) {
+			console.error('No records found');
+			return false;
+		}
+
+		// Check if columnTypes is an object
+		if (typeof data.columnTypes !== 'object' || data.columnTypes === null) {
+			console.error('ColumnTypes is not an object');
+			return false;
+		}
+
+		// Skip detailed type validation - just make sure the basic structure is correct
+		return true;
+	}
 </script>
 
+<!-- Debug info can be uncommented if needed -->
+<!-- <div class="debug-info">
+	<h3>Debug Information</h3>
+	<p><strong>Data source:</strong> {dataSource}</p>
+	<p><strong>Debug status:</strong> {debug}</p>
+	<p><strong>Data available:</strong> {localData ? 'Yes' : 'No'}</p>
+	{#if localData}
+		<p><strong>Records:</strong> {localData.records?.length || 0}</p>
+		<p><strong>Column types:</strong> {Object.keys(localData.columnTypes || {}).length}</p>
+	{/if}
+</div> -->
+
 <div class="table-container">
-	<table>
-		<thead>
-			<tr>
-				{#each headers as header}
-					<th style="background: #333333 !important; color: white !important;">
-						<div class="header-name">{header}</div>
-					</th>
-				{/each}
-			</tr>
-		</thead>
-		<tbody>
-			{#each data as row}
+	{#if localData && localData.records && localData.records.length > 0}
+		<table>
+			<thead>
 				<tr>
-					{#each headers as header}
-						<td>{row[header] ?? ''}</td>
+					{#each Object.keys(localData.records[0]) as header}
+						<th>{header} ({localData.columnTypes[header]})</th>
 					{/each}
 				</tr>
-			{/each}
-		</tbody>
-	</table>
+			</thead>
+			<tbody>
+				{#each localData.records as record}
+					<tr>
+						{#each Object.keys(record) as key}
+							<td>{record[key]}</td>
+						{/each}
+					</tr>
+				{/each}
+			</tbody>
+		</table>
+	{:else}
+		<p>
+			No data available to display. <button on:click={returnToTransform}>Return to Transform</button
+			>
+		</p>
+	{/if}
 </div>
+
+<!-- Data summary can be uncommented if needed -->
+<!-- {#if localData && localData.records}
+	<div class="data-summary">
+		<h3>Data Summary</h3>
+		<p>Total records: {localData.records.length}</p>
+		<p>Columns: {Object.keys(localData.columnTypes).join(', ')}</p>
+	</div>
+{/if} -->
 
 <style>
 	.table-container {
@@ -51,16 +166,15 @@
 		text-overflow: ellipsis;
 	}
 
-	.header-name {
-		padding: 0.25rem;
-		font-weight: bold;
-	}
-
 	tr:nth-child(even) {
 		background-color: #f9f9f9;
 	}
 
 	tr:hover {
 		background-color: #f5f5f5;
+	}
+
+	button {
+		margin-left: 0.5rem;
 	}
 </style>
