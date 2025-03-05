@@ -1,8 +1,11 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
 
+	// Define table name type
+	type TableName = 'Planting' | 'Land' | 'Crop';
+
 	// Define the table headers based on the database schema
-	const tableHeaders = {
+	const tableHeaders: Record<TableName, string[]> = {
 		Planting: ['id', 'land_id', 'crop_id', 'planted', 'planting_date', 'notes'],
 		Land: [
 			'land_id',
@@ -24,7 +27,7 @@
 	let cropData = Array(emptyRows).fill({});
 
 	// Function to get table data by name
-	function getTableData(tableName: string): any[] {
+	function getTableData(tableName: TableName): any[] {
 		switch (tableName) {
 			case 'Planting':
 				return plantingData;
@@ -43,12 +46,12 @@
 <div class="database-tables-container">
 	{#each ['Planting', 'Land', 'Crop'] as tableName}
 		<div class="table-section">
-			<h4 class="table-title">{tableName} Table</h4>
+			<h4 class="table-title">{tableName}</h4>
 			<div class="table-container">
 				<table>
 					<thead>
 						<tr>
-							{#each tableHeaders[tableName] as header}
+							{#each tableHeaders[tableName as TableName] as header}
 								<th class={tableName !== 'Planting' ? 'static-table-header' : ''}>
 									{header}
 								</th>
@@ -56,9 +59,9 @@
 						</tr>
 					</thead>
 					<tbody>
-						{#each getTableData(tableName) as _, rowIndex}
+						{#each getTableData(tableName as TableName) as _, rowIndex}
 							<tr>
-								{#each tableHeaders[tableName] as header}
+								{#each tableHeaders[tableName as TableName] as header}
 									<td></td>
 								{/each}
 							</tr>
