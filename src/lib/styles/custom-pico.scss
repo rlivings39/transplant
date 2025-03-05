@@ -230,12 +230,12 @@ select {
 	}
 }
 
-.type-display {
+.type-pseudo-select {
 	display: block;
 	background-color: var(--color-grey);
 	border: 0.05rem solid var(--color-light-grey); // Type Select
 	border-radius: 0.25rem;
-	padding: 0.2rem 1.5rem 0.2rem 0.4rem !important;
+	padding: 0.2rem 1.5rem 0.3rem 0.4rem !important;
 	font-size: 0.6rem;
 	margin-bottom: 0.4rem;
 	text-align: left;

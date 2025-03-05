@@ -116,7 +116,7 @@
 					{#each Object.keys(localData.records[0]) as header}
 						<th>
 							<div class="header-controls">
-								<span class="type-display">{localData.columnTypes[header]}</span>
+								<span class="type-pseudo-select">{localData.columnTypes[header]}</span>
 								<span class="header-text">{header}</span>
 							</div>
 						</th>
