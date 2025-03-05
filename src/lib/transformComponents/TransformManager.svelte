@@ -65,23 +65,22 @@
 
 		const headers = Object.keys(data[0]);
 		headers.forEach((header) => {
-			if (columnTypes[header]) return; // Skip if type already set
+			if (!columnTypes[header]) {
+				// Only detect and set the type if it's not already set
+				const samples = data
+					.map((row) => row[header]?.trim())
+					.filter((value) => value)
+					.slice(0, nonBlankValidSampleCount);
 
-			// Get samples for type detection
-			const samples = data
-				.map((row) => row[header]?.trim())
-				.filter((value) => value)
-				.slice(0, nonBlankValidSampleCount);
+				let detectedType = null;
 
-			// Run through type detection pipeline
-			let detectedType: string | null = null;
-			for (const { detect } of typeDetectors) {
-				detectedType = detect(header, samples);
-				if (detectedType) break;
+				for (const { detect } of typeDetectors) {
+					detectedType = detect(header, samples);
+					if (detectedType) break;
+				}
+
+				columnTypes[header] = detectedType || 'string'; // Set type once
 			}
-
-			// Default to string if no type detected
-			columnTypes[header] = detectedType || 'string';
 		});
 
 		validateAndTransformData();
@@ -217,48 +216,10 @@
 		});
 
 		// Create a copy with only the needed information
-		const transformedCopy: TransformedData = {
+		const transformedCopy = {
 			records: cleanData,
-			columnTypes: { ...columnTypes }
+			columnTypes: { ...columnTypes } // Include column types
 		};
-
-		// Manually set column types based on column names
-		Object.keys(transformedCopy.columnTypes).forEach((header) => {
-			const lowerHeader = header.toLowerCase();
-
-			// GPS related columns
-			if (lowerHeader.includes('gps')) {
-				transformedCopy.columnTypes[header] = 'gps';
-			}
-
-			// Latitude/Longitude columns
-			else if (lowerHeader.includes('lat')) {
-				transformedCopy.columnTypes[header] = 'latitude';
-			} else if (lowerHeader.includes('lon') || lowerHeader.includes('lng')) {
-				transformedCopy.columnTypes[header] = 'longitude';
-			}
-
-			// Number columns
-			else if (lowerHeader.includes('number') || lowerHeader.includes('num')) {
-				transformedCopy.columnTypes[header] = 'number';
-			}
-
-			// Date columns
-			else if (lowerHeader.includes('date') || lowerHeader.includes('time')) {
-				transformedCopy.columnTypes[header] = 'date';
-			}
-
-			// Special case for GPS DMS_1 which is a number according to logs
-			else if (lowerHeader === 'gps dms_1') {
-				transformedCopy.columnTypes[header] = 'number';
-			}
-		});
-
-		// Debug log the final column types
-		console.log('=== FINAL COLUMN TYPES BEING SENT TO TRANSPLANT ===');
-		Object.entries(transformedCopy.columnTypes).forEach(([column, type]) => {
-			console.log(`Column: ${column}, Type: ${type}`);
-		});
 
 		// Save to transformed data service
 		transformedDataService.set(transformedCopy);
