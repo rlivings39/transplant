@@ -222,7 +222,43 @@
 			columnTypes: { ...columnTypes }
 		};
 
-		// // // console.log('Final transformed data object:', transformedCopy);
+		// Manually set column types based on column names
+		Object.keys(transformedCopy.columnTypes).forEach((header) => {
+			const lowerHeader = header.toLowerCase();
+
+			// GPS related columns
+			if (lowerHeader.includes('gps')) {
+				transformedCopy.columnTypes[header] = 'gps';
+			}
+
+			// Latitude/Longitude columns
+			else if (lowerHeader.includes('lat')) {
+				transformedCopy.columnTypes[header] = 'latitude';
+			} else if (lowerHeader.includes('lon') || lowerHeader.includes('lng')) {
+				transformedCopy.columnTypes[header] = 'longitude';
+			}
+
+			// Number columns
+			else if (lowerHeader.includes('number') || lowerHeader.includes('num')) {
+				transformedCopy.columnTypes[header] = 'number';
+			}
+
+			// Date columns
+			else if (lowerHeader.includes('date') || lowerHeader.includes('time')) {
+				transformedCopy.columnTypes[header] = 'date';
+			}
+
+			// Special case for GPS DMS_1 which is a number according to logs
+			else if (lowerHeader === 'gps dms_1') {
+				transformedCopy.columnTypes[header] = 'number';
+			}
+		});
+
+		// Debug log the final column types
+		console.log('=== FINAL COLUMN TYPES BEING SENT TO TRANSPLANT ===');
+		Object.entries(transformedCopy.columnTypes).forEach(([column, type]) => {
+			console.log(`Column: ${column}, Type: ${type}`);
+		});
 
 		// Save to transformed data service
 		transformedDataService.set(transformedCopy);

@@ -37,8 +37,26 @@ export function format(value: string): string {
 }
 
 export function detectType(header: string, samples: string[]): NumberType | null {
-	if (!samples.length) return null;
-	return samples.every(validate) ? 'number' : null;
+	console.log(`Number detectType called for header "${header}" with ${samples.length} samples`);
+
+	if (!samples.length) {
+		console.log(`Number detectType: No samples for "${header}"`);
+		return null;
+	}
+
+	const allValid = samples.every((sample) => {
+		const isValid = validate(sample);
+		console.log(`Number detectType: Sample "${sample}" is valid number: ${isValid}`);
+		return isValid;
+	});
+
+	if (allValid) {
+		console.log(`Number detectType: Detected number type for "${header}"`);
+		return 'number';
+	}
+
+	console.log(`Number detectType: No number type detected for "${header}"`);
+	return null;
 }
 
 export function validateAndFormat(header: string, value: string): ValidationResult {

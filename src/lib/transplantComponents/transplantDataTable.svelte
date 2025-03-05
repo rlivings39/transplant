@@ -94,6 +94,62 @@
 		// Skip detailed type validation - just make sure the basic structure is correct
 		return true;
 	}
+
+	// Function to format type name for display
+	function formatTypeName(type: string, header: string): string {
+		// First try to determine type from the column name if header is provided
+		const lowerHeader = header.toLowerCase();
+
+		// GPS related columns
+		if (lowerHeader.includes('gps')) {
+			console.log(`Using GPS type for column "${header}"`);
+			return 'GPS';
+		}
+
+		// Latitude/Longitude columns
+		if (lowerHeader.includes('lat')) {
+			console.log(`Using Latitude type for column "${header}"`);
+			return 'Latitude';
+		}
+		if (lowerHeader.includes('lon') || lowerHeader.includes('lng')) {
+			console.log(`Using Longitude type for column "${header}"`);
+			return 'Longitude';
+		}
+
+		// Number columns
+		if (lowerHeader.includes('number') || lowerHeader.includes('num')) {
+			console.log(`Using Number type for column "${header}"`);
+			return 'Number';
+		}
+
+		// Date columns
+		if (
+			lowerHeader.includes('date') ||
+			lowerHeader.includes('time') ||
+			lowerHeader.includes('dms_1')
+		) {
+			console.log(`Using Date type for column "${header}"`);
+			return 'Date';
+		}
+
+		// If no header-based type, use the provided type
+		switch (type) {
+			case 'string':
+				return 'String';
+			case 'number':
+				return 'Number';
+			case 'date':
+				return 'Date';
+			case 'gps':
+				return 'GPS';
+			case 'latitude':
+				return 'Latitude';
+			case 'longitude':
+				return 'Longitude';
+			default:
+				return 'String';
+		}
+	}
 </script>
 
 <!-- Debug info can be uncommented if needed -->
@@ -116,7 +172,14 @@
 					{#each Object.keys(localData.records[0]) as header}
 						<th>
 							<div class="header-controls">
-								<span class="type-pseudo-select">{localData.columnTypes[header]}</span>
+								<span
+									class="type-pseudo-select"
+									data-type={formatTypeName(localData.columnTypes[header], header)}
+								>
+									{formatTypeName(localData.columnTypes[header], header)}
+									<!-- Debug output -->
+									<span style="display: none;">Raw type: {localData.columnTypes[header]}</span>
+								</span>
 								<span class="header-text">{header}</span>
 							</div>
 						</th>

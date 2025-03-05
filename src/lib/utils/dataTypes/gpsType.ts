@@ -160,35 +160,53 @@ export function detectCoordinateType(
 
 // Auto-detect the type of a column based on header and samples
 export function detectType(header: string, samples: string[]): GpsTypes | null {
+	console.log(`GPS detectType called for header "${header}" with ${samples.length} samples`);
+
 	// First check if it's a GPS coordinate pair
 	const validSamples = samples.filter((s) => s?.trim());
+	console.log(`GPS detectType: ${validSamples.length} valid samples`);
+
 	if (!validSamples.length) return null;
 
 	const samplesToCheck = validSamples.slice(
 		0,
 		Math.min(nonBlankValidSampleCount, validSamples.length)
 	);
+	console.log(`GPS detectType: Checking ${samplesToCheck.length} samples`);
 
 	// Check if any sample is a valid GPS coordinate pair
-	if (samplesToCheck.some((value) => parseGpsCoordinate(value) !== null)) {
+	const hasGpsCoordinate = samplesToCheck.some((value) => {
+		const result = parseGpsCoordinate(value) !== null;
+		console.log(`GPS detectType: Sample "${value}" is GPS coordinate: ${result}`);
+		return result;
+	});
+
+	if (hasGpsCoordinate) {
+		console.log(`GPS detectType: Detected GPS type for "${header}"`);
 		return 'gps';
 	}
 
 	// Check if it's latitude or longitude - be more aggressive about detection
 	const headerLower = header.toLowerCase();
 	if (headerLower.includes('lat')) {
+		console.log(`GPS detectType: Detected latitude type for "${header}" based on header name`);
 		return 'latitude';
 	}
 	if (headerLower.includes('lon') || headerLower.includes('lng')) {
+		console.log(`GPS detectType: Detected longitude type for "${header}" based on header name`);
 		return 'longitude';
 	}
 
 	// If not found by header, try to detect by value patterns
 	const coordinateType = detectCoordinateType(header, samplesToCheck);
 	if (coordinateType) {
+		console.log(
+			`GPS detectType: Detected ${coordinateType} type for "${header}" based on value patterns`
+		);
 		return coordinateType;
 	}
 
+	console.log(`GPS detectType: No GPS type detected for "${header}"`);
 	return null;
 }
 
