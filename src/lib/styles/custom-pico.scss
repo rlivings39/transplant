@@ -13,13 +13,12 @@
 	--color-white: #e0e0e0 --input-max-width: 28rem;
 	--column-width: 7rem;
 	--button-max-width: 28rem;
-	--bright-border: 1px solid #e0e0e0;
+	// --bright-border: 1px solid #e0e0e0;
 	--button-background: transparent;
 	--button-color: white;
-	--button-border: solid 2px #7a7281;
-	--button-padding: 0.75rem 2rem;
+	--button-border: solid 0.04rem #343434 --button-padding: 0.75rem 2rem;
 	--button-margin: 0.75rem 2rem;
-	--button-radius: 0.5rem;
+	--button-radius: 0.25rem;
 	--button-font-size: 1rem;
 	--button-transition: all 0.3s ease;
 	--header-background: #2f1e4b;
@@ -45,15 +44,13 @@ th {
 }
 
 table {
+	border: 0.04rem solid var(--color-light-grey) !important; // LEAVE THIS ONE ALSO. Chris 4 Mar 2025
 	font-family: 'Roboto Mono', monospace;
 	font-size: 0.5rem;
 	line-height: 1;
-	// position: relative;
 	width: fit-content;
 	border-collapse: separate;
-	// border-spacing: 0;
 	overflow: hidden !important;
-	// border: 1px solid var(--color-white);
 }
 
 /* Table Header Styles */
@@ -84,8 +81,9 @@ thead {
 				display: flex;
 				flex-direction: column;
 				gap: 0.25rem;
-				align-items: flex-start;
+				align-items: stretch;
 				margin-bottom: 0.5rem;
+				width: 100%;
 			}
 
 			.header-name {
@@ -123,7 +121,6 @@ td:first-child {
 table thead th {
 	padding-bottom: 0.5rem;
 	padding-top: 0.3rem;
-	border: 0.5px solid var(--color-light-grey);
 }
 
 /* Adjust the inner elements to maintain proper spacing */
@@ -134,15 +131,14 @@ table thead th > div {
 
 th,
 td {
+	border: 0.04rem solid var(--color-light-grey); // LEAVE THIS ONE. Chris 4 Mar 2025
 	width: var(--column-width);
 	min-width: var(--column-width);
 	max-width: var(--column-width);
 	// overflow: hidden;
-
 	white-space: nowrap;
 	padding: 1px;
 	background-color: var(--pico-background-color);
-	border: 0.5px solid var(--color-light-grey);
 
 	&:hover {
 		background-color: rgb(55, 55, 55);
@@ -213,28 +209,46 @@ td:first-child {
 }
 
 select {
-	border-width: 0.1rem !important;
-	margin-bottom: -0.3rem;
+	/* Reset Pico CSS variables that affect borders */
+	--pico-border-color: var(--color-light-grey) !important;
+	--pico-border-width: 0.05rem !important;
+	--pico-form-element-border-color: var(--color-light-grey) !important;
+	background-color: var(--color-grey);
+	border-width: 0.05rem !important;
+	border-style: solid !important;
+	border-color: var(--color-light-grey) !important;
+	border: 0.05rem solid var(--color-light-grey) !important;
+	margin-bottom: -0.1rem;
 	font-size: 0.5rem;
-	// overflow-x: auto;
-	// white-space: nowrap; /* Prevent wrapping */
 	background-image: url("data:image/svg+xml;charset=UTF-8,%3csvs xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='white' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
-	// background-position: right 0.1rem center; /* Position the dropdown arrow */
-	padding: 0.2rem 1.5rem 0.2rem 0.4rem !important; /* Left/right padding to position text properly */
-
+	padding: 0.2rem 1.5rem 0.2rem 0.4rem !important; 
 	color: var(--color-white);
+	// gap: 0.25rem;
 	cursor: pointer;
 	&:hover {
 		background-color: var(--color-light-grey);
 	}
 }
 
-// Type select, no dropdown on Transplant page
-.header-controls {
-	display: flex;
-	flex-direction: column;
-	gap: 0.25rem;
-	align-items: flex-start;
+.type-display {
+	display: block;
+	background-color: var(--color-grey);
+	border: 0.05rem solid var(--color-light-grey); // Type Select
+	border-radius: 0.25rem;
+	padding: 0.2rem 1.5rem 0.2rem 0.4rem !important;
+	font-size: 0.6rem;
+	margin-bottom: 0.4rem;
+	text-align: left;
+	width: 100%;
+	box-sizing: border-box;
+	// min-width: 4rem;
+	color: var(--color-white);
+	cursor: default;
+	user-select: none;
+	// background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='white' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
+	background-position: right 0.1rem center;
+	background-repeat: no-repeat;
+	background-size: 1rem auto;
 }
 
 .header-text {
@@ -246,25 +260,6 @@ select {
 	margin-top: 0.25rem;
 }
 
-.type-display {
-	display: inline-block;
-	background-color: var(--color-grey);
-	border: 1px solid #444444 !important;
-	border-width: 0.1rem !important;
-	border-radius: 0.25rem;
-	padding: 0.2rem 1.5rem 0.2rem 0.4rem !important;
-	font-size: 0.6rem;
-	text-align: left;
-	width: fit-content;
-	min-width: 4rem;
-	color: var(--color-white);
-	cursor: default;
-	user-select: none;
-	// background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='white' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
-	background-position: right 0.1rem center;
-	background-repeat: no-repeat;
-	background-size: 1rem auto;
-}
 
 .number-cell {
 	text-align: right;
@@ -297,7 +292,7 @@ button,
 .transform-button {
 	background: var(--button-background);
 	color: var(--button-color);
-	border: var(--button-border);
+	border: 0.04rem solid var(--color-light-grey);
 	padding: var(--button-padding);
 	margin: var(--button-margin);
 	border-radius: var(--button-radius);
@@ -318,51 +313,9 @@ button,
 	background-color: var(--header-background) !important;
 }
 
-/* Dark mode contrast improvements */
-:root {
-	/* Enhance contrast for better readability */
-	--color-white: #f0f0f0; /* Brighter white */
-	--color-light-grey: #3a3a3a; /* Slightly lighter for better contrast */
-	--color-grey: #212121; /* Keep as is */
-	--color-black: #121212; /* Keep as is */
-	--color-purple: #9a3aff; /* Brighter purple for better visibility */
-
-	/* Improve text contrast */
-	--pico-form-element-color: var(--color-white);
-	--pico-form-element-background-color: var(--color-grey);
-	--pico-form-element-border-color: #444444;
-
-	/* Enhance focus states */
-	--pico-form-element-focus-color: var(--color-purple);
-}
-
-/* Improve table contrast */
-table {
-	--border-color: #444444;
-	border-color: var(--border-color);
-}
-
-th,
-td {
-	border-color: var(--border-color);
-}
-
-/* Enhance select contrast */
-select {
-	background-color: var(--color-grey);
-	color: var(--color-white);
-	border-color: #444444 !important;
-
-	&:hover {
-		background-color: var(--color-light-grey);
-	}
-
-	&:focus {
-		border-color: var(--color-purple) !important;
-	}
-}
-
-/* Responsive Adjustment */
+/* ============================================================================
+   BREAKPOINTS
+   ============================================================================ */
 @media (max-width: 768px) {
 	th,
 	td {
@@ -371,46 +324,21 @@ select {
 	}
 }
 
-thead th {
-	position: sticky !important;
-	top: 0;
-	z-index: 2;
-	padding: 0.3rem;
-}
+// thead th {
+// 	position: sticky !important;
+// 	top: 0;
+// 	z-index: 2;
+// 	padding: 0.3rem;
+// }
 
 @media (max-width: 480px) {
-	table {
-		width: 100%;
-		overflow-x: auto;
-		display: block;
-		margin-left: -1rem;
-		margin-right: -1rem;
-		// width: calc(100% + 2rem);
-	}
-
-	thead {
-		position: sticky;
-		top: 0;
-		z-index: 2;
-		background-color: var(--pico-background-color);
-	}
-
-	// head {
-	// 	position: sticky;
-	// 	top: -1px; /* Compensate for border */
-	// 	z-index: 3;
-	// 	margin: 0;
-	// 	padding: 0;
+	// table {
+	// 	width: 100%;
+	// 	overflow-x: auto;
+	// 	display: block;
+	// 	margin-left: -1rem;
+	// 	margin-right: -1rem;
+	// 	// width: calc(100% + 2rem);
 	// }
-}
 
-/* Safari and Brave sticky fix */
-thead,
-th:first-child,
-td:first-child,
-thead th,
-thead th:first-child {
-	/* Force hardware acceleration */
-	transform: translateZ(0);
-	-webkit-transform: translateZ(0);
 }
