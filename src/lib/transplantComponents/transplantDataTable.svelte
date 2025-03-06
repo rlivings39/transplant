@@ -3,18 +3,8 @@
 	import { transformedDataService } from '$lib/stores/transformStore';
 	import { goto } from '$app/navigation';
 
-	// Define the ValidatedTransformData interface
-	interface ValidatedTransformData {
-		records: Array<{
-			[key: string]: string | number | null;
-		}>;
-		columnTypes: {
-			[key: string]: 'string' | 'number' | 'date' | 'gps' | 'latitude' | 'longitude';
-		};
-	}
-
 	// Local state using runes
-	let localData = $state<ValidatedTransformData | null>(null);
+	let localData = $state(null);
 	let dataSource = $state('none');
 	let debug = $state('Waiting for data...');
 	let totalRecords = $state(0); // Track total number of records
@@ -37,119 +27,41 @@
 		}
 
 		if (rawData && rawData.records && rawData.records.length > 0) {
-			try {
-				// Make a clean copy of the data to avoid Svelte 5 proxy issues
-				const cleanData = {
-					records: JSON.parse(JSON.stringify(rawData.records)),
-					columnTypes: JSON.parse(JSON.stringify(rawData.columnTypes))
-				};
+			localData = rawData;
+			totalRecords = rawData.records.length; // Store total record count
+			dataSource = 'store';
+			debug = 'Data successfully loaded from Transform stage';
 
-				// Validate the data structure
-				const isValidStructure = validateDataStructure(cleanData);
+			// Add console logs to show detailed information about the data being received and the types of each record
+			console.log('Local Data:', localData);
+			console.log('Total Records:', totalRecords);
 
-				if (isValidStructure) {
-					localData = cleanData;
-					totalRecords = cleanData.records.length; // Store total record count
-					dataSource = 'store';
-					debug = 'Data successfully loaded from Transform stage';
-				} else {
-					console.error('Data structure validation failed');
-					debug = 'Error: Invalid data structure received from Transform stage';
-				}
-			} catch (error) {
-				console.error('Error processing data:', error);
-				debug = 'Error processing data: ' + error.message;
+			// Create JSON object structure
+			let jsonObject = {
+				headers: [],
+				data: {}
+			};
+
+			if (localData && localData.records) {
+				// Populate the headers
+				Object.keys(localData.records[0]).forEach((header) => {
+					jsonObject.headers.push({ header: header, category: 'random' }); // Treat as a random attribute
+					jsonObject.data[header] = []; // Initialize the array for this header
+				});
+
+				// Populate the data
+				localData.records.forEach((record) => {
+					Object.keys(record).forEach((header) => {
+						jsonObject.data[header].push(record[header]); // Push the value into the array
+					});
+				});
+
+				console.log('JSON Object:', JSON.stringify(jsonObject, null, 2)); // Log the JSON object
 			}
 		} else {
 			debug = 'No data found. Please go to transform page first.';
 		}
 	});
-
-	// Function to validate the data structure
-	function validateDataStructure(data: any): boolean {
-		// Check if data has the required properties
-		if (!data || !data.records || !data.columnTypes) {
-			console.error('Missing required properties in data');
-			return false;
-		}
-
-		// Check if records is an array
-		if (!Array.isArray(data.records)) {
-			console.error('Records is not an array');
-			return false;
-		}
-
-		// Check if we have any records
-		if (data.records.length === 0) {
-			console.error('No records found');
-			return false;
-		}
-
-		// Check if columnTypes is an object
-		if (typeof data.columnTypes !== 'object' || data.columnTypes === null) {
-			console.error('ColumnTypes is not an object');
-			return false;
-		}
-
-		// Skip detailed type validation - just make sure the basic structure is correct
-		return true;
-	}
-
-	// Function to format type name for display
-	function formatTypeName(type: string, header: string): string {
-		// First try to determine type from the column name if header is provided
-		const lowerHeader = header.toLowerCase();
-
-		// GPS related columns
-		if (lowerHeader.includes('gps')) {
-			console.log(`Using GPS type for column "${header}"`);
-			return 'GPS';
-		}
-
-		// Latitude/Longitude columns
-		if (lowerHeader.includes('lat')) {
-			console.log(`Using Latitude type for column "${header}"`);
-			return 'Latitude';
-		}
-		if (lowerHeader.includes('lon') || lowerHeader.includes('lng')) {
-			console.log(`Using Longitude type for column "${header}"`);
-			return 'Longitude';
-		}
-
-		// Number columns
-		if (lowerHeader.includes('number') || lowerHeader.includes('num')) {
-			console.log(`Using Number type for column "${header}"`);
-			return 'Number';
-		}
-
-		// Date columns
-		if (
-			lowerHeader.includes('date') ||
-			lowerHeader.includes('time') ||
-			lowerHeader.includes('dms_1')
-		) {
-			console.log(`Using Date type for column "${header}"`);
-			return 'Date';
-		}
-
-		// If no header-based type, use the provided type
-		switch (type) {
-			case 'string':
-				return 'String';
-			case 'number':
-				return 'Number';
-			case 'date':
-				return 'Date';
-			case 'gps':
-				return 'GPS';
-			case 'latitude':
-				return 'Latitude';
-			case 'longitude':
-				return 'Longitude';
-			default:
-				return 'String';
-		}
-	}
 </script>
 
 <!-- Debug info can be uncommented if needed -->
@@ -160,7 +72,6 @@
 	<p><strong>Data available:</strong> {localData ? 'Yes' : 'No'}</p>
 	{#if localData}
 		<p><strong>Records:</strong> {localData.records?.length || 0}</p>
-		<p><strong>Column types:</strong> {Object.keys(localData.columnTypes || {}).length}</p>
 	{/if}
 </div> -->
 
@@ -171,34 +82,24 @@
 				<tr>
 					{#each Object.keys(localData.records[0]) as header}
 						<th>
-							<div class="header-controls">
-								<span
-									class="type-pseudo-select"
-									data-type={formatTypeName(localData.columnTypes[header], header)}
-								>
-									{formatTypeName(localData.columnTypes[header], header)}
-									<!-- Debug output -->
-									<span style="display: none;">Raw type: {localData.columnTypes[header]}</span>
-								</span>
-								<span class="header-text">{header}</span>
-							</div>
+							<span class="header-text">{header}</span>
 						</th>
 					{/each}
 				</tr>
 			</thead>
 			<tbody>
-				{#each localData.records.slice(0, 5) as record}
+				{#each localData.records as record}
 					<tr>
-						{#each Object.keys(record) as key}
-							<td>{record[key]}</td>
+						{#each Object.keys(record) as header}
+							<td>{record[header]}</td>
 						{/each}
 					</tr>
 				{/each}
 			</tbody>
 		</table>
-		{#if totalRecords > 5}
+		{#if totalRecords > 0}
 			<div class="record-count-info">
-				<p>Showing 5 of {totalRecords} records</p>
+				<p>Showing {totalRecords} records</p>
 			</div>
 		{/if}
 	{:else}
@@ -214,7 +115,6 @@
 	<div class="data-summary">
 		<h3>Data Summary</h3>
 		<p>Total records: {localData.records.length}</p>
-		<p>Columns: {Object.keys(localData.columnTypes).join(', ')}</p>
 	</div>
 {/if} -->
 

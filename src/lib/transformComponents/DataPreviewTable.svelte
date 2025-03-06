@@ -31,7 +31,6 @@
 	}
 </script>
 
-
 <div>
 	<div class="header-container">
 		<div class="header-actions"></div>
@@ -99,5 +98,3 @@
 		</table>
 	</div>
 </div>
-
-
