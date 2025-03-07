@@ -2,14 +2,20 @@
  * Type Mapping Utility
  *
  * Maps between Transform data types and database schema types
- * Ensures consistency between the two systems
+ * Ensures consistency between the two systems by deriving types directly from the database schema
  */
+
+import { land, crop, planting } from '$lib/server/db/schema';
+import type { PgTable } from 'drizzle-orm/pg-core';
 
 // Transform data types
 export type TransformDataType = 'string' | 'number' | 'date' | 'gps' | 'latitude' | 'longitude';
 
 // Database schema types
 export type DatabaseFieldType = 'string' | 'numeric' | 'timestamp' | 'integer' | 'boolean' | 'json';
+
+// Table names type
+export type TableName = 'Land' | 'Crop' | 'Planting';
 
 // Validation specifications for each type
 export interface TypeValidationSpec {
@@ -78,6 +84,92 @@ export const typeValidationSpecs: Record<TransformDataType, TypeValidationSpec> 
 		description: 'Longitude coordinate (-180 to 180 degrees)'
 	}
 };
+
+// Map schema tables to their PgTable definitions
+const schemaTableMap: Record<TableName, PgTable> = {
+	Land: land,
+	Crop: crop,
+	Planting: planting
+};
+
+// Map Drizzle column types to TransformDataType
+function mapDbColumnTypeToTransformType(columnType: string): TransformDataType {
+	switch (columnType) {
+		case 'text':
+			return 'string';
+		case 'numeric':
+			return 'number';
+		case 'integer':
+			return 'number';
+		case 'timestamp':
+			return 'date';
+		case 'boolean':
+			return 'string'; // We'll represent booleans as strings in the UI
+		case 'json':
+			return 'string'; // JSON will be represented as strings
+		default:
+			return 'string';
+	}
+}
+
+// Special case handling for GPS coordinates
+function isGpsField(columnName: string): boolean {
+	return columnName === 'gps_lat' || columnName === 'gps_lon';
+}
+
+// Get the specific GPS type based on column name
+function getGpsType(columnName: string): TransformDataType {
+	if (columnName === 'gps_lat') return 'latitude';
+	if (columnName === 'gps_lon') return 'longitude';
+	return 'string';
+}
+
+// Get column type from schema definition
+export function getColumnTypeFromSchema(
+	tableName: TableName,
+	columnName: string
+): TransformDataType {
+	const table = schemaTableMap[tableName];
+	if (!table) return 'string';
+
+	// Access the column definition
+	const columnDef = table[columnName];
+	if (!columnDef) return 'string';
+
+	// Special handling for GPS fields
+	if (isGpsField(columnName)) {
+		return getGpsType(columnName);
+	}
+
+	// Get the column type from the Drizzle definition
+	const columnType = columnDef.dataType?.toLowerCase();
+	return mapDbColumnTypeToTransformType(columnType);
+}
+
+// Check if a column is required based on schema
+export function isColumnRequired(tableName: TableName, columnName: string): boolean {
+	const table = schemaTableMap[tableName];
+	if (!table) return false;
+
+	const columnDef = table[columnName];
+	if (!columnDef) return false;
+
+	// In Drizzle, notNull() indicates a required field
+	return columnDef.notNull === true;
+}
+
+// Get all columns for a table from schema
+export function getTableColumns(tableName: TableName): string[] {
+	const table = schemaTableMap[tableName];
+	if (!table) return [];
+
+	// Extract column names from the table definition
+	return Object.keys(table).filter(
+		(key) =>
+			// Filter out methods and properties that aren't column definitions
+			typeof table[key] === 'object' && table[key] !== null && !key.startsWith('_')
+	);
+}
 
 // Map Transform type to Database type
 export function mapToDatabaseType(transformType: TransformDataType): DatabaseFieldType {
