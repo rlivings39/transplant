@@ -152,7 +152,7 @@
 	</div>
 {/if} -->
 
-<style>
+<!-- <style>
 	.record-count-info {
 		font-size: 0.8rem;
 		color: var(--color-light-grey);
@@ -182,4 +182,4 @@
 	.header-text {
 		margin-right: 15px;
 	}
-</style>
+</style> -->
