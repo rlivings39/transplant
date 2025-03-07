@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
+	import { transformedDataService } from '$lib/stores/transformStore';
 
 	// Define table name type
 	type TableName = 'Planting' | 'Land' | 'Crop';
@@ -53,9 +54,23 @@
 
 	// Empty data arrays for each table (3 empty rows)
 	const emptyRows = 3;
-	let plantingData = Array(emptyRows).fill({});
-	let landData = Array(emptyRows).fill({});
-	let cropData = Array(emptyRows).fill({});
+	let plantingData = $state(Array(emptyRows).fill({}));
+	let landData = $state(Array(emptyRows).fill({}));
+	let cropData = $state(Array(emptyRows).fill({}));
+
+	// Mapping state to track which CSV columns are mapped to which table fields
+	let mappings = $state<Record<string, string>>({});
+	let dragOverField = $state<{ table: string; field: string } | null>(null);
+
+	// Get data from the transform service
+	let transformData = $state<any>(null);
+
+	onMount(() => {
+		const data = transformedDataService.getData();
+		if (data) {
+			transformData = data;
+		}
+	});
 
 	// Function to get table data by name
 	function getTableData(tableName: TableName): any[] {
@@ -90,6 +105,92 @@
 				return 'String';
 		}
 	}
+
+	// Drag and drop handlers
+	function handleDragOver(event: DragEvent, table: string, field: string) {
+		event.preventDefault();
+		event.dataTransfer!.dropEffect = 'move';
+		dragOverField = { table, field };
+	}
+
+	function handleDragLeave() {
+		dragOverField = null;
+	}
+
+	function handleDrop(event: DragEvent, table: string, field: string) {
+		event.preventDefault();
+		dragOverField = null;
+
+		const csvColumn = event.dataTransfer?.getData('text/plain');
+		if (!csvColumn || !transformData) return;
+
+		console.log(`Dropped ${csvColumn} onto ${table}.${field}`);
+
+		// Clear any existing mappings to this target field
+		Object.entries(mappings).forEach(([col, mapping]) => {
+			if (mapping === `${table}.${field}`) {
+				mappings[col] = '';
+			}
+		});
+
+		// Set the new mapping
+		mappings = {
+			...mappings,
+			[csvColumn]: `${table}.${field}`
+		};
+
+		// Update the preview data for the table
+		updatePreviewData(table, field, csvColumn);
+	}
+
+	function updatePreviewData(table: string, field: string, csvColumn: string) {
+		if (!transformData || !transformData.records || transformData.records.length === 0) return;
+
+		// Get the first few records to display in the preview
+		const previewRecords = transformData.records.slice(0, emptyRows);
+
+		// Update the appropriate table data
+		if (table === 'Planting') {
+			plantingData = plantingData.map((row, index) => {
+				if (index < previewRecords.length) {
+					return {
+						...row,
+						[field]: previewRecords[index][csvColumn]
+					};
+				}
+				return row;
+			});
+		} else if (table === 'Land') {
+			landData = landData.map((row, index) => {
+				if (index < previewRecords.length) {
+					return {
+						...row,
+						[field]: previewRecords[index][csvColumn]
+					};
+				}
+				return row;
+			});
+		} else if (table === 'Crop') {
+			cropData = cropData.map((row, index) => {
+				if (index < previewRecords.length) {
+					return {
+						...row,
+						[field]: previewRecords[index][csvColumn]
+					};
+				}
+				return row;
+			});
+		}
+	}
+
+	function isFieldMapped(table: string, field: string): boolean {
+		return Object.values(mappings).includes(`${table}.${field}`);
+	}
+
+	function getMappedColumn(table: string, field: string): string | null {
+		const entry = Object.entries(mappings).find(([_, mapping]) => mapping === `${table}.${field}`);
+		return entry ? entry[0] : null;
+	}
 </script>
 
 <br />
@@ -103,7 +204,12 @@
 					<thead>
 						<tr>
 							{#each tableHeaders[tableName as TableName] as header}
-								<th class={tableName !== 'Planting' ? 'static-table-header' : ''}>
+								<th
+									class={`${tableName !== 'Planting' ? 'static-table-header' : ''} ${isFieldMapped(tableName, header) ? 'mapped-field' : ''} ${dragOverField?.table === tableName && dragOverField?.field === header ? 'drag-over' : ''}`}
+									ondragover={(e) => handleDragOver(e, tableName, header)}
+									ondragleave={handleDragLeave}
+									ondrop={(e) => handleDrop(e, tableName, header)}
+								>
 									<div class="header-controls">
 										<span
 											class="type-pseudo-select"
@@ -112,16 +218,21 @@
 											{formatTypeName(tableColumnTypes[tableName as TableName][header])}
 										</span>
 										<span class="header-text">{header}</span>
+										{#if isFieldMapped(tableName, header)}
+											<span class="mapped-indicator">
+												← {getMappedColumn(tableName, header)}
+											</span>
+										{/if}
 									</div>
 								</th>
 							{/each}
 						</tr>
 					</thead>
 					<tbody>
-						{#each getTableData(tableName as TableName) as _, rowIndex}
+						{#each getTableData(tableName as TableName) as row, rowIndex}
 							<tr>
 								{#each tableHeaders[tableName as TableName] as header}
-									<td></td>
+									<td>{row[header] || ''}</td>
 								{/each}
 							</tr>
 						{/each}
@@ -201,7 +312,19 @@
 		color: #4a148c;
 	}
 
-	.header-text {
-		font-weight: normal;
+	.drag-over {
+		background-color: #e3f2fd !important;
+		border: 2px dashed #2196f3 !important;
+	}
+
+	.mapped-field {
+		background-color: #e8f5e9 !important;
+	}
+
+	.mapped-indicator {
+		font-size: 0.8rem;
+		color: #1b5e20;
+		font-weight: bold;
+		margin-top: 0.25rem;
 	}
 </style>

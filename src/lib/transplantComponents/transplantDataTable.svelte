@@ -19,11 +19,27 @@
 	let debug = $state('Waiting for data...');
 	let totalRecords = $state(0); // Track total number of records
 
+	// Add drag state
+	let draggedHeader = $state<string | null>(null);
+
 	// Function to return to transform page
 	function returnToTransform() {
 		// Clear data and navigate back
 		transformedDataService.clear();
 		goto('/transform');
+	}
+
+	// Drag event handlers
+	function handleDragStart(event: DragEvent, header: string) {
+		if (event.dataTransfer) {
+			event.dataTransfer.setData('text/plain', header);
+			event.dataTransfer.effectAllowed = 'move';
+			draggedHeader = header;
+		}
+	}
+
+	function handleDragEnd() {
+		draggedHeader = null;
 	}
 
 	// Load data on component mount
@@ -94,8 +110,14 @@
 			<thead>
 				<tr>
 					{#each Object.keys(localData.records[0]) as header}
-						<th>
+						<th
+							draggable="true"
+							ondragstart={(e) => handleDragStart(e, header)}
+							ondragend={handleDragEnd}
+							class={draggedHeader === header ? 'dragging' : ''}
+						>
 							<span class="header-text">{header}</span>
+							<span class="drag-handle">⇅</span>
 						</th>
 					{/each}
 				</tr>
@@ -136,5 +158,28 @@
 		color: var(--color-light-grey);
 		text-align: right;
 		padding: 0.5rem;
+	}
+
+	th {
+		position: relative;
+		cursor: grab;
+	}
+
+	th.dragging {
+		opacity: 0.7;
+		background-color: #f0f0f0;
+	}
+
+	.drag-handle {
+		position: absolute;
+		right: 5px;
+		top: 50%;
+		transform: translateY(-50%);
+		font-size: 0.8rem;
+		color: #888;
+	}
+
+	.header-text {
+		margin-right: 15px;
 	}
 </style>
