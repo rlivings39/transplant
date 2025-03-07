@@ -3,8 +3,18 @@
 	import { transformedDataService } from '$lib/stores/transformStore';
 	import { goto } from '$app/navigation';
 
+	// Interface for validated transform data
+	interface ValidatedTransformData {
+		records: Array<{
+			[key: string]: string | number | null;
+		}>;
+		columnTypes: {
+			[key: string]: 'string' | 'number' | 'date' | 'gps' | 'latitude' | 'longitude';
+		};
+	}
+
 	// Local state using runes
-	let localData = $state(null);
+	let localData = $state<ValidatedTransformData | null>(null);
 	let dataSource = $state('none');
 	let debug = $state('Waiting for data...');
 	let totalRecords = $state(0); // Track total number of records
@@ -27,7 +37,7 @@
 		}
 
 		if (rawData && rawData.records && rawData.records.length > 0) {
-			localData = rawData;
+			localData = rawData as ValidatedTransformData;
 			totalRecords = rawData.records.length; // Store total record count
 			dataSource = 'store';
 			debug = 'Data successfully loaded from Transform stage';
@@ -37,7 +47,10 @@
 			console.log('Total Records:', totalRecords);
 
 			// Create JSON object structure
-			let jsonObject = {
+			let jsonObject: {
+				headers: Array<{ header: string; category: string }>;
+				data: Record<string, any[]>;
+			} = {
 				headers: [],
 				data: {}
 			};
@@ -104,8 +117,7 @@
 		{/if}
 	{:else}
 		<p>
-			No data available to display. <button on:click={returnToTransform}>Return to Transform</button
-			>
+			No data available to display. <button onclick={returnToTransform}>Return to Transform</button>
 		</p>
 	{/if}
 </div>
