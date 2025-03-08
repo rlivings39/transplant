@@ -24,7 +24,7 @@
 	}
 
 	let columnHeaders = $derived(rows.length > 0 ? Object.keys(rows[0]) : []);
-	let previewRows = $derived(rows.slice(0, 500));
+	let previewRows = $derived(rows.slice(0, 4)); // Show only 4 rows instead of 500
 
 	function isGreyedOut(columnHeader: string, rowIndex: number): boolean {
 		return toggledColumns[columnHeader] || invalidCells[columnHeader]?.has(rowIndex);
@@ -97,4 +97,9 @@
 			</tbody>
 		</table>
 	</div>
+	{#if rows.length > 4}
+		<div class="record-count-info">
+			<p>Showing 4 of {rows.length} records</p>
+		</div>
+	{/if}
 </div>

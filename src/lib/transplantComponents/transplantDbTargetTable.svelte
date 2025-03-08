@@ -12,8 +12,8 @@
 	let schemaError = $state<string | null>(null);
 	let tableNames = $state<string[]>([]);
 
-	// Empty data arrays for each table (3 empty rows)
-	const emptyRows = 3;
+	// Empty data arrays for each table (4 empty rows)
+	const emptyRows = 4;
 	let tableData = $state<Record<string, any[]>>({});
 
 	// Mapping state to track which CSV columns are mapped to which table fields
