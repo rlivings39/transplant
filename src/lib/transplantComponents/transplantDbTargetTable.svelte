@@ -16,15 +16,13 @@
 	let schemaRelationships = $state<Record<string, any> | null>(null);
 	let schemaColumnTypes = $state<Record<string, Record<string, string>> | null>(null);
 	let schemaTableHeaders = $state<Record<string, string[]> | null>(null);
-	let isSchemaLoading = $state(true);
+	let isSchemaLoading = $state<boolean>(true);
 	let schemaError = $state<string | null>(null);
+
+	// Table data state
 	let tableNames = $state<string[]>([]);
-
-	// Empty data arrays for each table (4 empty rows)
-	const emptyRows = 4;
 	let tableData = $state<Record<string, any[]>>({});
-
-	// Mapping state to track which CSV columns are mapped to which table fields
+	const emptyRows = 4;
 	let mappings = $state<Record<string, string>>({});
 	let dragOverField = $state<{ table: string; field: string } | null>(null);
 
@@ -34,82 +32,87 @@
 	// Get data from the transform service
 	let transformData = $state<any>(null);
 
+	// Track last processed column type to prevent infinite loop
+	let lastProcessedColumnType = $state<string | null>(null);
+
 	// Watch for changes to draggedColumn prop
 	$effect(() => {
-		if (draggedColumn) {
-			// Calculate compatible targets for this column type
+		if (draggedColumn && draggedColumn.columnType !== lastProcessedColumnType) {
+			// Only update compatible targets if the column type has changed
+			lastProcessedColumnType = draggedColumn.columnType;
 			updateCompatibleTargets(draggedColumn.columnType);
-			console.log(
-				`Calculating compatible targets for ${draggedColumn.header} of type ${draggedColumn.columnType}`
-			);
-		} else {
+		} else if (!draggedColumn) {
 			// Clear compatible targets when not dragging
+			lastProcessedColumnType = null;
 			compatibleTargets = {};
 		}
 	});
 
 	// Function to update compatible targets based on column type
 	function updateCompatibleTargets(columnType: string) {
-		compatibleTargets = {};
+		const newCompatibleTargets: Record<string, string[]> = {};
 
 		if (schemaColumnTypes) {
 			Object.entries(schemaColumnTypes).forEach(([tableName, columns]) => {
-				compatibleTargets[tableName] = [];
+				newCompatibleTargets[tableName] = [];
 
 				Object.entries(columns).forEach(([fieldName, fieldType]) => {
 					if (isTypeCompatible(columnType, fieldType)) {
-						compatibleTargets[tableName].push(fieldName);
+						newCompatibleTargets[tableName].push(fieldName);
 					}
 				});
 			});
 		}
 
-		console.log(`Column of type ${columnType} can be mapped to:`, compatibleTargets);
+		// Set the state once after all calculations are done
+		compatibleTargets = newCompatibleTargets;
 	}
 
 	onMount(async () => {
 		console.log('TransplantDbTargetTable: Component mounted');
 
-		// Load schema metadata
 		try {
-			console.log('TransplantDbTargetTable: Loading schema metadata...');
-			await schemaService.loadSchemaMetadata();
-
-			// Subscribe to schema data
-			const unsubscribeMetadata = schemaService.metadata.subscribe((data) => {
-				schemaMetadata = data;
-				if (data) {
-					tableNames = Object.keys(data);
-					console.log(
-						'TransplantDbTargetTable: Loaded',
-						tableNames.length,
-						'tables:',
-						tableNames.join(', ')
-					);
-
-					// Initialize empty data for each table
-					tableNames.forEach((tableName) => {
-						if (!tableData[tableName]) {
-							tableData[tableName] = Array(emptyRows).fill({});
-						}
-					});
-				} else {
-					console.warn('TransplantDbTargetTable: Schema metadata is null or empty');
+			// Subscribe to schema metadata
+			const unsubscribeMetadata = schemaService.metadata.subscribe((metadata) => {
+				schemaMetadata = metadata;
+				if (metadata) {
+					console.log('TransplantDbTargetTable: Schema metadata loaded');
 				}
 			});
 
-			const unsubscribeRelationships = schemaService.relationships.subscribe((data) => {
-				schemaRelationships = data;
+			// Subscribe to schema relationships
+			const unsubscribeRelationships = schemaService.relationships.subscribe((relationships) => {
+				schemaRelationships = relationships;
+				if (relationships) {
+					console.log('TransplantDbTargetTable: Schema relationships loaded');
+				}
 			});
 
-			const unsubscribeColumnTypes = schemaService.columnTypes.subscribe((data) => {
-				schemaColumnTypes = data;
+			// Subscribe to schema column types
+			const unsubscribeColumnTypes = schemaService.columnTypes.subscribe((columnTypes) => {
+				schemaColumnTypes = columnTypes;
+				if (columnTypes) {
+					console.log('TransplantDbTargetTable: Schema column types loaded');
+					// Initialize table data with empty rows
+					const tables = Object.keys(columnTypes);
+					tableNames = tables;
+					tables.forEach((table) => {
+						if (!tableData[table]) {
+							tableData[table] = Array(emptyRows).fill({});
+						}
+					});
+				}
 			});
 
-			const unsubscribeTableHeaders = schemaService.tableHeaders.subscribe((data) => {
-				schemaTableHeaders = data;
+			// Subscribe to schema table headers
+			const unsubscribeTableHeaders = schemaService.tableHeaders.subscribe((tableHeaders) => {
+				schemaTableHeaders = tableHeaders;
+				if (tableHeaders) {
+					console.log('TransplantDbTargetTable: Schema table headers loaded');
+				}
 			});
 
+			// Subscribe to schema loading state
 			const unsubscribeLoading = schemaService.isLoading.subscribe((loading) => {
 				isSchemaLoading = loading;
 				if (!loading) {
@@ -234,14 +237,16 @@
 		}
 
 		// Clear any existing mappings to this target field
-		Object.entries(mappings).forEach(([col, mapping]) => {
+		const updatedMappings = { ...mappings };
+		Object.entries(updatedMappings).forEach(([col, mapping]) => {
 			if (mapping === `${table}.${field}`) {
-				delete mappings[col];
+				delete updatedMappings[col];
 			}
 		});
 
 		// Create new mapping
-		mappings[csvColumn] = `${table}.${field}`;
+		updatedMappings[csvColumn] = `${table}.${field}`;
+		mappings = updatedMappings;
 
 		// Update the preview data
 		updatePreviewData(table, field, csvColumn);
@@ -264,6 +269,11 @@
 		// Create a copy of the current table data
 		const updatedTableData = { ...tableData };
 
+		// Initialize the table if it doesn't exist
+		if (!updatedTableData[table]) {
+			updatedTableData[table] = Array(emptyRows).fill({});
+		}
+
 		// Update the field in each row with the corresponding CSV data
 		updatedTableData[table] = updatedTableData[table].map((row, index) => {
 			if (index < transformData.records.length) {
@@ -281,9 +291,10 @@
 
 	// Propagate data to related tables if needed
 	function propagateData(table: string, field: string, csvColumn: string) {
-		// Implementation for data propagation between tables
-		// This would use the schemaRelationships to determine which fields
-		// should be propagated to other tables
+		// Implementation for data propagation between tables based on schema relationships
+		if (!schemaRelationships) return;
+
+		// This is a placeholder for the actual implementation
 		console.log(`Propagation for ${table}.${field} not yet implemented`);
 	}
 
@@ -313,17 +324,14 @@
 	}
 </script>
 
-<br />
-<br />
 {#if isSchemaLoading}
-	<div class="loading-indicator">Loading schema metadata...</div>
+	<div class="loading-indicator">
+		<p>Loading schema metadata...</p>
+	</div>
 {:else if schemaError}
 	<div class="error-message">
-		Error loading schema: {schemaError}
-		<button onclick={() => schemaService.loadSchemaMetadata()}>Retry</button>
+		<p>Error loading schema: {schemaError}</p>
 	</div>
-{:else if !schemaTableHeaders || !schemaColumnTypes}
-	<div class="error-message">No schema metadata available</div>
 {:else}
 	<div class="database-tables-container">
 		<!-- Debug information -->
@@ -339,7 +347,7 @@
 
 		{#each tableNames as tableName}
 			<div class="table-section">
-				<h4 class="table-title">{tableName}</h4>
+				<h3 class="table-title">{tableName}</h3>
 				<div class="table-container">
 					<table>
 						<thead>
@@ -357,18 +365,16 @@
 										ondrop={(e) => handleDrop(e, tableName, header)}
 									>
 										<div class="header-controls">
+											<span class="header-text">{header}</span>
 											<span
 												class="type-pseudo-select"
-												data-type={formatTypeName(
-													schemaColumnTypes[tableName]?.[header] || 'unknown'
-												)}
+												data-type={schemaColumnTypes[tableName]?.[header]}
 											>
-												{formatTypeName(schemaColumnTypes[tableName]?.[header] || 'unknown')}
+												{formatTypeName(schemaColumnTypes[tableName]?.[header] || '')}
 											</span>
-											<span class="header-text">{header}</span>
 											{#if isFieldMapped(tableName, header)}
 												<span class="mapped-indicator">
-													← {getMappedColumn(tableName, header)}
+													Mapped from: {getMappedColumn(tableName, header)}
 												</span>
 											{/if}
 										</div>
@@ -380,7 +386,9 @@
 							{#each getTableData(tableName) as row, rowIndex}
 								<tr>
 									{#each schemaTableHeaders[tableName] || [] as header}
-										<td>{row[header] || ''}</td>
+										<td class={isFieldMapped(tableName, header) ? 'mapped-cell' : ''}>
+											{row[header] !== undefined ? row[header] : ''}
+										</td>
 									{/each}
 								</tr>
 							{/each}
@@ -396,13 +404,14 @@
 	.database-tables-container {
 		display: flex;
 		flex-direction: column;
-		gap: 2rem;
+		gap: 1.5rem;
 	}
 
 	.table-section {
 		border: 1px solid #ddd;
 		border-radius: 4px;
 		overflow: hidden;
+		margin-bottom: 1.5rem;
 	}
 
 	.table-title {
@@ -450,6 +459,10 @@
 
 	.mapped-field {
 		background-color: #e6f7ff;
+	}
+
+	.mapped-cell {
+		background-color: #f0f8ff;
 	}
 
 	.mapped-indicator {
