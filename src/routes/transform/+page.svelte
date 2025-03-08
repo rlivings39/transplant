@@ -48,36 +48,38 @@
 		csvDataLoaded = true;
 	}
 
+	
 	// Function to send data to TransPlant
 	function sendToTransplant() {
 		// Extract data from the DOM table
 		try {
 			// Get all table rows
 			const tableRows = document.querySelectorAll('table tbody tr');
-
+			
 			if (tableRows.length === 0) {
 				console.error('No table rows found');
-
+				
 				// Fall back to using transformed records if available
 				if (transformedRecords.length === 0) {
 					alert('No data available. Please transform data first.');
 					return;
 				}
 			}
-
+			
 			// Get headers from the table head
 			const headerCells = document.querySelectorAll('table thead th');
-
+			
 			if (headerCells.length === 0) {
 				console.error('No header cells found');
-
+				
 				// Fall back to using transformed records if available
 				if (transformedRecords.length === 0) {
 					alert('No data available. Please transform data first.');
 					return;
 				}
 			}
-
+			// let tableHeaders: unknown[] = [];
+			
 			// Extract headers and selector types
 			const tableHeaders = [];
 			const selectorTypes = {};

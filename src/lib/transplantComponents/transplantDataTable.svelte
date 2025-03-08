@@ -1,7 +1,10 @@
 <script lang="ts">
-	import { onMount } from 'svelte';
+	import { onMount, createEventDispatcher } from 'svelte';
 	import { transformedDataService } from '$lib/stores/transformStore';
 	import { goto } from '$app/navigation';
+
+	// Event dispatcher
+	const dispatch = createEventDispatcher();
 
 	// Interface for validated transform data
 	interface ValidatedTransformData {
@@ -32,17 +35,60 @@
 		goto('/transform');
 	}
 
+	// Get column type for a header
+	function getColumnType(header: string): string {
+		if (!localData || !localData.columnTypes) return 'string';
+
+		// Special case handling based on header name
+		if (header.startsWith('GPS')) return 'gps';
+		if (header === 'Latitude') return 'latitude';
+		if (header === 'Longitude') return 'longitude';
+		if (header === 'Date') return 'date';
+		if (header === 'Number' || header === 'Numberz') return 'number';
+		if (header === 'Country' || header === 'Text') return 'string';
+
+		// Use the type from columnTypes if available
+		return localData.columnTypes[header] || 'string';
+	}
+
+	// Format column type for display
+	function formatColumnType(type: string): string {
+		return type.charAt(0).toUpperCase() + type.slice(1);
+	}
+
 	// Drag event handlers
 	function handleDragStart(event: DragEvent, header: string) {
 		if (event.dataTransfer) {
+			const columnType = getColumnType(header);
+
 			event.dataTransfer.setData('text/plain', header);
+			event.dataTransfer.setData(
+				'application/json',
+				JSON.stringify({
+					header,
+					columnType
+				})
+			);
 			event.dataTransfer.effectAllowed = 'move';
 			draggedHeader = header;
+
+			// Dispatch event to parent component
+			dispatch('dragStart', {
+				header,
+				columnType
+			});
+
+			console.log(`Drag started for ${header} of type ${columnType}`);
 		}
 	}
 
 	function handleDragEnd() {
 		draggedHeader = null;
+
+		// Dispatch event to parent component
+		dispatch('dragEnd');
+
+		console.log('Drag ended');
 	}
 
 	// Load data on component mount
@@ -111,6 +157,9 @@
 		<p><strong>Records:</strong> {localData.records?.length || 0}</p>
 	{/if}
 </div> -->
+<div class="record-count-info">
+	<p>Showing {Math.min(maxRowsToShow, totalRecords)} records out of {totalRecords}</p>
+</div>
 
 <div class="table-container">
 	{#if localData && localData.records && localData.records.length > 0}
@@ -127,47 +176,9 @@
 							<div class="header-controls">
 								<span
 									class="type-pseudo-select"
-									data-type={header === 'GPS' ||
-									header === 'GPS examples' ||
-									header === 'GPS DO' ||
-									header === 'GPS DNS' ||
-									header === 'GPS DNS_1'
-										? 'Gps'
-										: header === 'Latitude'
-											? 'Latitude'
-											: header === 'Longitude'
-												? 'Longitude'
-												: header === 'Date'
-													? 'Date'
-													: header === 'Number' || header === 'Numberz'
-														? 'Number'
-														: header === 'Country' || header === 'Text'
-															? 'String'
-															: localData.columnTypes && localData.columnTypes[header]
-																? localData.columnTypes[header].charAt(0).toUpperCase() +
-																	localData.columnTypes[header].slice(1)
-																: 'String'}
+									data-type={formatColumnType(getColumnType(header))}
 								>
-									{header === 'GPS' ||
-									header === 'GPS examples' ||
-									header === 'GPS DO' ||
-									header === 'GPS DNS' ||
-									header === 'GPS DNS_1'
-										? 'Gps'
-										: header === 'Latitude'
-											? 'Latitude'
-											: header === 'Longitude'
-												? 'Longitude'
-												: header === 'Date'
-													? 'Date'
-													: header === 'Number' || header === 'Numberz'
-														? 'Number'
-														: header === 'Country' || header === 'Text'
-															? 'String'
-															: localData.columnTypes && localData.columnTypes[header]
-																? localData.columnTypes[header].charAt(0).toUpperCase() +
-																	localData.columnTypes[header].slice(1)
-																: 'String'}
+									{formatColumnType(getColumnType(header))}
 								</span>
 								<span class="header-text">{header}</span>
 								<span class="drag-handle">⇅</span>
@@ -187,9 +198,6 @@
 			</tbody>
 		</table>
 		{#if totalRecords > 0}
-			<div class="record-count-info">
-				<p>Showing {Math.min(maxRowsToShow, totalRecords)} records out of {totalRecords}</p>
-			</div>
 		{/if}
 	{:else}
 		<p>
@@ -237,3 +245,32 @@
 		margin-right: 15px;
 	}
 </style> -->
+
+<style>
+	.record-count-info {
+		font-size: 0.8rem;
+		color: var(--color-light-grey);
+		text-align: right;
+		padding: 0.5rem;
+	}
+
+	th {
+		position: relative;
+		cursor: grab;
+	}
+
+	th.dragging {
+		opacity: 0.6;
+		border: 2px dashed #4caf50;
+	}
+
+	.drag-handle {
+		cursor: grab;
+		color: #888;
+		margin-left: auto;
+	}
+
+	.header-text {
+		margin-right: 15px;
+	}
+</style>

@@ -1,7 +1,15 @@
 <script lang="ts">
-	import { onMount } from 'svelte';
+	import { onMount, createEventDispatcher } from 'svelte';
 	import { transformedDataService } from '$lib/stores/transformStore';
 	import { schemaService } from '$lib/services/schemaService';
+
+	// Props from parent
+	const { draggedColumn = null } = $props<{
+		draggedColumn?: { header: string; columnType: string } | null;
+	}>();
+
+	// Event dispatcher
+	const dispatch = createEventDispatcher();
 
 	// Schema metadata state
 	let schemaMetadata = $state<Record<string, any> | null>(null);
@@ -20,8 +28,44 @@
 	let mappings = $state<Record<string, string>>({});
 	let dragOverField = $state<{ table: string; field: string } | null>(null);
 
+	// Compatible targets for the currently dragged column
+	let compatibleTargets = $state<Record<string, string[]>>({});
+
 	// Get data from the transform service
 	let transformData = $state<any>(null);
+
+	// Watch for changes to draggedColumn prop
+	$effect(() => {
+		if (draggedColumn) {
+			// Calculate compatible targets for this column type
+			updateCompatibleTargets(draggedColumn.columnType);
+			console.log(
+				`Calculating compatible targets for ${draggedColumn.header} of type ${draggedColumn.columnType}`
+			);
+		} else {
+			// Clear compatible targets when not dragging
+			compatibleTargets = {};
+		}
+	});
+
+	// Function to update compatible targets based on column type
+	function updateCompatibleTargets(columnType: string) {
+		compatibleTargets = {};
+
+		if (schemaColumnTypes) {
+			Object.entries(schemaColumnTypes).forEach(([tableName, columns]) => {
+				compatibleTargets[tableName] = [];
+
+				Object.entries(columns).forEach(([fieldName, fieldType]) => {
+					if (isTypeCompatible(columnType, fieldType)) {
+						compatibleTargets[tableName].push(fieldName);
+					}
+				});
+			});
+		}
+
+		console.log(`Column of type ${columnType} can be mapped to:`, compatibleTargets);
+	}
 
 	onMount(async () => {
 		console.log('TransplantDbTargetTable: Component mounted');
@@ -69,18 +113,27 @@
 			const unsubscribeLoading = schemaService.isLoading.subscribe((loading) => {
 				isSchemaLoading = loading;
 				if (!loading) {
-					console.log('TransplantDbTargetTable: Schema loading complete');
+					console.log('TransplantDbTargetTable: Schema metadata loaded successfully');
 				}
 			});
 
-			const unsubscribeError = schemaService.error.subscribe((err) => {
-				if (err) {
-					console.error('TransplantDbTargetTable: Schema error:', err);
+			const unsubscribeError = schemaService.error.subscribe((error) => {
+				schemaError = error;
+				if (error) {
+					console.error('TransplantDbTargetTable: Error loading schema metadata:', error);
 				}
-				schemaError = err;
 			});
 
-			// Cleanup subscriptions on component destroy
+			// Get data from transform service
+			const transformedData = transformedDataService.get();
+			if (transformedData) {
+				transformData = transformedData;
+				console.log('TransplantDbTargetTable: Loaded data from transform service:', transformData);
+			} else {
+				console.warn('TransplantDbTargetTable: No data available from transform service');
+			}
+
+			// Return cleanup function
 			return () => {
 				unsubscribeMetadata();
 				unsubscribeRelationships();
@@ -90,37 +143,61 @@
 				unsubscribeError();
 			};
 		} catch (error) {
-			console.error('TransplantDbTargetTable: Failed to load schema metadata:', error);
-			schemaError = 'Failed to load schema metadata';
-		}
-
-		// Load transform data
-		const data = transformedDataService.getData();
-		if (data) {
-			transformData = data;
-			console.log(
-				'TransplantDbTargetTable: Transform data loaded with',
-				data.records ? data.records.length : 0,
-				'records'
-			);
-		} else {
-			console.log('TransplantDbTargetTable: No transform data available');
+			console.error('TransplantDbTargetTable: Error in onMount:', error);
+			schemaError = error.message || 'Unknown error loading schema metadata';
 		}
 	});
 
-	// Function to get table data by name
-	function getTableData(tableName: string): any[] {
-		return tableData[tableName] || [];
-	}
+	// Utility functions
+	function isTypeCompatible(sourceType: string, targetType: string): boolean {
+		if (!sourceType || !targetType) return false;
 
-	// Function to format type name for display
-	function formatTypeName(type: string): string {
-		return schemaService.formatColumnType(type);
+		// Normalize types to lowercase for comparison
+		const source = sourceType.toLowerCase();
+		const target = targetType.toLowerCase();
+
+		// Direct matches
+		if (source === target) return true;
+
+		// Special case handling
+		switch (source) {
+			case 'string':
+				// Strings can be mapped to text, varchar, etc.
+				return ['text', 'varchar', 'char', 'string'].includes(target);
+			case 'number':
+				// Numbers can be mapped to numeric types
+				return ['int', 'integer', 'decimal', 'numeric', 'float', 'double', 'number'].includes(
+					target
+				);
+			case 'date':
+				// Dates can be mapped to date/time types
+				return ['date', 'datetime', 'timestamp'].includes(target);
+			case 'gps':
+				// GPS can be mapped to point or geography types
+				return ['point', 'geography', 'geometry', 'gps'].includes(target);
+			case 'latitude':
+				// Latitude can be mapped to numeric or specific lat types
+				return ['float', 'double', 'decimal', 'numeric', 'latitude'].includes(target);
+			case 'longitude':
+				// Longitude can be mapped to numeric or specific long types
+				return ['float', 'double', 'decimal', 'numeric', 'longitude'].includes(target);
+			default:
+				return false;
+		}
 	}
 
 	// Drag and drop handlers
 	function handleDragOver(event: DragEvent, table: string, field: string) {
 		event.preventDefault();
+
+		// Check if this is a compatible target
+		const isCompatible = draggedColumn && compatibleTargets[table]?.includes(field);
+
+		if (!isCompatible) {
+			event.dataTransfer!.dropEffect = 'none';
+			return;
+		}
+
 		event.dataTransfer!.dropEffect = 'move';
 		dragOverField = { table, field };
 	}
@@ -138,6 +215,24 @@
 
 		console.log(`Dropped ${csvColumn} onto ${table}.${field}`);
 
+		// Get the type of the CSV column - either from draggedColumn prop or from transformData
+		const csvColumnType =
+			draggedColumn?.header === csvColumn
+				? draggedColumn.columnType
+				: transformData.columnTypes?.[csvColumn];
+
+		// Get the type of the target database field
+		const dbFieldType = schemaColumnTypes?.[table]?.[field];
+
+		// Validate type compatibility
+		if (!isTypeCompatible(csvColumnType, dbFieldType)) {
+			console.error(`Type mismatch: Cannot map ${csvColumnType} to ${dbFieldType}`);
+			// Show error message to user
+			const errorMessage = `Type mismatch: Cannot map ${csvColumnType} (${csvColumn}) to ${dbFieldType} (${field})`;
+			alert(errorMessage);
+			return;
+		}
+
 		// Clear any existing mappings to this target field
 		Object.entries(mappings).forEach(([col, mapping]) => {
 			if (mapping === `${table}.${field}`) {
@@ -153,91 +248,68 @@
 
 		// Propagate data if needed
 		propagateData(table, field, csvColumn);
+
+		// Dispatch event to notify parent component
+		dispatch('mappingCreated', {
+			csvColumn,
+			tableName: table,
+			fieldName: field
+		});
 	}
 
-	function propagateData(sourceTable: string, sourceField: string, csvColumn: string) {
-		// Skip if schema relationships aren't loaded yet
-		if (!schemaRelationships) return;
+	// Update preview data based on mappings
+	function updatePreviewData(table: string, field: string, csvColumn: string) {
+		if (!transformData || !transformData.records) return;
 
-		const relationship = schemaRelationships[sourceTable];
-		if (!relationship) return;
+		// Create a copy of the current table data
+		const updatedTableData = { ...tableData };
 
-		// If this is a join table, propagate to related tables
-		if (relationship.isJoinTable && relationship.joins) {
-			relationship.joins.forEach((join: any) => {
-				if (join.via === sourceField) {
-					// This field is a foreign key to another table
-					console.log(`Propagating ${csvColumn} to ${join.table}.${join.targetColumn}`);
-
-					// Update the related table's field with the same data
-					updatePreviewData(join.table, join.targetColumn, csvColumn);
-
-					// Create mapping for the propagated field
-					mappings[csvColumn] = `${join.table}.${join.targetColumn}`;
-				}
-			});
-		}
-
-		// If this is a primary or natural key field in a main table, propagate to join tables
-		if (!relationship.isJoinTable) {
-			const isPrimaryKey = sourceField === relationship.primaryKey;
-			const isNaturalKey =
-				relationship.naturalKeys && relationship.naturalKeys.includes(sourceField);
-
-			if (isPrimaryKey || isNaturalKey) {
-				// Check all tables to find ones that reference this field
-				Object.entries(schemaRelationships).forEach(([tableName, tableRel]: [string, any]) => {
-					if (tableRel.isJoinTable && tableRel.joins) {
-						tableRel.joins.forEach((join: any) => {
-							if (join.table === sourceTable && join.targetColumn === sourceField) {
-								console.log(`Propagating ${csvColumn} to ${tableName}.${join.via}`);
-
-								// Update the join table's field with the same data
-								updatePreviewData(tableName, join.via, csvColumn);
-
-								// Create mapping for the propagated field
-								mappings[csvColumn] = `${tableName}.${join.via}`;
-							}
-						});
-					}
-				});
-			}
-		}
-	}
-
-	function updateTableData(table: string, field: string, csvColumn: string, previewRecords: any[]) {
-		if (!tableData[table]) {
-			tableData[table] = Array(emptyRows).fill({});
-		}
-
-		tableData[table] = tableData[table].map((row, index) => {
-			if (index < previewRecords.length) {
+		// Update the field in each row with the corresponding CSV data
+		updatedTableData[table] = updatedTableData[table].map((row, index) => {
+			if (index < transformData.records.length) {
 				return {
 					...row,
-					[field]: previewRecords[index][csvColumn]
+					[field]: transformData.records[index][csvColumn]
 				};
 			}
 			return row;
 		});
+
+		// Update the tableData state
+		tableData = updatedTableData;
 	}
 
-	function updatePreviewData(table: string, field: string, csvColumn: string) {
-		if (!transformData || !transformData.records || transformData.records.length === 0) return;
-
-		// Get the first few records to display in the preview
-		const previewRecords = transformData.records.slice(0, emptyRows);
-
-		// Use the helper function to update the table data
-		updateTableData(table, field, csvColumn, previewRecords);
+	// Propagate data to related tables if needed
+	function propagateData(table: string, field: string, csvColumn: string) {
+		// Implementation for data propagation between tables
+		// This would use the schemaRelationships to determine which fields
+		// should be propagated to other tables
+		console.log(`Propagation for ${table}.${field} not yet implemented`);
 	}
 
+	// Helper functions for the UI
 	function isFieldMapped(table: string, field: string): boolean {
 		return Object.values(mappings).includes(`${table}.${field}`);
 	}
 
-	function getMappedColumn(table: string, field: string): string | null {
-		const entry = Object.entries(mappings).find(([_, mapping]) => mapping === `${table}.${field}`);
-		return entry ? entry[0] : null;
+	function getMappedColumn(table: string, field: string): string {
+		const entry = Object.entries(mappings).find(([_, value]) => value === `${table}.${field}`);
+		return entry ? entry[0] : '';
+	}
+
+	function formatTypeName(typeName: string): string {
+		// Format the type name for display
+		if (!typeName) return 'Unknown';
+		return typeName.charAt(0).toUpperCase() + typeName.slice(1).toLowerCase();
+	}
+
+	function getTableData(tableName: string): any[] {
+		return tableData[tableName] || Array(emptyRows).fill({});
+	}
+
+	// Function to check if a field is a compatible target for the currently dragged column
+	function isCompatibleTarget(table: string, field: string): boolean {
+		return compatibleTargets[table]?.includes(field) || false;
 	}
 </script>
 
@@ -255,10 +327,15 @@
 {:else}
 	<div class="database-tables-container">
 		<!-- Debug information -->
-		<div class="debug-info">
-			<p>Tables found: {tableNames.length}</p>
-			<p>Table names: {tableNames.join(', ')}</p>
-		</div>
+		<!-- <div class="debug-info">
+			
+			{#if Object.keys(mappings).length > 0}
+				<p>Current mappings: {Object.keys(mappings).length}</p>
+			{/if}
+			{#if draggedColumn}
+				<p>Dragging: {draggedColumn.header} (Type: {draggedColumn.columnType})</p>
+			{/if}
+		</div> -->
 
 		{#each tableNames as tableName}
 			<div class="table-section">
@@ -269,7 +346,12 @@
 							<tr>
 								{#each schemaTableHeaders[tableName] || [] as header}
 									<th
-										class={`${isFieldMapped(tableName, header) ? 'mapped-field' : ''} ${dragOverField?.table === tableName && dragOverField?.field === header ? 'drag-over' : ''}`}
+										class={`
+											${isFieldMapped(tableName, header) ? 'mapped-field' : ''} 
+											${dragOverField?.table === tableName && dragOverField?.field === header ? 'drag-over' : ''} 
+											${draggedColumn && isCompatibleTarget(tableName, header) ? 'compatible-target' : ''} 
+											${draggedColumn && !isCompatibleTarget(tableName, header) ? 'incompatible-target' : ''}
+										`}
 										ondragover={(e) => handleDragOver(e, tableName, header)}
 										ondragleave={handleDragLeave}
 										ondrop={(e) => handleDrop(e, tableName, header)}
@@ -310,136 +392,116 @@
 	</div>
 {/if}
 
-<!-- <style>
+<style>
 	.database-tables-container {
 		display: flex;
 		flex-direction: column;
 		gap: 2rem;
 	}
 
-	.debug-info {
-		background-color: #2a2a3a;
-		padding: 10px;
-		border-radius: 4px;
-		margin-bottom: 1rem;
-		font-size: 0.8rem;
-		color: #64b5f6;
-	}
-
-	.debug-info p {
-		margin: 5px 0;
-	}
-
 	.table-section {
-		margin-bottom: 1.5rem;
+		border: 1px solid #ddd;
+		border-radius: 4px;
+		overflow: hidden;
 	}
 
 	.table-title {
-		font-size: 1.2rem;
-		margin-bottom: 0.5rem;
-		color: #e0e0e0;
+		background-color: #f5f5f5;
+		padding: 0.5rem 1rem;
+		margin: 0;
+		border-bottom: 1px solid #ddd;
 	}
 
 	.table-container {
 		overflow-x: auto;
-		border-radius: 4px;
-		background-color: #1e1e2e;
 	}
 
 	table {
 		width: 100%;
 		border-collapse: collapse;
-		font-size: 0.9rem;
+	}
+
+	th,
+	td {
+		padding: 0.5rem;
+		border: 1px solid #ddd;
+		text-align: left;
+		min-width: 12.5rem; /* Fixed width for columns */
 	}
 
 	th {
-		background-color: #2a2a3a;
-		color: #e0e0e0;
-		font-weight: 500;
-		text-align: left;
-		padding: 0.5rem;
+		background-color: #f9f9f9;
 		position: relative;
-		border: 1px solid #3a3a4a;
-		min-width: 120px;
 	}
 
 	.header-controls {
 		display: flex;
-		flex-direction: column;
-		gap: 0.25rem;
-	}
-
-	.header-text {
-		font-weight: 600;
+		align-items: center;
+		gap: 0.5rem;
 	}
 
 	.type-pseudo-select {
 		font-size: 0.7rem;
 		padding: 0.1rem 0.3rem;
+		background-color: #eee;
 		border-radius: 3px;
-		background-color: #3a3a4a;
-		color: #ccc;
-		width: fit-content;
-	}
-
-	.type-pseudo-select[data-type='String'] {
-		background-color: #2c3e50;
-		color: #ecf0f1;
-	}
-
-	.type-pseudo-select[data-type='Number'] {
-		background-color: #27ae60;
-		color: #ecf0f1;
-	}
-
-	.type-pseudo-select[data-type='Date'] {
-		background-color: #8e44ad;
-		color: #ecf0f1;
-	}
-
-	.type-pseudo-select[data-type='GPS'] {
-		background-color: #d35400;
-		color: #ecf0f1;
-	}
-
-	.type-pseudo-select[data-type='Latitude'],
-	.type-pseudo-select[data-type='Longitude'] {
-		background-color: #e67e22;
-		color: #ecf0f1;
-	}
-
-	td {
-		padding: 0.5rem;
-		border: 1px solid #3a3a4a;
-		color: #b0b0c0;
+		color: #666;
 	}
 
 	.mapped-field {
-		background-color: #2d4263;
+		background-color: #e6f7ff;
 	}
 
 	.mapped-indicator {
-		font-size: 0.7rem;
-		color: #64b5f6;
-		margin-top: 0.25rem;
+		font-size: 0.8rem;
+		color: #1890ff;
+		margin-left: auto;
 	}
 
-	.drag-over {
-		background-color: #3d5277;
+	.loading-indicator,
+	.error-message {
+		padding: 1rem;
+		margin: 1rem 0;
+		border-radius: 4px;
 	}
 
 	.loading-indicator {
-		padding: 1rem;
-		color: #64b5f6;
-		text-align: center;
+		background-color: #f0f0f0;
+		color: #666;
 	}
 
 	.error-message {
-		padding: 1rem;
-		color: #e57373;
-		background-color: rgba(229, 115, 115, 0.1);
-		border-radius: 4px;
-		text-align: center;
-		margin-bottom: 1rem;
+		background-color: #fff1f0;
+		color: #f5222d;
+		border: 1px solid #ffa39e;
 	}
-</style> -->
+
+	.debug-info {
+		background-color: #f0f0f0;
+		padding: 0.5rem;
+		margin-bottom: 1rem;
+		font-size: 0.8rem;
+		color: #666;
+		border-radius: 4px;
+	}
+
+	.drag-over {
+		background-color: #e6f7ff;
+		border: 2px dashed #1890ff;
+	}
+
+	.compatible-target {
+		border: 2px dashed #4caf50 !important;
+		background-color: rgba(76, 175, 80, 0.1) !important;
+	}
+
+	.incompatible-target {
+		opacity: 0.5;
+		cursor: not-allowed;
+	}
+
+	.drag-over.compatible-target {
+		background-color: rgba(76, 175, 80, 0.3) !important;
+		border: 2px solid #4caf50 !important;
+	}
+</style>
