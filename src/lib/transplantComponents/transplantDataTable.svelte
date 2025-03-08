@@ -19,6 +19,9 @@
 	let debug = $state('Waiting for data...');
 	let totalRecords = $state(0); // Track total number of records
 
+	// Constant for maximum rows to show in the UI
+	const maxRowsToShow = 4;
+
 	// Add drag state
 	let draggedHeader = $state<string | null>(null);
 
@@ -58,9 +61,14 @@
 			dataSource = 'store';
 			debug = 'Data successfully loaded from Transform stage';
 
-			// Add console logs to show detailed information about the data being received and the types of each record
-			console.log('Local Data:', localData);
-			console.log('Total Records:', totalRecords);
+			// Enhanced console logs to show detailed information about the data
+			console.log('===== TRANSPLANT DATA VERIFICATION =====');
+			console.log('Total Records Received from Transform:', totalRecords);
+			console.log('Records Being Displayed in UI:', Math.min(maxRowsToShow, totalRecords));
+			console.log('First 4 Records (Displayed in UI):', localData.records.slice(0, maxRowsToShow));
+			console.log('All Records (Stored in Memory):', localData.records);
+			console.log('Column Types:', localData.columnTypes);
+			console.log('=======================================');
 
 			// Create JSON object structure
 			let jsonObject: {
@@ -169,7 +177,7 @@
 				</tr>
 			</thead>
 			<tbody>
-				{#each localData.records as record}
+				{#each localData.records.slice(0, maxRowsToShow) as record}
 					<tr>
 						{#each Object.keys(record) as header}
 							<td>{record[header]}</td>
@@ -180,7 +188,7 @@
 		</table>
 		{#if totalRecords > 0}
 			<div class="record-count-info">
-				<p>Showing {totalRecords} records</p>
+				<p>Showing {Math.min(maxRowsToShow, totalRecords)} records out of {totalRecords}</p>
 			</div>
 		{/if}
 	{:else}
