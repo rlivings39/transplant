@@ -5,6 +5,8 @@
 
 // Simple variable to store the transformed data
 let transformedData = null;
+// Store for DOM-extracted data
+let domExtractedData = null;
 
 /**
  * Service to manage transformed data
@@ -28,12 +30,38 @@ export const transformedDataService = {
 	},
 
 	/**
+	 * Set the DOM-extracted data
+	 * @param {Object} data - The DOM-extracted data to store
+	 */
+	setDomExtractedData: function (data) {
+		console.log('transformStore: Setting DOM-extracted data', data);
+
+		// Make a clean copy to avoid Svelte 5 proxy issues
+		try {
+			domExtractedData = JSON.parse(JSON.stringify(data));
+			console.log('transformStore: DOM-extracted data set successfully', domExtractedData);
+		} catch (error) {
+			console.error('transformStore: Error setting DOM-extracted data', error);
+			domExtractedData = data; // Fallback to direct assignment if JSON fails
+		}
+	},
+
+	/**
 	 * Get the transformed data (primary method)
 	 * @returns {Object|null} The transformed data or null if not set
 	 */
 	get: function () {
 		// // console.log('transformStore: Getting data via get()', transformedData);
 		return transformedData;
+	},
+
+	/**
+	 * Get the DOM-extracted data
+	 * @returns {Object|null} The DOM-extracted data or null if not set
+	 */
+	getDomExtractedData: function () {
+		console.log('transformStore: Getting DOM-extracted data', domExtractedData);
+		return domExtractedData;
 	},
 
 	/**
@@ -51,5 +79,6 @@ export const transformedDataService = {
 	clear: function () {
 		// // console.log('transformStore: Clearing data');
 		transformedData = null;
+		domExtractedData = null;
 	}
 };

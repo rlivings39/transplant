@@ -13,6 +13,18 @@
 		};
 	}
 
+	// Interface for DOM-extracted data
+	interface DomExtractedData {
+		metadata: {
+			totalRecords: number;
+			exportTime: string;
+			columnTypes: Record<string, string>;
+		};
+		headers: string[];
+		selectorTypes: Record<string, string>;
+		records: Array<Record<string, any>>;
+	}
+
 	// Local state using runes
 	let transformedRecords = $state([]);
 	let columnTypeMap = $state({});
@@ -38,66 +50,69 @@
 
 	// Function to send data to TransPlant
 	function sendToTransplant() {
-		// // console.log('Push Data to Console button clicked');
-
-		// Try to get data from the table directly if no transformed data is available
-		if (transformedRecords.length === 0) {
-			// // console.log('No transformed data in state, trying to get data from table');
-
+		// Extract data from the DOM table
+		try {
 			// Get all table rows
-			const tableRows = document.querySelectorAll('table tr');
+			const tableRows = document.querySelectorAll('table tbody tr');
 
-			if (tableRows.length <= 1) {
-				// Account for header row
-				// // console.log('No rows found in table');
-				alert('No data available. Please transform data first.');
-				return;
+			if (tableRows.length === 0) {
+				console.error('No table rows found');
+
+				// Fall back to using transformed records if available
+				if (transformedRecords.length === 0) {
+					alert('No data available. Please transform data first.');
+					return;
+				}
 			}
 
-			// First, identify which columns are toggled off (completely disabled)
-			const toggledOffColumns = new Set();
-			const headerRow = tableRows[0];
-			const headerCells = headerRow.querySelectorAll('th');
+			// Get headers from the table head
+			const headerCells = document.querySelectorAll('table thead th');
 
-			// Check each header's toggle checkbox
+			if (headerCells.length === 0) {
+				console.error('No header cells found');
+
+				// Fall back to using transformed records if available
+				if (transformedRecords.length === 0) {
+					alert('No data available. Please transform data first.');
+					return;
+				}
+			}
+
+			// Extract headers and selector types
+			const tableHeaders = [];
+			const selectorTypes = {};
+
 			headerCells.forEach((th) => {
+				// Get the header name
 				const headerNameDiv = th.querySelector('.header-name');
 				if (!headerNameDiv) return;
 
 				const headerName = headerNameDiv.textContent?.trim() || '';
 				if (headerName === 'GPS' || headerName === '') return;
 
-				// Check if the column has its checkbox unchecked
-				const checkbox = th.querySelector('input[type="checkbox"]') as HTMLInputElement;
-				if (checkbox && !checkbox.checked) {
-					toggledOffColumns.add(headerName);
-					// // console.log(`Column "${headerName}" is toggled off`);
+				tableHeaders.push(headerName);
+
+				// Get the selector type from the select element
+				const selectElement = th.querySelector('select') as HTMLSelectElement;
+				if (selectElement) {
+					selectorTypes[headerName] = selectElement.value || 'string';
+				} else {
+					// Fallback to column type from state
+					selectorTypes[headerName] = columnTypeMap[headerName] || 'string';
 				}
 			});
 
-			// Get headers from the first row, excluding toggled-off columns
-			const headers = Array.from(headerRow.querySelectorAll('th'))
-				.map((th) => {
-					// Get the header name div which contains the actual text
-					const headerNameDiv = th.querySelector('.header-name');
-					return headerNameDiv ? headerNameDiv.textContent?.trim() || '' : '';
-				})
-				.filter((header) => header !== 'GPS' && header !== '' && !toggledOffColumns.has(header)); // Filter out GPS, empty headers, and toggled-off columns
+			// Extract data from rows
+			const extractedRecords = [];
 
-			// // console.log('Headers after filtering toggled-off columns:', headers);
-
-			// Get data from remaining rows
-			const records = [];
-			for (let i = 1; i < tableRows.length; i++) {
-				const row = tableRows[i];
+			tableRows.forEach((row) => {
 				const cells = row.querySelectorAll('td');
 
 				// Create a new record
 				const record = {};
 				let hasValidData = false;
 
-				// Process each header and find its corresponding cell
-				headers.forEach((header, headerIndex) => {
+				tableHeaders.forEach((header) => {
 					// Find the index of this header in the original table
 					let cellIndex = -1;
 					for (let j = 0; j < headerCells.length; j++) {
@@ -111,72 +126,89 @@
 					// Skip if we couldn't find the header
 					if (cellIndex === -1) return;
 
-					// Get the corresponding cell (add 1 to account for GPS column)
+					// Get the corresponding cell
 					const cell = cells[cellIndex];
 					if (!cell) return;
 
 					// Check if this cell is greyed out due to type validation failure
-					if (cell.classList.contains('greyed-out')) {
-						// For type validation failures, set value to null but keep the column
-						record[header] = null;
-						return;
-					}
+					const isGreyedOut = cell.classList.contains('greyed-out');
 
-					// Cell is valid, extract its value
+					// Extract the value
 					const value = cell.textContent?.trim() || '';
 
-					// Try to convert to number if it looks like one
-					if (/^-?\d+(\.\d+)?$/.test(value)) {
+					// Try to convert to number if it looks like one and isn't greyed out
+					if (!isGreyedOut && /^-?\d+(\.\d+)?$/.test(value)) {
 						record[header] = parseFloat(value);
 					} else {
-						record[header] = value;
+						record[header] = isGreyedOut ? null : value;
 					}
 
-					hasValidData = true;
+					if (!isGreyedOut && value) {
+						hasValidData = true;
+					}
 				});
 
 				// Only add records that have at least one valid cell
 				if (hasValidData) {
-					records.push(record);
+					extractedRecords.push(record);
 				}
-			}
-
-			// Get column types from the data - all as strings to avoid validation issues
-			const columnTypes = {};
-			headers.forEach((header) => {
-				// Default all to string to avoid validation issues
-				columnTypes[header] = 'string';
 			});
 
-			// // console.log('Scraped records:', records);
-			// // console.log('Detected column types:', columnTypes);
+			// Create a DOM-extracted data object
+			const domExtractedData = {
+				metadata: {
+					totalRecords: extractedRecords.length,
+					exportTime: new Date().toISOString(),
+					columnTypes: selectorTypes
+				},
+				headers: tableHeaders,
+				selectorTypes: selectorTypes,
+				records: extractedRecords
+			};
 
-			// Update local state
-			transformedRecords = records;
-			columnTypeMap = columnTypes;
+			// Log to console
+			console.log('DOM EXTRACTED DATA:', domExtractedData);
+
+			// If we have DOM-extracted data, use it
+			if (extractedRecords.length > 0) {
+				// Create validated data object for the regular transplant flow
+				const validatedData = {
+					records: extractedRecords,
+					columnTypes: selectorTypes
+				};
+
+				// Save both the regular data and DOM extracted data to store
+				transformedDataService.set(validatedData);
+				transformedDataService.setDomExtractedData(domExtractedData);
+
+				// Navigate to TransPlant
+				goto('/transplant');
+				return;
+			}
+		} catch (err) {
+			console.error('Error extracting data from DOM:', err);
 		}
 
-		// Create a clean copy of the data without Svelte 5 proxies
-		const cleanRecords = JSON.parse(JSON.stringify(transformedRecords));
-		const cleanColumnTypes = JSON.parse(JSON.stringify(columnTypeMap));
+		// If DOM extraction fails or no data is found, fall back to using transformed records
+		if (transformedRecords.length > 0) {
+			// Create a clean copy of the data without Svelte 5 proxies
+			const cleanRecords = JSON.parse(JSON.stringify(transformedRecords));
+			const cleanColumnTypes = JSON.parse(JSON.stringify(columnTypeMap));
 
-		// Create validated data object
-		const validatedData = {
-			records: cleanRecords,
-			columnTypes: cleanColumnTypes
-		};
+			// Create validated data object
+			const validatedData = {
+				records: cleanRecords,
+				columnTypes: cleanColumnTypes
+			};
 
-		// Log the data to console in a clean format
-		// // console.log('CLEAN DATA BEING SENT:');
-		// // console.log('Records:', JSON.stringify(cleanRecords, null, 2));
-		// // console.log('Column Types:', JSON.stringify(cleanColumnTypes, null, 2));
+			// Save to store
+			transformedDataService.set(validatedData);
 
-		// Save to store
-		transformedDataService.set(validatedData);
-		// // console.log('Clean transformed data saved to store:', validatedData);
-
-		// Navigate to TransPlant
-		goto('/transplant');
+			// Navigate to TransPlant
+			goto('/transplant');
+		} else {
+			alert('No data available. Please transform data first.');
+		}
 	}
 </script>
 

@@ -116,8 +116,54 @@
 							ondragend={handleDragEnd}
 							class={draggedHeader === header ? 'dragging' : ''}
 						>
-							<span class="header-text">{header}</span>
-							<span class="drag-handle">⇅</span>
+							<div class="header-controls">
+								<span
+									class="type-pseudo-select"
+									data-type={header === 'GPS' ||
+									header === 'GPS examples' ||
+									header === 'GPS DO' ||
+									header === 'GPS DNS' ||
+									header === 'GPS DNS_1'
+										? 'Gps'
+										: header === 'Latitude'
+											? 'Latitude'
+											: header === 'Longitude'
+												? 'Longitude'
+												: header === 'Date'
+													? 'Date'
+													: header === 'Number' || header === 'Numberz'
+														? 'Number'
+														: header === 'Country' || header === 'Text'
+															? 'String'
+															: localData.columnTypes && localData.columnTypes[header]
+																? localData.columnTypes[header].charAt(0).toUpperCase() +
+																	localData.columnTypes[header].slice(1)
+																: 'String'}
+								>
+									{header === 'GPS' ||
+									header === 'GPS examples' ||
+									header === 'GPS DO' ||
+									header === 'GPS DNS' ||
+									header === 'GPS DNS_1'
+										? 'Gps'
+										: header === 'Latitude'
+											? 'Latitude'
+											: header === 'Longitude'
+												? 'Longitude'
+												: header === 'Date'
+													? 'Date'
+													: header === 'Number' || header === 'Numberz'
+														? 'Number'
+														: header === 'Country' || header === 'Text'
+															? 'String'
+															: localData.columnTypes && localData.columnTypes[header]
+																? localData.columnTypes[header].charAt(0).toUpperCase() +
+																	localData.columnTypes[header].slice(1)
+																: 'String'}
+								</span>
+								<span class="header-text">{header}</span>
+								<span class="drag-handle">⇅</span>
+							</div>
 						</th>
 					{/each}
 				</tr>
