@@ -1,4 +1,4 @@
-// src/lib/stores/transformStore.js
+// src/lib/stores/transformStore.ts	
 /**
  * Store for transformed data to be shared between Transform and TransPlant stages
  */

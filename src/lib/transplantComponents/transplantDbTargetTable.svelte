@@ -310,7 +310,7 @@
 	</div>
 {/if}
 
-<style>
+<!-- <style>
 	.database-tables-container {
 		display: flex;
 		flex-direction: column;
@@ -442,4 +442,4 @@
 		text-align: center;
 		margin-bottom: 1rem;
 	}
-</style>
+</style> -->
