@@ -24,7 +24,7 @@
 	}
 
 	let columnHeaders = $derived(rows.length > 0 ? Object.keys(rows[0]) : []);
-	let previewRows = $derived(rows.slice(0, 500));
+	let previewRows = $derived(rows.slice(0, 5000)); // Process 1000 rows - better balance of performance and functionality
 
 	function isGreyedOut(columnHeader: string, rowIndex: number): boolean {
 		return toggledColumns[columnHeader] || invalidCells[columnHeader]?.has(rowIndex);

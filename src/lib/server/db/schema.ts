@@ -36,6 +36,20 @@ const baseColumns = {
 // 👍️🌲️ TABLE DEFINITIONS
 
 /**
+ * Planting Table
+ * Central table tracking what crops are planted where
+ * Forms many-to-many relationship between Land and Crop
+ */
+export const planting = pgTable('planting', {
+	id: text('id').primaryKey(),
+	land_id: text('land_id').references(() => land.land_id),
+	crop_id: text('crop_id').references(() => crop.crop_id),
+	planted: numeric('planted'),
+	planting_date: timestamp('planting_date'),
+	...baseColumns
+});
+
+/**
  * Land Table
  * Represents a parcel of land where crops can be planted
  * Key relationships:
@@ -74,20 +88,6 @@ export const crop = pgTable('crop', {
 	crop_stock: integer('crop_stock'),
 	seedlot: text('seedlot'),
 	seedzone: text('seedzone'),
-	...baseColumns
-});
-
-/**
- * Planting Table
- * Central table tracking what crops are planted where
- * Forms many-to-many relationship between Land and Crop
- */
-export const planting = pgTable('planting', {
-	id: text('id').primaryKey(),
-	land_id: text('land_id').references(() => land.land_id),
-	crop_id: text('crop_id').references(() => crop.crop_id),
-	planted: numeric('planted'),
-	planting_date: timestamp('planting_date'),
 	...baseColumns
 });
 

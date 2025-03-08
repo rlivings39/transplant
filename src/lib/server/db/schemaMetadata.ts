@@ -46,6 +46,24 @@ export interface JoinMetadata {
 export function extractSchemaMetadata(): SchemaMetadata {
 	// Define our known tables and their structure
 	const tables: Record<string, TableMetadata> = {
+		Planting: {
+			name: 'Planting',
+			columns: {
+				id: { name: 'id', dataType: 'text', notNull: true },
+				land_id: { name: 'land_id', dataType: 'text', notNull: false },
+				crop_id: { name: 'crop_id', dataType: 'text', notNull: false },
+				planted: { name: 'planted', dataType: 'numeric', notNull: false },
+				planting_date: { name: 'planting_date', dataType: 'timestamp', notNull: false },
+				notes: { name: 'notes', dataType: 'text', notNull: false }
+			},
+			primaryKeys: ['id'],
+			foreignKeys: [
+				{ columnName: 'land_id', targetTable: 'Land', targetColumn: 'land_id' },
+				{ columnName: 'crop_id', targetTable: 'Crop', targetColumn: 'crop_id' }
+			],
+			naturalKeys: [],
+			isJoinTable: true
+		},
 		Land: {
 			name: 'Land',
 			columns: {
@@ -76,24 +94,6 @@ export function extractSchemaMetadata(): SchemaMetadata {
 			foreignKeys: [],
 			naturalKeys: ['crop_name'],
 			isJoinTable: false
-		},
-		Planting: {
-			name: 'Planting',
-			columns: {
-				id: { name: 'id', dataType: 'text', notNull: true },
-				land_id: { name: 'land_id', dataType: 'text', notNull: false },
-				crop_id: { name: 'crop_id', dataType: 'text', notNull: false },
-				planted: { name: 'planted', dataType: 'numeric', notNull: false },
-				planting_date: { name: 'planting_date', dataType: 'timestamp', notNull: false },
-				notes: { name: 'notes', dataType: 'text', notNull: false }
-			},
-			primaryKeys: ['id'],
-			foreignKeys: [
-				{ columnName: 'land_id', targetTable: 'Land', targetColumn: 'land_id' },
-				{ columnName: 'crop_id', targetTable: 'Crop', targetColumn: 'crop_id' }
-			],
-			naturalKeys: [],
-			isJoinTable: true
 		}
 	};
 
