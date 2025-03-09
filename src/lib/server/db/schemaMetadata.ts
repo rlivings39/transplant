@@ -53,13 +53,38 @@ export function extractSchemaMetadata(): SchemaMetadata {
 		// Define table metadata based on the Drizzle schema
 		// We're using the actual schema structure but extracting only what we need
 		const tables: Record<string, TableMetadata> = {
-			Planting: extractTableMetadata('Planting', drizzleSchema.planting, true, [
-				{ columnName: 'land_id', targetTable: 'Land', targetColumn: 'land_id' },
-				{ columnName: 'crop_id', targetTable: 'Crop', targetColumn: 'crop_id' }
-			]),
+			Planting: extractTableMetadata(
+				'Planting',
+				drizzleSchema.planting,
+				true,
+				[
+					{ columnName: 'land_id', targetTable: 'Land', targetColumn: 'land_id' },
+					{ columnName: 'crop_id', targetTable: 'Crop', targetColumn: 'crop_id' }
+				],
+				['land_name', 'crop_name']
+			),
 			Land: extractTableMetadata('Land', drizzleSchema.land, false, [], ['land_name']),
 			Crop: extractTableMetadata('Crop', drizzleSchema.crop, false, [], ['crop_name'])
 		};
+
+		// Add virtual fields for natural keys to the Planting table
+		if (tables['Planting'] && tables['Planting'].columns) {
+			tables['Planting'].columns['land_name'] = {
+				name: 'land_name',
+				dataType: 'text',
+				notNull: false,
+				isVirtual: true,
+				relatedTo: { table: 'Land', column: 'land_name', via: 'land_id' }
+			};
+
+			tables['Planting'].columns['crop_name'] = {
+				name: 'crop_name',
+				dataType: 'text',
+				notNull: false,
+				isVirtual: true,
+				relatedTo: { table: 'Crop', column: 'crop_name', via: 'crop_id' }
+			};
+		}
 
 		console.log(
 			`Extracted metadata for ${Object.keys(tables).length} tables: ${Object.keys(tables).join(', ')}`
@@ -122,7 +147,21 @@ export function extractSchemaMetadata(): SchemaMetadata {
 					crop_id: { name: 'crop_id', dataType: 'text', notNull: false },
 					planted: { name: 'planted', dataType: 'numeric', notNull: false },
 					planting_date: { name: 'planting_date', dataType: 'timestamp', notNull: false },
-					notes: { name: 'notes', dataType: 'text', notNull: false }
+					notes: { name: 'notes', dataType: 'text', notNull: false },
+					land_name: {
+						name: 'land_name',
+						dataType: 'text',
+						notNull: false,
+						isVirtual: true,
+						relatedTo: { table: 'Land', column: 'land_name', via: 'land_id' }
+					},
+					crop_name: {
+						name: 'crop_name',
+						dataType: 'text',
+						notNull: false,
+						isVirtual: true,
+						relatedTo: { table: 'Crop', column: 'crop_name', via: 'crop_id' }
+					}
 				},
 				primaryKeys: ['id'],
 				foreignKeys: [
@@ -328,7 +367,9 @@ export function mapColumnTypes(
 				crop_id: 'string',
 				planted: 'number',
 				planting_date: 'date',
-				notes: 'string'
+				notes: 'string',
+				land_name: 'string',
+				crop_name: 'string'
 			},
 			Land: {
 				land_id: 'string',
@@ -362,7 +403,20 @@ export function getTableHeaders(tables: Record<string, TableMetadata>): Record<s
 	try {
 		const result = Object.entries(tables).reduce(
 			(acc, [tableName, table]) => {
-				acc[tableName] = Object.keys(table.columns);
+				// Get the base columns from the table
+				let headers = Object.keys(table.columns);
+
+				// Special handling for the Planting table to use natural keys instead of foreign keys
+				if (tableName === 'Planting') {
+					// Replace land_id with land_name and crop_id with crop_name
+					headers = headers.map((header) => {
+						if (header === 'land_id') return 'land_name';
+						if (header === 'crop_id') return 'crop_name';
+						return header;
+					});
+				}
+
+				acc[tableName] = headers;
 				return acc;
 			},
 			{} as Record<string, string[]>
@@ -373,9 +427,9 @@ export function getTableHeaders(tables: Record<string, TableMetadata>): Record<s
 	} catch (error) {
 		console.error('Error getting table headers:', error);
 
-		// Provide fallback table headers
+		// Provide fallback table headers with natural keys for Planting
 		const fallbackTableHeaders: Record<string, string[]> = {
-			Planting: ['id', 'land_id', 'crop_id', 'planted', 'planting_date', 'notes'],
+			Planting: ['id', 'land_name', 'crop_name', 'planted', 'planting_date', 'notes'],
 			Land: ['land_id', 'land_name', 'hectares', 'land_holder', 'gps_lat', 'gps_lon', 'notes'],
 			Crop: ['crop_id', 'crop_name', 'crop_stock', 'seedlot', 'seedzone', 'notes']
 		};
