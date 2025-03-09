@@ -420,22 +420,20 @@
 	th,
 	td {
 		/* padding: 0.5rem; */
-		
+
 		text-align: left;
 		min-width: 12.5rem; /* Fixed width for columns */
 	}
 
-
 	.loading-indicator,
-	
 	.loading-indicator {
 		background-color: #f0f0f0;
 		color: #666;
 	}
 
 	.compatible-target {
-		border: 2px dashed #4caf50 ;
-		background-color: rgba(76, 175, 80, 0.1) ;
+		border: 2px dashed #4caf50;
+		background-color: rgba(76, 175, 80, 0.1);
 	}
 
 	.incompatible-target {
