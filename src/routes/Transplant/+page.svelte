@@ -84,7 +84,7 @@
 	{:else}
 		<TransplantDataTable on:dragStart={handleDragStart} on:dragEnd={handleDragEnd} />
 		<h3
-			style="background-color:  #333333; color: var(--color-purple) ; padding: 0.25rem; border-radius: 0.25rem; margin-top: 1rem; text-align: center;"
+			style="color: var(--color-purple) ; padding: 0.25rem; border-radius: 0.25rem; margin-top: 1rem; text-align: center;"
 		>
 ⬇ ⬇ ⬇ ⬇ Drag Columns to Database ⬇ ⬇ ⬇ ⬇
 		</h3>

@@ -178,7 +178,6 @@
 									{formatColumnType(getColumnType(header))}
 								</span>
 								<span class="header-text">{header}</span>
-								<span class="drag-handle">⇅</span>
 							</div>
 						</th>
 					{/each}
