@@ -40,12 +40,12 @@
 		if (!localData || !localData.columnTypes) return 'string';
 
 		// Special case handling based on header name
-		if (header.startsWith('GPS')) return 'gps';
-		if (header === 'Latitude') return 'latitude';
-		if (header === 'Longitude') return 'longitude';
-		if (header === 'Date') return 'date';
-		if (header === 'Number' || header === 'Numberz') return 'number';
-		if (header === 'Country' || header === 'Text') return 'string';
+		// if (header.startsWith('GPS')) return 'gps';
+		// if (header === 'Latitude') return 'latitude';
+		// if (header === 'Longitude') return 'longitude';
+		// if (header === 'Date') return 'date';
+		// if (header === 'Number' || header === 'Numberz') return 'number';
+		// if (header === 'Country' || header === 'Text') return 'string';
 
 		// Use the type from columnTypes if available
 		return localData.columnTypes[header] || 'string';
@@ -184,18 +184,21 @@
 					{/each}
 				</tr>
 			</thead>
-			<tbody >
+			<tbody>
 				{#each localData.records.slice(0, maxRowsToShow) as record}
 					<tr>
 						{#each Object.keys(record) as header}
-							<td>{record[header]}</td>
+							<td 
+								draggable="true"
+								ondragstart={(e) => handleDragStart(e, header)}
+								ondragend={handleDragEnd}
+							>{record[header]}</td>
 						{/each}
 					</tr>
 				{/each}
 			</tbody>
 		</table>
-		{#if totalRecords > 0}
-		{/if}
+		{#if totalRecords > 0}{/if}
 	{:else}
 		<p>
 			No data available to display. <button onclick={returnToTransform}>Return to Transform</button>

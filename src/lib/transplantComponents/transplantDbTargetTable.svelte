@@ -431,12 +431,12 @@
 												</span>
 											{/if}
 											<span
-											class="type-pseudo-select"
-											data-type={schemaColumnTypes[tableName]?.[header]}
+												class="type-pseudo-select"
+												data-type={schemaColumnTypes[tableName]?.[header]}
 											>
-											{formatTypeName(schemaColumnTypes[tableName]?.[header] || '')}
-										</span>
-										<span class="header-text">{header}</span>
+												{formatTypeName(schemaColumnTypes[tableName]?.[header] || '')}
+											</span>
+											<span class="header-text">{header}</span>
 										</div>
 									</th>
 								{/each}
@@ -459,4 +459,3 @@
 		{/each}
 	</div>
 {/if}
-

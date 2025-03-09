@@ -71,9 +71,9 @@
 	<button onclick={() => (window.location.href = '/transform')}> Back to Transform </button>
 </div>
 <div class="container">
-	<h2>Transplant Data</h2>
+	<h2>Imported Data</h2>
 	<p class="description">
-		Drag'n drop columns to tree planting database below. Just try we can fix it later 😎️
+		Drag'n'drop columns to database tables below. Just try! We can fix it later 😎️
 	</p>
 
 	{#if !hasTransformData}
@@ -83,8 +83,11 @@
 		</div>
 	{:else}
 		<TransplantDataTable on:dragStart={handleDragStart} on:dragEnd={handleDragEnd} />
-		<br />
-		<h2>Database Tables</h2>
+		<h3
+			style="background-color:  #333333; color: var(--color-purple) ; padding: 0.25rem; border-radius: 0.25rem; margin-top: 1rem; text-align: center;"
+		>
+⬇ ⬇ ⬇ ⬇ Drag Columns to Database ⬇ ⬇ ⬇ ⬇
+		</h3>
 
 		{#if isSchemaLoading}
 			<div class="loading-indicator">

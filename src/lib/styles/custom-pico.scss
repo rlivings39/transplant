@@ -420,11 +420,41 @@ button,
 .compatible-target {
 	border: 2px dashed #4caf50;
 	background-color: rgba(76, 175, 80, 0.1);
+	cursor: pointer ;
 }
 
 .incompatible-target {
 	opacity: 0.5;
 	cursor: not-allowed;
+}
+
+/* Drag and drop cursor styling */
+[draggable='true'],
+[draggable='true'] * {
+	cursor: grab !important;
+}
+
+[draggable='true']:active,
+[draggable='true']:active * {
+	cursor: grabbing !important;
+}
+
+/* Make all cells in the source table appear draggable */
+.table-container table tbody td {
+	cursor: grab;
+}
+
+/* Style for drop targets */
+.compatible-target {
+	border: 2px dashed #4caf50;
+	background-color: rgba(76, 175, 80, 0.1);
+	cursor: pointer !important;
+}
+
+.drag-over {
+	border: 2px solid #4caf50 !important;
+	background-color: rgba(76, 175, 80, 0.2) !important;
+	cursor: pointer !important;
 }
 
 /* ============================================================================
