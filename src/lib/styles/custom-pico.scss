@@ -48,15 +48,15 @@ table {
 	font-family: 'Roboto Mono', monospace;
 	font-size: 0.5rem;
 	line-height: 1;
-	width: fit-content;
+	width: auto;
+	min-width: fit-content;
 	border-collapse: separate;
-	overflow: hidden !important;
+	margin-left: 0;
 }
 
 /* Table Header Styles */
 thead {
 	position: sticky !important;
-	// top: -1px;
 	z-index: 1;
 	background-color: var(--pico-background-color);
 
@@ -97,8 +97,45 @@ thead {
 	}
 }
 
+/* Override container styles with high specificity */
+body .container,
+html body .container,
+div.container {
+	width: 100% !important;
+	max-width: 100% !important;
+	margin: 0 !important;
+	margin-left: 0 !important;
+	margin-right: 0 !important;
+	padding: 1rem !important;
+}
+
+/* Table container styles for horizontal scrolling */
 .table-container {
 	max-width: 100%;
+	overflow-x: auto;
+	margin: 0;
+	padding: 0;
+	/* Enable momentum scrolling on iOS */
+	-webkit-overflow-scrolling: touch;
+	/* Add some space for scrollbar */
+	padding-bottom: 5px;
+	/* Ensure proper positioning context for sticky elements */
+	position: relative;
+}
+
+/* Database tables container */
+.database-tables-container {
+	margin: 0;
+	padding: 0;
+	width: 100%;
+}
+
+/* Table section styles */
+.table-section {
+	margin-bottom: 1.5rem;
+	margin-left: 0;
+	padding-left: 0;
+	width: 100%;
 }
 
 .number-cell {
@@ -117,6 +154,24 @@ td:first-child {
 	z-index: 1;
 	background-color: var(--pico-background-color);
 }
+
+/* First header sticky */
+th:first-child {
+	position: sticky !important;
+	left: 0;
+	top: 0;
+	z-index: 999 !important;
+	background-color: var(--header-background) !important;
+}
+
+/* All headers sticky at top */
+thead th {
+	position: sticky !important;
+	top: 0;
+	z-index: 998 !important;
+	background-color: var(--header-background) !important;
+}
+
 /* Target the table headers directly to fill the entire cell */
 table thead th {
 	padding-bottom: 0.5rem;
@@ -135,7 +190,6 @@ td {
 	width: var(--column-width);
 	min-width: var(--column-width);
 	max-width: var(--column-width);
-	// overflow: hidden;
 	white-space: nowrap;
 	padding: 1px;
 	background-color: var(--pico-background-color);
@@ -145,67 +199,39 @@ td {
 	}
 }
 
-th.removed,
-td.removed {
-	background-color: rgba(128, 128, 128, 0.2);
-	color: rgba(224, 224, 224, 0.5);
-
-	&:hover {
-		background-color: rgba(128, 128, 128, 0.3);
-	}
+/* Scrollbar styling for better visibility */
+.table-container::-webkit-scrollbar {
+	height: 8px;
+	background-color: var(--color-black);
 }
 
-table.numeric,
-td.numeric,
-th.numeric {
-	text-align: right; /* Right-align only numeric cells */
+.table-container::-webkit-scrollbar-thumb {
+	background-color: var(--color-light-grey);
+	border-radius: 4px;
+}
+
+.table-container::-webkit-scrollbar-track {
+	background-color: var(--color-black);
+}
+
+/* Media query adjustments for mobile */
+@media (max-width: 768px) {
+	.table-container {
+		overflow-x: auto;
+		-webkit-overflow-scrolling: touch;
+	}
 }
 
 td {
 	padding: 8px;
 	overflow: hidden;
 }
+
 td:first-child {
 	position: sticky !important;
 	left: 0;
 	z-index: 2 !important;
 	background-color: var(--pico-background-color) !important;
-}
-
-th:first-child {
-	position: sticky !important;
-	left: 0;
-	top: 0;
-	z-index: 999 !important;
-	background-color: var(--header-background) !important;
-}
-
-thead th:first-child {
-	position: sticky !important;
-	left: 0;
-	top: 0;
-	z-index: 999 !important;
-	background-color: var(--header-background) !important;
-}
-
-/* Regular header cells */
-thead th {
-	position: sticky !important;
-	top: 0;
-	z-index: 998 !important;
-	background-color: var(--header-background) !important;
-}
-
-/* Sticky First Column */
-th:first-child,
-td:first-child {
-	position: sticky !important;
-	left: 0;
-	z-index: 1;
-	background-color: var(--pico-background-color);
-	&:hover {
-		background-color: var(--color-grey);
-	}
 }
 
 select {
@@ -255,22 +281,56 @@ select {
 	background-size: 1rem auto;
 
 	// Type-specific styling
-	&[data-type='String'] {
+	&[data-type='String'],
+	&[data-type='string'],
+	&[data-type='VARCHAR'],
+	&[data-type='TEXT'] {
 		border-left: 0.2rem solid #9c27b0; // Purple for String
 	}
 
-	&[data-type='Number'] {
+	&[data-type='Number'],
+	&[data-type='number'],
+	&[data-type='INTEGER'],
+	&[data-type='FLOAT'],
+	&[data-type='DECIMAL'],
+	&[data-type='NUMERIC'] {
 		border-left: 0.2rem solid #2196f3; // Blue for Number
 	}
 
-	&[data-type='Date'] {
+	&[data-type='Date'],
+	&[data-type='date'],
+	&[data-type='DATETIME'],
+	&[data-type='TIMESTAMP'] {
 		border-left: 0.2rem solid #ff9800; // Orange for Date
 	}
 
 	&[data-type='Gps'],
+	&[data-type='gps'],
 	&[data-type='Latitude'],
-	&[data-type='Longitude'] {
+	&[data-type='latitude'],
+	&[data-type='Longitude'],
+	&[data-type='longitude'],
+	&[data-type='POINT'] {
 		border-left: 0.2rem solid #4caf50; // Green for GPS coordinates
+	}
+
+	&[data-type='BOOLEAN'] {
+		border-left: 0.2rem solid #f44336; // Red for Boolean
+	}
+
+	// Default for any other type
+	&:not([data-type='String']):not([data-type='string']):not([data-type='VARCHAR']):not(
+			[data-type='TEXT']
+		):not([data-type='Number']):not([data-type='number']):not([data-type='INTEGER']):not(
+			[data-type='FLOAT']
+		):not([data-type='DECIMAL']):not([data-type='NUMERIC']):not([data-type='Date']):not(
+			[data-type='date']
+		):not([data-type='DATETIME']):not([data-type='TIMESTAMP']):not([data-type='Gps']):not(
+			[data-type='gps']
+		):not([data-type='Latitude']):not([data-type='latitude']):not([data-type='Longitude']):not(
+			[data-type='longitude']
+		):not([data-type='POINT']):not([data-type='BOOLEAN']) {
+		border-left: 0.2rem solid #9e9e9e; // Grey for other types
 	}
 }
 
