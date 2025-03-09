@@ -266,6 +266,8 @@
 	function updatePreviewData(table: string, field: string, csvColumn: string) {
 		if (!transformData || !transformData.records) return;
 
+		console.log(`Updating preview data for ${table}.${field} from ${csvColumn}`);
+
 		// Create a copy of the current table data
 		const updatedTableData = { ...tableData };
 
@@ -274,12 +276,45 @@
 			updatedTableData[table] = Array(emptyRows).fill({});
 		}
 
+		// Get the field type from schema
+		const fieldType = schemaColumnTypes?.[table]?.[field];
+
 		// Update the field in each row with the corresponding CSV data
 		updatedTableData[table] = updatedTableData[table].map((row, index) => {
 			if (index < transformData.records.length) {
+				let value = transformData.records[index][csvColumn];
+
+				// Handle type conversion based on the target field type
+				if (fieldType && value !== undefined && value !== null) {
+					if (
+						fieldType.includes('numeric') ||
+						fieldType.includes('int') ||
+						fieldType.includes('float') ||
+						fieldType.includes('double')
+					) {
+						// Convert string to number for numeric fields
+						const numValue = Number(value);
+						if (!isNaN(numValue)) {
+							value = numValue;
+						} else {
+							console.warn(`Failed to convert "${value}" to number for ${table}.${field}`);
+						}
+					} else if (fieldType.includes('date') || fieldType.includes('timestamp')) {
+						// Handle date conversion if needed
+						try {
+							const dateValue = new Date(value);
+							if (!isNaN(dateValue.getTime())) {
+								value = dateValue.toISOString();
+							}
+						} catch (error) {
+							console.warn(`Failed to convert "${value}" to date for ${table}.${field}`);
+						}
+					}
+				}
+
 				return {
 					...row,
-					[field]: transformData.records[index][csvColumn]
+					[field]: value
 				};
 			}
 			return row;
@@ -287,6 +322,8 @@
 
 		// Update the tableData state
 		tableData = updatedTableData;
+
+		console.log(`Updated preview data for ${table}.${field}`);
 	}
 
 	// Propagate data to related tables if needed
