@@ -407,7 +407,7 @@
 
 		{#each tableNames as tableName}
 			<div class="table-section">
-				<h3 class="table-title">{tableName}</h3>
+				<h4 class="table-title">{tableName}</h4>
 				<div class="table-container">
 					<table>
 						<thead>
@@ -425,18 +425,18 @@
 										ondrop={(e) => handleDrop(e, tableName, header)}
 									>
 										<div class="header-controls">
-											<span class="header-text">{header}</span>
-											<span
-												class="type-pseudo-select"
-												data-type={schemaColumnTypes[tableName]?.[header]}
-											>
-												{formatTypeName(schemaColumnTypes[tableName]?.[header] || '')}
-											</span>
 											{#if isFieldMapped(tableName, header)}
 												<span class="mapped-indicator">
-													Mapped from: {getMappedColumn(tableName, header)}
+													From: {getMappedColumn(tableName, header)}
 												</span>
 											{/if}
+											<span
+											class="type-pseudo-select"
+											data-type={schemaColumnTypes[tableName]?.[header]}
+											>
+											{formatTypeName(schemaColumnTypes[tableName]?.[header] || '')}
+										</span>
+										<span class="header-text">{header}</span>
 										</div>
 									</th>
 								{/each}
@@ -460,35 +460,3 @@
 	</div>
 {/if}
 
-<style>
-	.mapped-indicator {
-		font-size: 0.7rem;
-		color: #4caf50;
-		display: block;
-		margin-top: 0.25rem;
-	}
-
-	.header-controls {
-		display: flex;
-		flex-direction: column;
-		gap: 0.25rem;
-	}
-
-	.mapped-field {
-		border: 2px solid #4caf50;
-	}
-
-	.drag-over {
-		background-color: rgba(76, 175, 80, 0.2);
-	}
-
-	.compatible-target {
-		border: 2px dashed #4caf50;
-		background-color: rgba(76, 175, 80, 0.1);
-	}
-
-	.incompatible-target {
-		opacity: 0.5;
-		cursor: not-allowed;
-	}
-</style>

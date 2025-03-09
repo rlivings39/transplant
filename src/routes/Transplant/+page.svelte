@@ -64,8 +64,14 @@
 	});
 </script>
 
+<div class="actions">
+	<button class="primary" onclick={() => alert('Save to database functionality coming soon!')}>
+		Save to Database
+	</button>
+	<button onclick={() => (window.location.href = '/transform')}> Back to Transform </button>
+</div>
 <div class="container">
-	<h1>Transplant Data</h1>
+	<h2>Transplant Data</h2>
 	<p class="description">
 		Drag'n drop columns to tree planting database below. Just try we can fix it later 😎️
 	</p>
@@ -92,56 +98,50 @@
 		{:else}
 			<TransplantDbTargetTable {draggedColumn} on:mappingCreated={handleMappingCreated} />
 		{/if}
-
-		<div class="actions">
-			<button class="primary" onclick={() => alert('Save to database functionality coming soon!')}>
-				Save to Database
-			</button>
-			<button onclick={() => (window.location.href = '/transform')}> Back to Transform </button>
-		</div>
 	{/if}
 </div>
 
 <style>
-	.container {
-		max-width: 100%;
-		margin: 0;
-		padding: 1rem;
+	.description {
+		text-align: center;
+		margin-top: -1rem;
+		margin-bottom: 0;
 	}
 
-	h1 {
-		margin-bottom: 0.5rem;
-	}
+	/* .actions {
+		margin-top: -10rem;
+	} */
 
 	h2 {
-		margin-top: 2rem;
-		margin-bottom: 0.5rem;
+		margin-top: -0.5rem;
 	}
 
 	.description {
-		margin-bottom: 1rem;
+		margin-bottom: 0.5rem;
 		color: #666;
 		font-size: 0.9rem;
 	}
 
 	.actions {
 		margin-top: 2rem;
+		margin-bottom: -0.2rem;
 		display: flex;
 		gap: 1rem;
 		justify-content: flex-end;
 	}
 
 	button {
+		margin-top: -3em;
 		padding: 0.5rem 1rem;
-		border: 1px solid #ddd;
+		/* border: 1px solid #ddd; */
 		border-radius: 4px;
-		background-color: #f5f5f5;
+		background-color: var(--color-purple);
 		cursor: pointer;
 	}
 
-	button:hover {
-		background-color: #e5e5e5;
-	}
+	/* button:hover {
+		background-color: #e5e5e5 5;
+	} */
 
 	button.primary {
 		background-color: #4caf50;

@@ -25,11 +25,9 @@
 }
 
 nav a {
-	color: var(--color-purple);
 	text-decoration-color: var(--color-purple);
-
 	&:hover {
-		color: var(--color-light-grey);
+		color: var(--color-purple);
 		text-decoration-color: var(--color-white);
 	}
 }
@@ -101,12 +99,12 @@ thead {
 body .container,
 html body .container,
 div.container {
-	width: 100% !important;
-	max-width: 100% !important;
-	margin: 0 !important;
-	margin-left: 0 !important;
-	margin-right: 0 !important;
-	padding: 1rem !important;
+	width: 100%;
+	max-width: 100%;
+	margin: 0;
+	margin-left: 0;
+	margin-right: 0;
+	padding: 1rem;
 }
 
 /* Table container styles for horizontal scrolling */
@@ -123,16 +121,14 @@ div.container {
 	position: relative;
 }
 
-/* Database tables container */
-.database-tables-container {
-	margin: 0;
-	padding: 0;
-	width: 100%;
+.table-title {
+	/* margin-top: 0.2rem; */
+	margin-bottom: 0.2rem;
 }
 
 /* Table section styles */
 .table-section {
-	margin-bottom: 1.5rem;
+	// margin-bottom: 1rem;
 	margin-left: 0;
 	padding-left: 0;
 	width: 100%;
@@ -364,15 +360,15 @@ button,
 	max-width: var(--button-max-width);
 	width: auto;
 	cursor: pointer;
-	&::file-selector-button {
-		cursor: pointer;
-		color: var(--color-white);
-		background-color: var(--color-grey);
-		&:hover {
-			background-color: var(--color-white);
-			color: var(--color-white);
-		}
+	&:hover {
+		opacity: 0.6 !important;
+		transition: opacity 0.3s ease;
 	}
+	// &::file-selector-button {
+	// 	cursor: pointer;
+	// 	color: var(--color-white);
+	// 	background-color: var(--color-grey);
+	// }
 }
 
 /* Transform Button Styles */
@@ -398,6 +394,37 @@ button,
 
 .import-dropzone {
 	background-color: var(--header-background) !important;
+}
+
+.mapped-indicator {
+	font-size: 0.7rem;
+	color: #4caf50;
+	display: block;
+	margin-top: 0.25rem;
+}
+
+.header-controls {
+	display: flex;
+	flex-direction: column;
+	gap: 0.25rem;
+}
+
+.mapped-field {
+	border: 2px solid #4caf50;
+}
+
+.drag-over {
+	background-color: rgba(76, 175, 80, 0.2);
+}
+
+.compatible-target {
+	border: 2px dashed #4caf50;
+	background-color: rgba(76, 175, 80, 0.1);
+}
+
+.incompatible-target {
+	opacity: 0.5;
+	cursor: not-allowed;
 }
 
 /* ============================================================================

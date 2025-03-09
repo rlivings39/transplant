@@ -157,9 +157,6 @@
 		<p><strong>Records:</strong> {localData.records?.length || 0}</p>
 	{/if}
 </div> -->
-<div class="record-count-info">
-	<p>Showing {Math.min(maxRowsToShow, totalRecords)} records out of {totalRecords}</p>
-</div>
 
 <div class="table-container">
 	{#if localData && localData.records && localData.records.length > 0}
@@ -187,7 +184,7 @@
 					{/each}
 				</tr>
 			</thead>
-			<tbody>
+			<tbody >
 				{#each localData.records.slice(0, maxRowsToShow) as record}
 					<tr>
 						{#each Object.keys(record) as header}
