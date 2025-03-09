@@ -28,7 +28,8 @@
 <div class="container">
 	<h1>Transplant Data</h1>
 	<p class="description">
-		Drag columns from transplant table to the target database tables below.
+		Drag columns from transplant table to the database tables. Column types must be
+		compatible with the target field types.
 	</p>
 
 	<TransplantDataTable on:dragStart={handleDragStart} on:dragEnd={handleDragEnd} />

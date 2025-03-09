@@ -65,10 +65,3 @@
 		<!-- Empty cell -->
 	</td>
 {/if}
-
-<style>
-	.gps-column {
-		font-family: monospace;
-		white-space: nowrap;
-	}
-</style>

@@ -224,13 +224,3 @@
 	<TransformManager on:dataTransformed={handleTransformedData} on:csvLoaded={handleCsvLoaded} />
 </div>
 
-<style>
-	.transform-header {
-		width: 100%;
-		padding: 1rem 0;
-		margin-bottom: 1rem;
-		display: flex;
-		justify-content: space-between;
-		align-items: center;
-	}
-</style>

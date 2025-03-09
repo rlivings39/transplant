@@ -401,24 +401,11 @@
 {/if}
 
 <style>
-	.database-tables-container {
-		display: flex;
-		flex-direction: column;
-		gap: 1.5rem;
-	}
-
-	.table-section {
+	/* .table-section {
 		border: 1px solid #ddd;
 		border-radius: 4px;
 		overflow: hidden;
 		margin-bottom: 1.5rem;
-	}
-
-	.table-title {
-		background-color: #f5f5f5;
-		padding: 0.5rem 1rem;
-		margin: 0;
-		border-bottom: 1px solid #ddd;
 	}
 
 	.table-container {
@@ -428,93 +415,31 @@
 	table {
 		width: 100%;
 		border-collapse: collapse;
-	}
+	} */
 
 	th,
 	td {
-		padding: 0.5rem;
-		border: 1px solid #ddd;
+		/* padding: 0.5rem; */
+		
 		text-align: left;
 		min-width: 12.5rem; /* Fixed width for columns */
 	}
 
-	th {
-		background-color: #f9f9f9;
-		position: relative;
-	}
-
-	.header-controls {
-		display: flex;
-		align-items: center;
-		gap: 0.5rem;
-	}
-
-	.type-pseudo-select {
-		font-size: 0.7rem;
-		padding: 0.1rem 0.3rem;
-		background-color: #eee;
-		border-radius: 3px;
-		color: #666;
-	}
-
-	.mapped-field {
-		background-color: #e6f7ff;
-	}
-
-	.mapped-cell {
-		background-color: #f0f8ff;
-	}
-
-	.mapped-indicator {
-		font-size: 0.8rem;
-		color: #1890ff;
-		margin-left: auto;
-	}
 
 	.loading-indicator,
-	.error-message {
-		padding: 1rem;
-		margin: 1rem 0;
-		border-radius: 4px;
-	}
-
+	
 	.loading-indicator {
 		background-color: #f0f0f0;
 		color: #666;
 	}
 
-	.error-message {
-		background-color: #fff1f0;
-		color: #f5222d;
-		border: 1px solid #ffa39e;
-	}
-
-	.debug-info {
-		background-color: #f0f0f0;
-		padding: 0.5rem;
-		margin-bottom: 1rem;
-		font-size: 0.8rem;
-		color: #666;
-		border-radius: 4px;
-	}
-
-	.drag-over {
-		background-color: #e6f7ff;
-		border: 2px dashed #1890ff;
-	}
-
 	.compatible-target {
-		border: 2px dashed #4caf50 !important;
-		background-color: rgba(76, 175, 80, 0.1) !important;
+		border: 2px dashed #4caf50 ;
+		background-color: rgba(76, 175, 80, 0.1) ;
 	}
 
 	.incompatible-target {
 		opacity: 0.5;
 		cursor: not-allowed;
-	}
-
-	.drag-over.compatible-target {
-		background-color: rgba(76, 175, 80, 0.3) !important;
-		border: 2px solid #4caf50 !important;
 	}
 </style>
