@@ -406,14 +406,18 @@ export function getTableHeaders(tables: Record<string, TableMetadata>): Record<s
 				// Get the base columns from the table
 				let headers = Object.keys(table.columns);
 
-				// Special handling for the Planting table to use natural keys instead of foreign keys
+				// Special handling for the Planting table
 				if (tableName === 'Planting') {
-					// Replace land_id with land_name and crop_id with crop_name
-					headers = headers.map((header) => {
-						if (header === 'land_id') return 'land_name';
-						if (header === 'crop_id') return 'crop_name';
-						return header;
-					});
+					// Remove the foreign key IDs since we already have virtual fields
+					headers = headers.filter((header) => header !== 'land_id' && header !== 'crop_id');
+
+					// Remove any duplicates
+					headers = [...new Set(headers)];
+
+					// Ensure land_name and crop_name appear at the beginning
+					const naturalKeys = ['land_name', 'crop_name'];
+					const otherFields = headers.filter((header) => !naturalKeys.includes(header));
+					headers = [...naturalKeys, ...otherFields];
 				}
 
 				acc[tableName] = headers;
@@ -429,7 +433,7 @@ export function getTableHeaders(tables: Record<string, TableMetadata>): Record<s
 
 		// Provide fallback table headers with natural keys for Planting
 		const fallbackTableHeaders: Record<string, string[]> = {
-			Planting: ['id', 'land_name', 'crop_name', 'planted', 'planting_date', 'notes'],
+			Planting: ['land_name', 'crop_name', 'id', 'planted', 'planting_date', 'notes'],
 			Land: ['land_id', 'land_name', 'hectares', 'land_holder', 'gps_lat', 'gps_lon', 'notes'],
 			Crop: ['crop_id', 'crop_name', 'crop_stock', 'seedlot', 'seedzone', 'notes']
 		};
