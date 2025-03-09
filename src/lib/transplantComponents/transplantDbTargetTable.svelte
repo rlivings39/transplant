@@ -329,10 +329,33 @@
 	// Propagate data to related tables if needed
 	function propagateData(table: string, field: string, csvColumn: string) {
 		// Implementation for data propagation between tables based on schema relationships
-		if (!schemaRelationships) return;
+		if (!schemaRelationships || !transformData || !transformData.records || !schemaTableHeaders) {
+			console.log(
+				'Cannot propagate: missing schema relationships, transform data, or table headers'
+			);
+			return;
+		}
 
-		// This is a placeholder for the actual implementation
-		console.log(`Propagation for ${table}.${field} not yet implemented`);
+		console.log(`Checking propagation for ${table}.${field}`);
+
+		// Find all tables that have a field with the same name
+		Object.entries(schemaTableHeaders).forEach(([targetTable, headers]) => {
+			// Skip the source table
+			if (targetTable === table) return;
+
+			// Check if the target table has the same field name
+			if (headers.includes(field)) {
+				console.log(`Propagating ${field} from ${table} to ${targetTable} table`);
+
+				// Update the preview data in the target table
+				updatePreviewData(targetTable, field, csvColumn);
+
+				// Update mappings for the target table
+				const updatedMappings = { ...mappings };
+				updatedMappings[csvColumn] = `${targetTable}.${field}`;
+				mappings = updatedMappings;
+			}
+		});
 	}
 
 	// Helper functions for the UI
