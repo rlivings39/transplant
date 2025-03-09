@@ -461,34 +461,25 @@
 {/if}
 
 <style>
-	/* .table-section {
-		border: 1px solid #ddd;
-		border-radius: 4px;
-		overflow: hidden;
-		margin-bottom: 1.5rem;
+	.mapped-indicator {
+		font-size: 0.7rem;
+		color: #4caf50;
+		display: block;
+		margin-top: 0.25rem;
 	}
 
-	.table-container {
-		overflow-x: auto;
+	.header-controls {
+		display: flex;
+		flex-direction: column;
+		gap: 0.25rem;
 	}
 
-	table {
-		width: 100%;
-		border-collapse: collapse;
-	} */
-
-	th,
-	td {
-		/* padding: 0.5rem; */
-
-		text-align: left;
-		min-width: 12.5rem; /* Fixed width for columns */
+	.mapped-field {
+		border: 2px solid #4caf50;
 	}
 
-	.loading-indicator,
-	.loading-indicator {
-		background-color: #f0f0f0;
-		color: #666;
+	.drag-over {
+		background-color: rgba(76, 175, 80, 0.2);
 	}
 
 	.compatible-target {
