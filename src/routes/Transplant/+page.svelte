@@ -65,16 +65,18 @@
 </script>
 
 <div class="actions">
-	<button class="primary" onclick={() => alert('Save to database functionality coming soon!')}>
-		Save to Database
-	</button>
-	<button onclick={() => (window.location.href = '/transform')}> Back to Transform </button>
-</div>
-<div class="container">
-	<h2>Imported Data</h2>
 	<p class="description">
 		Drag'n'drop columns to database tables below. Just try! We can fix it later 😎️
 	</p>
+	<div class="button-container">
+		<button class="primary" onclick={() => alert('Save to database functionality coming soon!')}>
+			Save to Database
+		</button>
+		<button onclick={() => (window.location.href = '/transform')}> Back to Transform </button>
+	</div>
+</div>
+<div class="container">
+	<h3>Imported Data</h3>
 
 	{#if !hasTransformData}
 		<div class="warning-message">
@@ -86,7 +88,7 @@
 		<h3
 			style="color: var(--color-purple) ; padding: 0.25rem; border-radius: 0.25rem; margin-top: 1rem; text-align: center;"
 		>
-⬇ ⬇ ⬇ ⬇ Drag Columns to Database ⬇ ⬇ ⬇ ⬇
+			⬇ ⬇ ⬇ ⬇ Drag Columns to Database ⬇ ⬇ ⬇ ⬇
 		</h3>
 
 		{#if isSchemaLoading}
@@ -106,31 +108,32 @@
 
 <style>
 	.description {
-		text-align: center;
+		/* text-align: left; */
 		margin-top: -1rem;
 		margin-bottom: 0;
 	}
 
-	/* .actions {
-		margin-top: -10rem;
-	} */
+	.actions {
+		margin-top: 2rem;
+		margin-bottom: 1rem;
+		display: flex;
+		justify-content: space-between;
+		align-items: center;
+	}
 
 	h2 {
 		margin-top: -0.5rem;
 	}
 
 	.description {
-		margin-bottom: 0.5rem;
+		margin-bottom: 0;
 		color: #666;
 		font-size: 0.9rem;
 	}
 
-	.actions {
-		margin-top: 2rem;
-		margin-bottom: -0.2rem;
+	.button-container {
 		display: flex;
 		gap: 1rem;
-		justify-content: flex-end;
 	}
 
 	button {
