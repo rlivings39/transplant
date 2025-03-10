@@ -2,6 +2,7 @@
 	import { onMount, createEventDispatcher } from 'svelte';
 	import { transformedDataService } from '$lib/stores/transformStore';
 	import { goto } from '$app/navigation';
+	import { setupColumnDrag, addDragDropStyles } from '$lib/utils/dragColumnUtils';
 
 	// Event dispatcher
 	const dispatch = createEventDispatcher();
@@ -61,15 +62,8 @@
 		if (event.dataTransfer) {
 			const columnType = getColumnType(header);
 
-			event.dataTransfer.setData('text/plain', header);
-			event.dataTransfer.setData(
-				'application/json',
-				JSON.stringify({
-					header,
-					columnType
-				})
-			);
-			event.dataTransfer.effectAllowed = 'move';
+			// Use the utility function to setup the column drag
+			setupColumnDrag(event, header, columnType, localData.records, formatColumnType);
 			draggedHeader = header;
 
 			// Dispatch event to parent component
@@ -93,6 +87,9 @@
 
 	// Load data on component mount
 	onMount(() => {
+		// Add drag-drop styles
+		addDragDropStyles();
+
 		// Try both methods to get data from service
 		let rawData = transformedDataService.get();
 
@@ -187,11 +184,11 @@
 				{#each localData.records.slice(0, maxRowsToShow) as record}
 					<tr>
 						{#each Object.keys(record) as header}
-							<td 
+							<td
 								draggable="true"
 								ondragstart={(e) => handleDragStart(e, header)}
-								ondragend={handleDragEnd}
-							>{record[header]}</td>
+								ondragend={handleDragEnd}>{record[header]}</td
+							>
 						{/each}
 					</tr>
 				{/each}
@@ -204,3 +201,19 @@
 		</p>
 	{/if}
 </div>
+
+<style>
+	/* Style for the dragging state */
+	.dragging {
+		opacity: 0.5;
+	}
+
+	/* Cursor styles for drag and drop */
+	[draggable='true'] {
+		cursor: grab;
+	}
+
+	[draggable='true']:active {
+		cursor: grabbing;
+	}
+</style>
