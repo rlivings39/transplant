@@ -24,9 +24,9 @@ export function createColumnDragImage(
 	applyStyles(dragImageContainer, {
 		position: 'absolute',
 		top: '-1000px',
-		opacity: '0.85',
+		opacity: '0.8f5',
 		background: 'white',
-		border: '1px solid #ccc',
+		border: '1px var(--color-gray) solid',
 		borderRadius: '4px',
 		boxShadow: '0 2px 10px rgba(0, 0, 0, 0.2)',
 		zIndex: '9999',
@@ -194,18 +194,45 @@ export function addDragDropStyles(): void {
             cursor: grabbing;
         }
         
-        .dragging {
-            opacity: 0.5;
-        }
+        // .dragging {
+        //     opacity: 0.5;
+        // }
         
-        .drop-target {
-            background-color: rgba(0, 123, 255, 0.1);
-            outline: 2px dashed #007bff;
-        }
+        // .drop-target {
+        //     background-color: transparent !important;
+        //     outline: 2px dashed #007bff;
+        // }
         
-        .drop-target * {
-            pointer-events: none;
-        }
+        // .drop-target * {
+        //     pointer-events: none;
+        // }
+
+        // /* Styles for the database target table */
+        // .compatible-target {
+        //     outline: 1px solid #28a745;
+        //     background-color: transparent !important;
+        // }
+        
+        // .incompatible-target {
+        //     outline: 1px solid #dc3545;
+        //     opacity: 0.6;
+        //     background-color: transparent !important;
+        // }
+        
+        // .drag-over {
+        //     outline: 1px dashed #007bff;
+        //     background-color: transparent !important;
+        // }
+        
+        // /* Fix for the ghost column and bright white background */
+        // .table-container {
+        //     background-color: #1e1e2e;
+        // }
+        
+        // td, th {
+        //     border-bottom: 1px solid #333 !important;
+        //     background-color: transparent !important;
+        // }
     `;
 
 	document.head.appendChild(styleElement);

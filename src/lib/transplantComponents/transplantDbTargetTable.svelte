@@ -446,7 +446,17 @@
 							{#each getTableData(tableName) as row, rowIndex}
 								<tr>
 									{#each schemaTableHeaders[tableName] || [] as header}
-										<td class={isFieldMapped(tableName, header) ? 'mapped-cell' : ''}>
+										<td
+											class={`
+												${isFieldMapped(tableName, header) ? 'mapped-cell' : ''} 
+												${dragOverField?.table === tableName && dragOverField?.field === header ? 'drag-over' : ''} 
+												${draggedColumn && isCompatibleTarget(tableName, header) ? 'compatible-target' : ''} 
+												${draggedColumn && !isCompatibleTarget(tableName, header) ? 'incompatible-target' : ''}
+											`}
+											ondragover={(e) => handleDragOver(e, tableName, header)}
+											ondragleave={handleDragLeave}
+											ondrop={(e) => handleDrop(e, tableName, header)}
+										>
 											{row[header] !== undefined ? row[header] : ''}
 										</td>
 									{/each}
