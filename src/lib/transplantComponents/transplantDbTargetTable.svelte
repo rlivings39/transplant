@@ -25,6 +25,7 @@
 	const emptyRows = 4;
 	let mappings = $state<Record<string, string>>({});
 	let dragOverField = $state<{ table: string; field: string } | null>(null);
+	let columnFieldMap = $state<Record<string, string>>({});
 
 	// Compatible targets for the currently dragged column
 	let compatibleTargets = $state<Record<string, string[]>>({});
@@ -236,8 +237,22 @@
 			return;
 		}
 
-		// Clear any existing mappings to this target field
+		// FUNDAMENTAL RULE: A column can only be mapped to one field name
+		if (columnFieldMap[csvColumn] && columnFieldMap[csvColumn] !== field) {
+			// This column is already mapped to a different field name
+			console.log(`Column ${csvColumn} is already mapped to field "${columnFieldMap[csvColumn]}"`);
+
+			// Alert the user and prevent the mapping
+			alert(
+				`Column "${csvColumn}" is already mapped to field "${columnFieldMap[csvColumn]}". A column can only be mapped to one field name at a time.`
+			);
+			return; // Stop the operation here - don't proceed with mapping or propagation
+		}
+
+		// Create a copy of the current mappings
 		const updatedMappings = { ...mappings };
+
+		// Clear any existing mappings to this target field in this table
 		Object.entries(updatedMappings).forEach(([col, mapping]) => {
 			if (mapping === `${table}.${field}`) {
 				delete updatedMappings[col];
@@ -247,6 +262,9 @@
 		// Create new mapping
 		updatedMappings[csvColumn] = `${table}.${field}`;
 		mappings = updatedMappings;
+
+		// Update our column to field mapping tracker
+		columnFieldMap = { ...columnFieldMap, [csvColumn]: field };
 
 		// Update the preview data
 		updatePreviewData(table, field, csvColumn);
@@ -338,6 +356,40 @@
 
 		console.log(`Checking propagation for ${table}.${field}`);
 
+		// Debug logging for state
+		console.log('=== DEBUG HEADER RELATIONSHIPS ===');
+		console.log('CSV Column:', csvColumn);
+
+		// Log all tables that have this field name
+		console.log(`Tables with field "${field}":`);
+		Object.entries(schemaTableHeaders).forEach(([tableName, headers]) => {
+			if (headers.includes(field)) {
+				console.log(`- ${tableName}`);
+			}
+		});
+
+		// Log all mappings for this column
+		console.log(`All mappings for column "${csvColumn}":`);
+		Object.entries(mappings).forEach(([col, target]) => {
+			if (col === csvColumn) {
+				const [mappedTable, mappedField] = target.split('.');
+				console.log(`- Mapped to ${mappedTable}.${mappedField}`);
+			}
+		});
+
+		// Log the field name this column is mapped to in columnFieldMap
+		console.log(`Field name in columnFieldMap for "${csvColumn}":`, columnFieldMap[csvColumn]);
+
+		// Log all columns mapped to this field name
+		console.log(`All columns mapped to field "${field}":`);
+		Object.entries(columnFieldMap).forEach(([col, fieldName]) => {
+			if (fieldName === field) {
+				console.log(`- ${col}`);
+			}
+		});
+
+		console.log('=== END DEBUG ===');
+
 		// Find all tables that have a field with the same name
 		Object.entries(schemaTableHeaders).forEach(([targetTable, headers]) => {
 			// Skip the source table
@@ -346,6 +398,7 @@
 			// Check if the target table has the same field name
 			if (headers.includes(field)) {
 				console.log(`Propagating ${field} from ${table} to ${targetTable} table`);
+				console.log(`Target table ${targetTable} headers:`, headers);
 
 				// Update the preview data in the target table
 				updatePreviewData(targetTable, field, csvColumn);
@@ -354,6 +407,13 @@
 				const updatedMappings = { ...mappings };
 				updatedMappings[csvColumn] = `${targetTable}.${field}`;
 				mappings = updatedMappings;
+
+				console.log('AFTER PROPAGATION:');
+				console.log(`Column ${csvColumn} is now mapped to:`, mappings[csvColumn]);
+				console.log(`Column ${csvColumn} field in columnFieldMap:`, columnFieldMap[csvColumn]);
+
+				// Note: We don't need to update columnFieldMap here because
+				// the field name stays the same, just in a different table
 			}
 		});
 	}
