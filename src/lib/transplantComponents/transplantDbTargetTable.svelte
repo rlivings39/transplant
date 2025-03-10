@@ -2,6 +2,7 @@
 	import { onMount, createEventDispatcher } from 'svelte';
 	import { transformedDataService } from '$lib/stores/transformStore';
 	import { schemaService } from '$lib/services/schemaService';
+	import { getPersistentState, addMapping, removeMapping } from '$lib/utils/persistentStateManager';
 
 	// Props from parent
 	const { draggedColumn = null } = $props<{
@@ -14,8 +15,15 @@
 	// Schema metadata state
 	let schemaMetadata = $state<Record<string, any> | null>(null);
 	let schemaRelationships = $state<Record<string, any> | null>(null);
-	let schemaColumnTypes = $state<Record<string, Record<string, string>> | null>(null);
-	let schemaTableHeaders = $state<Record<string, string[]> | null>(null);
+
+	// Define schema table structure
+	interface SchemaTable {
+		headers: string[];
+		columnTypes: Record<string, string>;
+	}
+
+	// Combined schema data structure
+	let schemaData = $state<Record<string, SchemaTable> | null>(null);
 	let isSchemaLoading = $state<boolean>(true);
 	let schemaError = $state<string | null>(null);
 
@@ -53,11 +61,11 @@
 	function updateCompatibleTargets(columnType: string) {
 		const newCompatibleTargets: Record<string, string[]> = {};
 
-		if (schemaColumnTypes) {
-			Object.entries(schemaColumnTypes).forEach(([tableName, columns]) => {
+		if (schemaData) {
+			Object.entries(schemaData).forEach(([tableName, tableData]) => {
 				newCompatibleTargets[tableName] = [];
 
-				Object.entries(columns).forEach(([fieldName, fieldType]) => {
+				Object.entries(tableData.columnTypes).forEach(([fieldName, fieldType]) => {
 					if (isTypeCompatible(columnType, fieldType)) {
 						newCompatibleTargets[tableName].push(fieldName);
 					}
@@ -89,27 +97,19 @@
 				}
 			});
 
-			// Subscribe to schema column types
-			const unsubscribeColumnTypes = schemaService.columnTypes.subscribe((columnTypes) => {
-				schemaColumnTypes = columnTypes;
-				if (columnTypes) {
-					console.log('TransplantDbTargetTable: Schema column types loaded');
+			// Subscribe to schema data
+			const unsubscribeSchemaData = schemaService.schemaData.subscribe((schemaData) => {
+				schemaData = schemaData;
+				if (schemaData) {
+					console.log('TransplantDbTargetTable: Schema data loaded');
 					// Initialize table data with empty rows
-					const tables = Object.keys(columnTypes);
+					const tables = Object.keys(schemaData);
 					tableNames = tables;
 					tables.forEach((table) => {
 						if (!tableData[table]) {
 							tableData[table] = Array(emptyRows).fill({});
 						}
 					});
-				}
-			});
-
-			// Subscribe to schema table headers
-			const unsubscribeTableHeaders = schemaService.tableHeaders.subscribe((tableHeaders) => {
-				schemaTableHeaders = tableHeaders;
-				if (tableHeaders) {
-					console.log('TransplantDbTargetTable: Schema table headers loaded');
 				}
 			});
 
@@ -141,8 +141,7 @@
 			return () => {
 				unsubscribeMetadata();
 				unsubscribeRelationships();
-				unsubscribeColumnTypes();
-				unsubscribeTableHeaders();
+				unsubscribeSchemaData();
 				unsubscribeLoading();
 				unsubscribeError();
 			};
@@ -226,7 +225,7 @@
 				: transformData.columnTypes?.[csvColumn];
 
 		// Get the type of the target database field
-		const dbFieldType = schemaColumnTypes?.[table]?.[field];
+		const dbFieldType = schemaData?.[table]?.columnTypes?.[field];
 
 		// Validate type compatibility
 		if (!isTypeCompatible(csvColumnType, dbFieldType)) {
@@ -296,7 +295,7 @@
 		}
 
 		// Get the field type from schema
-		const fieldType = schemaColumnTypes?.[table]?.[field];
+		const fieldType = schemaData?.[table]?.columnTypes?.[field];
 
 		// Update the field in each row with the corresponding CSV data
 		updatedTableData[table] = updatedTableData[table].map((row, index) => {
@@ -348,7 +347,7 @@
 	// Propagate data to related tables if needed
 	function propagateData(table: string, field: string, csvColumn: string) {
 		// Implementation for data propagation between tables based on schema relationships
-		if (!schemaRelationships || !transformData || !transformData.records || !schemaTableHeaders) {
+		if (!schemaRelationships || !transformData || !transformData.records || !schemaData) {
 			console.log(
 				'Cannot propagate: missing schema relationships, transform data, or table headers'
 			);
@@ -363,8 +362,8 @@
 
 		// Log all tables that have this field name
 		console.log(`Tables with field "${field}":`);
-		Object.entries(schemaTableHeaders).forEach(([tableName, headers]) => {
-			if (headers.includes(field)) {
+		Object.entries(schemaData).forEach(([tableName, tableData]) => {
+			if (tableData.headers.includes(field)) {
 				console.log(`- ${tableName}`);
 			}
 		});
@@ -392,14 +391,14 @@
 		console.log('=== END DEBUG ===');
 
 		// Find all tables that have a field with the same name
-		Object.entries(schemaTableHeaders).forEach(([targetTable, headers]) => {
+		Object.entries(schemaData).forEach(([targetTable, tableData]) => {
 			// Skip the source table
 			if (targetTable === table) return;
 
 			// Check if the target table has the same field name
-			if (headers.includes(field)) {
+			if (tableData.headers.includes(field)) {
 				console.log(`Propagating ${field} from ${table} to ${targetTable} table`);
-				console.log(`Target table ${targetTable} headers:`, headers);
+				console.log(`Target table ${targetTable} headers:`, tableData.headers);
 
 				// Update the preview data in the target table
 				updatePreviewData(targetTable, field, csvColumn);
@@ -473,7 +472,7 @@
 					<table>
 						<thead>
 							<tr>
-								{#each schemaTableHeaders[tableName] || [] as header}
+								{#each schemaData[tableName].headers as header}
 									<th
 										class={`
 											${isFieldMapped(tableName, header) ? 'mapped-field' : ''} 
@@ -493,9 +492,9 @@
 											{/if}
 											<span
 												class="type-pseudo-select"
-												data-type={schemaColumnTypes[tableName]?.[header]}
+												data-type={schemaData[tableName].columnTypes[header]}
 											>
-												{formatTypeName(schemaColumnTypes[tableName]?.[header] || '')}
+												{formatTypeName(schemaData[tableName].columnTypes[header] || '')}
 											</span>
 											<span class="header-text">{header}</span>
 										</div>
@@ -506,7 +505,7 @@
 						<tbody>
 							{#each getTableData(tableName) as row, rowIndex}
 								<tr>
-									{#each schemaTableHeaders[tableName] || [] as header}
+									{#each schemaData[tableName].headers as header}
 										<td
 											class={`
 												${isFieldMapped(tableName, header) ? 'mapped-cell' : ''} 

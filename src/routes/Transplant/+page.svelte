@@ -4,6 +4,13 @@
 	import TransplantDbTargetTable from '$lib/transplantComponents/transplantDbTargetTable.svelte';
 	import { schemaService } from '$lib/services/schemaService';
 	import { transformedDataService } from '$lib/stores/transformStore';
+	import {
+		getPersistentState,
+		updatePersistentState,
+		addMapping,
+		removeMapping,
+		PersistentState
+	} from '$lib/utils/persistentStateManager';
 
 	// State for drag-and-drop coordination
 	let draggedColumn = $state<{ header: string; columnType: string } | null>(null);
@@ -12,6 +19,9 @@
 	let isSchemaLoading = $state(true);
 	let schemaError = $state<string | null>(null);
 	let hasTransformData = $state(false);
+
+	// Add persistent state
+	let persistentState = $state<PersistentState>(getPersistentState());
 
 	// Handle drag start from the data table
 	function handleDragStart(event: CustomEvent) {
@@ -30,6 +40,12 @@
 	function handleMappingCreated(event: CustomEvent) {
 		const { csvColumn, tableName, fieldName } = event.detail;
 		console.log(`Parent: Mapping created: ${csvColumn} -> ${tableName}.${fieldName}`);
+
+		// Update the persistent state with the new mapping
+		addMapping(csvColumn, fieldName, columnType, tableName);
+
+		// Update the local state to trigger a re-render
+		persistentState = getPersistentState();
 	}
 
 	// Initialize schema service on component mount
@@ -61,6 +77,16 @@
 		} finally {
 			isSchemaLoading = false;
 		}
+		// Listen for persistent state changes
+		window.addEventListener('persistent-state-changed', (event: CustomEvent) => {
+			persistentState = event.detail.state;
+		});
+		// Cleanup listener on component destroy
+		return () => {
+			window.removeEventListener('persistent-state-changed', (event: CustomEvent) => {
+				persistentState = event.detail.state;
+			});
+		};
 	});
 </script>
 
@@ -105,8 +131,37 @@
 		{/if}
 	{/if}
 </div>
+<div class="persistent-state-container">
+	<h3>Persistent Visible State</h3>
+	<pre id="persistent-state-display">{JSON.stringify(persistentState, null, 2)}</pre>
+</div>
 
 <style>
+	.persistent-state-container {
+		margin-top: 2rem;
+		padding: 1rem;
+		background-color: #f8f9fa;
+		border: 1px solid #dee2e6;
+		border-radius: 0.25rem;
+	}
+
+	.persistent-state-container h3 {
+		margin-top: 0;
+		color: #495057;
+	}
+
+	#persistent-state-display {
+		background-color: #212529;
+		color: #f8f9fa;
+		padding: 1rem;
+		border-radius: 0.25rem;
+		overflow-x: auto;
+		font-family: monospace;
+		font-size: 0.875rem;
+		line-height: 1.5;
+		white-space: pre-wrap;
+	}
+
 	.description {
 		/* text-align: left; */
 		margin-top: -1rem;
