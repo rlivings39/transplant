@@ -276,7 +276,8 @@
 		dispatch('mappingCreated', {
 			csvColumn,
 			tableName: table,
-			fieldName: field
+			fieldName: field,
+			mappedColumns: Object.keys(mappings) // Send list of all mapped columns
 		});
 	}
 

@@ -29,6 +29,9 @@
 	// Add drag state
 	let draggedHeader = $state<string | null>(null);
 
+	// Accept mappedColumns as a prop
+	export let mappedColumns: string[] = [];
+
 	// Function to return to transform page
 	function returnToTransform() {
 		// Clear data and navigate back
@@ -166,6 +169,9 @@
 							ondragstart={(e) => handleDragStart(e, header)}
 							ondragend={handleDragEnd}
 							class={draggedHeader === header ? 'dragging' : ''}
+							style={mappedColumns.includes(header)
+								? 'color: #777 !important; background-color: #f7f7f7 !important;'
+								: ''}
 						>
 							<div class="header-controls">
 								<span
@@ -187,7 +193,10 @@
 							<td
 								draggable="true"
 								ondragstart={(e) => handleDragStart(e, header)}
-								ondragend={handleDragEnd}>{record[header]}</td
+								ondragend={handleDragEnd}
+								style={mappedColumns.includes(header)
+									? 'color: #777 !important; background-color: #f7f7f7 !important;'
+									: ''}>{record[header]}</td
 							>
 						{/each}
 					</tr>
@@ -215,5 +224,12 @@
 
 	[draggable='true']:active {
 		cursor: grabbing;
+	}
+
+	/* Hover effect for all cells */
+	th:hover,
+	td:hover {
+		color: #333 !important;
+		background-color: #e8f4ff !important;
 	}
 </style>
