@@ -27,6 +27,7 @@ export interface TableMetadata {
 	foreignKeys: any[];
 	naturalKeys: string[];
 	isJoinTable: boolean;
+	requiredFields?: string[];
 }
 
 export interface RelationshipMetadata {
@@ -47,13 +48,16 @@ const schemaMetadata = writable<Record<string, TableMetadata> | null>(null);
 const schemaRelationships = writable<Record<string, RelationshipMetadata> | null>(null);
 const columnTypes = writable<Record<string, Record<string, string>> | null>(null);
 const tableHeaders = writable<Record<string, string[]> | null>(null);
+const requiredFields = writable<Record<string, string[]>>({
+	Planting: ['crop_name', 'land_name', 'planted']
+});
 const isLoading = writable(true);
 const error = writable<string | null>(null);
 
 // Derive schema data from tableHeaders and columnTypes
 const schemaData = derived(
-	[tableHeaders, columnTypes, schemaMetadata],
-	([$tableHeaders, $columnTypes, $schemaMetadata]) => {
+	[tableHeaders, columnTypes, schemaMetadata, requiredFields],
+	([$tableHeaders, $columnTypes, $schemaMetadata, $requiredFields]) => {
 		logger.debug('Deriving schema data...');
 		logger.debug('Data availability:', {
 			tableHeaders: !!$tableHeaders,
@@ -66,12 +70,20 @@ const schemaData = derived(
 			return null;
 		}
 
-		const result: Record<string, { headers: string[]; columnTypes: Record<string, string> }> = {};
+		const result: Record<
+			string,
+			{
+				headers: string[];
+				columnTypes: Record<string, string>;
+				requiredFields?: string[];
+			}
+		> = {};
 
 		Object.keys($tableHeaders).forEach((tableName) => {
 			result[tableName] = {
 				headers: $tableHeaders[tableName] || [],
-				columnTypes: $columnTypes[tableName] || {}
+				columnTypes: $columnTypes[tableName] || {},
+				requiredFields: $requiredFields[tableName] || []
 			};
 		});
 
@@ -163,6 +175,12 @@ function getRelationshipForTable(tableName: string): RelationshipMetadata | null
 	return relationships[tableName] || null;
 }
 
+// Check if a field is required
+function isFieldRequired(tableName: string, fieldName: string): boolean {
+	const required = get(requiredFields);
+	return required[tableName]?.includes(fieldName) || false;
+}
+
 // Format column type for display
 function formatColumnType(type: string): string {
 	switch (type) {
@@ -193,6 +211,7 @@ export const schemaService = {
 	relationships: { subscribe: schemaRelationships.subscribe },
 	columnTypes: { subscribe: columnTypes.subscribe },
 	tableHeaders: { subscribe: tableHeaders.subscribe },
+	requiredFields: { subscribe: requiredFields.subscribe },
 	schemaData: { subscribe: schemaData.subscribe },
 	isLoading: { subscribe: isLoading.subscribe },
 	error: { subscribe: error.subscribe },
@@ -200,5 +219,6 @@ export const schemaService = {
 	getTableHeadersForTable,
 	getColumnType,
 	getRelationshipForTable,
+	isFieldRequired,
 	formatColumnType
 };

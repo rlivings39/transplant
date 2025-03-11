@@ -409,9 +409,9 @@ button,
 // 	gap: 0.25rem;
 // }
 
-.mapped-field {
-	border: 1px solid #4caf50;
-}
+// .mapped-field {
+// 	border: 1px solid #4caf50;
+// }
 
 .drag-over {
 	background-color: rgba(76, 175, 80, 0.2);
@@ -420,7 +420,7 @@ button,
 .compatible-target {
 	border: 2px dashed #4caf50;
 	background-color: rgba(76, 175, 80, 0.1);
-	cursor: pointer ;
+	cursor: pointer;
 }
 
 .incompatible-target {
@@ -455,6 +455,44 @@ button,
 	border: 2px solid #4caf50 !important;
 	background-color: rgba(76, 175, 80, 0.2) !important;
 	cursor: pointer !important;
+}
+
+/* Required field styling that works with the actual HTML structure */
+
+/* Style for the th element with required-field class */
+th.required-field {
+	position: relative;
+}
+
+/* Style for the span inside th that has required-mapped or required-unmapped class */
+th span.required-mapped {
+	position: relative;
+	display: block;
+	border-left: 3px solid #4caf50;
+	padding-left: 5px;
+	font-weight: bold;
+}
+
+th span.required-unmapped {
+	position: relative;
+	display: block;
+	border-left: 3px solid #ff5252;
+	padding-left: 5px;
+	font-weight: bold;
+}
+
+/* Add asterisk to required fields */
+th.required-field span:not([class^='type-']):after {
+	content: ' *';
+	color: #ff5252;
+	font-weight: bold;
+}
+
+/* Existing compatible target styles */
+.compatible-target {
+	border: 2px dashed #4caf50;
+	background-color: rgba(76, 175, 80, 0.1);
+	cursor: pointer;
 }
 
 /* ============================================================================

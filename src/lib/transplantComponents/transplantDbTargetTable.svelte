@@ -19,6 +19,7 @@
 	interface SchemaTable {
 		headers: string[];
 		columnTypes: Record<string, string>;
+		requiredFields: string[];
 	}
 
 	// Combined schema data structure
@@ -98,6 +99,13 @@
 			const unsubscribeSchemaData = schemaService.schemaData.subscribe((data) => {
 				if (data) {
 					schemaData = data;
+					console.log('Schema data loaded:', JSON.stringify(data, null, 2));
+					console.log('Tables with required fields:');
+					Object.entries(data).forEach(([table, tableData]) => {
+						if (tableData.requiredFields && tableData.requiredFields.length > 0) {
+							console.log(`Table ${table} has required fields:`, tableData.requiredFields);
+						}
+					});
 
 					// Initialize table data with empty rows
 					const tables = Object.keys(data);
@@ -372,6 +380,12 @@
 		});
 	}
 
+	// Helper function to check if a field is required
+	function isFieldRequired(table: string, field: string): boolean {
+		// Use the schemaService directly to avoid reactivity issues
+		return schemaService.isFieldRequired(table, field);
+	}
+
 	// Helper functions for the UI
 	function isFieldMapped(table: string, field: string): boolean {
 		return Object.values(mappings).includes(`${table}.${field}`);
@@ -380,6 +394,16 @@
 	function getMappedColumn(table: string, field: string): string {
 		const entry = Object.entries(mappings).find(([_, value]) => value === `${table}.${field}`);
 		return entry ? entry[0] : '';
+	}
+
+	// Helper function to determine CSS class for required fields
+	function getRequiredFieldClass(table: string, field: string): string {
+		if (!isFieldRequired(table, field)) return '';
+
+		const mappedClass = isFieldMapped(table, field) ? 'required-mapped' : 'required-unmapped';
+		console.log(`Applied required field class for ${table}.${field}: ${mappedClass}`);
+
+		return mappedClass;
 	}
 
 	function formatTypeName(typeName: string): string {
@@ -422,6 +446,7 @@
 											${dragOverField?.table === tableName && dragOverField?.field === header ? 'drag-over' : ''} 
 											${draggedColumn && isCompatibleTarget(tableName, header) ? 'compatible-target' : ''} 
 											${draggedColumn && !isCompatibleTarget(tableName, header) ? 'incompatible-target' : ''}
+											${isFieldRequired(tableName, header) ? 'required-field' : ''}
 										`}
 										ondragover={(e) => handleDragOver(e, tableName, header)}
 										ondragleave={handleDragLeave}
@@ -430,7 +455,7 @@
 										<div class="header-controls">
 											{#if isFieldMapped(tableName, header)}
 												<span class="mapped-indicator">
-													From: {getMappedColumn(tableName, header)}
+													{getMappedColumn(tableName, header)}
 												</span>
 											{/if}
 											<span
@@ -439,7 +464,9 @@
 											>
 												{formatTypeName(schemaData[tableName].columnTypes[header] || '')}
 											</span>
-											<span class="header-text">{header}</span>
+											<span class={getRequiredFieldClass(tableName, header)}>
+												{header}{isFieldRequired(tableName, header) ? ' *' : ''}
+											</span>
 										</div>
 									</th>
 								{/each}
@@ -455,6 +482,7 @@
 												${dragOverField?.table === tableName && dragOverField?.field === header ? 'drag-over' : ''} 
 												${draggedColumn && isCompatibleTarget(tableName, header) ? 'compatible-target' : ''} 
 												${draggedColumn && !isCompatibleTarget(tableName, header) ? 'incompatible-target' : ''}
+												${isFieldRequired(tableName, header) ? 'required-field' : ''}
 											`}
 											ondragover={(e) => handleDragOver(e, tableName, header)}
 											ondragleave={handleDragLeave}
@@ -530,5 +558,17 @@
 		max-height: 200px;
 		overflow-y: auto;
 		margin: 0;
+	}
+
+	.required-field {
+		border: 1px solid red;
+	}
+
+	.required-mapped {
+		border: 1px solid green;
+	}
+
+	.required-unmapped {
+		border: 1px solid red;
 	}
 </style>
