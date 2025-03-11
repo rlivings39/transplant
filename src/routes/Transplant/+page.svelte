@@ -20,58 +20,43 @@
 	function handleDragStart(event: CustomEvent) {
 		const { header, columnType } = event.detail;
 		draggedColumn = { header, columnType };
-		console.log(`Parent: Drag started for ${header} of type ${columnType}`);
 	}
 
 	// Handle drag end
 	function handleDragEnd() {
 		draggedColumn = null;
-		console.log('Parent: Drag ended');
 	}
 
 	// Handle successful mapping
 	function handleMappingCreated(event: CustomEvent) {
 		const { csvColumn, tableName, fieldName, mappedColumns: newMappedColumns } = event.detail;
-		console.log(`Parent: Mapping created: ${csvColumn} -> ${tableName}.${fieldName}`);
 
 		// Update the list of mapped columns
 		if (newMappedColumns && Array.isArray(newMappedColumns)) {
 			mappedColumns = [...newMappedColumns];
-			console.log('Parent: Updated mapped columns from event:', mappedColumns);
 		} else if (csvColumn) {
 			// If mappedColumns not provided, just add the current column
 			if (!mappedColumns.includes(csvColumn)) {
 				mappedColumns = [...mappedColumns, csvColumn];
-				console.log('Parent: Added column to mapped columns:', csvColumn);
 			}
 		}
 	}
 
 	// Initialize schema service on component mount
 	onMount(async () => {
-		console.log('TransPlant page: Component mounted');
-
 		// Check if we have transform data
 		const transformData = transformedDataService.get() || transformedDataService.getData();
 		hasTransformData = !!transformData;
 
-		if (!hasTransformData) {
-			console.warn('TransPlant page: No transform data available');
-		}
-
 		try {
 			// Initialize schema service
-			console.log('TransPlant page: Loading schema metadata');
 			const schemaData = await schemaService.loadSchemaMetadata();
 
-			if (schemaData) {
-				console.log('TransPlant page: Schema metadata loaded successfully');
-			} else {
-				console.error('TransPlant page: Failed to load schema metadata');
+			if (!schemaData) {
 				schemaError = 'Failed to load schema metadata. Please try again.';
 			}
 		} catch (error) {
-			console.error('TransPlant page: Error loading schema metadata:', error);
+			console.error('Error loading schema metadata:', error);
 			schemaError = error.message || 'Unknown error loading schema metadata';
 		} finally {
 			isSchemaLoading = false;

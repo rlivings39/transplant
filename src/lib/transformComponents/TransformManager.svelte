@@ -101,8 +101,6 @@
 					continue;
 				}
 
-				// // // console.log(`Processing ${header} (type: ${type}) value: ${value}`);
-
 				// String columns accept everything
 				if (type === 'string') {
 					newRow[header] = value;
@@ -147,8 +145,6 @@
 					continue;
 				}
 
-				// Unknown type
-				// console.warn(`Unknown type: ${type}`);
 				if (!newInvalidCells[header]) newInvalidCells[header] = new Set();
 				newInvalidCells[header].add(rowIndex);
 				newRow[header] = value;

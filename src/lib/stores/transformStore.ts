@@ -17,14 +17,11 @@ export const transformedDataService = {
 	 * @param {Object} data - The transformed data to store
 	 */
 	set: function (data) {
-		// // console.log('transformStore: Setting data', data);
 
 		// Make a clean copy to avoid Svelte 5 proxy issues
 		try {
 			transformedData = JSON.parse(JSON.stringify(data));
-			// // console.log('transformStore: Data set successfully', transformedData);
 		} catch (error) {
-			// console.error('transformStore: Error setting data', error);
 			transformedData = data; // Fallback to direct assignment if JSON fails
 		}
 	},
@@ -51,7 +48,6 @@ export const transformedDataService = {
 	 * @returns {Object|null} The transformed data or null if not set
 	 */
 	get: function () {
-		// // console.log('transformStore: Getting data via get()', transformedData);
 		return transformedData;
 	},
 
@@ -69,7 +65,6 @@ export const transformedDataService = {
 	 * @returns {Object|null} The transformed data or null if not set
 	 */
 	getData: function () {
-		// // console.log('transformStore: Getting data via getData()', transformedData);
 		return transformedData;
 	},
 
@@ -77,7 +72,6 @@ export const transformedDataService = {
 	 * Clear the transformed data
 	 */
 	clear: function () {
-		// // console.log('transformStore: Clearing data');
 		transformedData = null;
 		domExtractedData = null;
 	}

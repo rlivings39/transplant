@@ -3,6 +3,25 @@
 	import { transformedDataService } from '$lib/stores/transformStore';
 	import { schemaService } from '$lib/services/schemaService';
 
+	// Debug flag to control logging
+	const DEBUG = false;
+
+	// Logger utility for consistent and controlled logging
+	const logger = {
+		debug: (message: string, ...args: any[]) => {
+			if (DEBUG) console.log(`[TransplantDbTarget] ${message}`, ...args);
+		},
+		info: (message: string, ...args: any[]) => {
+			console.log(`[TransplantDbTarget] ${message}`, ...args);
+		},
+		warn: (message: string, ...args: any[]) => {
+			console.warn(`[TransplantDbTarget] ${message}`, ...args);
+		},
+		error: (message: string, ...args: any[]) => {
+			console.error(`[TransplantDbTarget] ${message}`, ...args);
+		}
+	};
+
 	// Props from parent
 	const { draggedColumn = null } = $props<{
 		draggedColumn?: { header: string; columnType: string } | null;
@@ -64,43 +83,38 @@
 			Object.entries(schemaData).forEach(([tableName, tableData]) => {
 				newCompatibleTargets[tableName] = [];
 
-				Object.entries(tableData.columnTypes).forEach(([fieldName, fieldType]) => {
-					if (isTypeCompatible(columnType, fieldType)) {
-						newCompatibleTargets[tableName].push(fieldName);
-					}
-				});
+				if (tableData && tableData.columnTypes) {
+					Object.entries(tableData.columnTypes).forEach(([fieldName, fieldType]) => {
+						if (isTypeCompatible(columnType, fieldType)) {
+							newCompatibleTargets[tableName].push(fieldName);
+						}
+					});
+				}
 			});
 		}
 
-		// Set the state once after all calculations are done
 		compatibleTargets = newCompatibleTargets;
+		logger.debug('Compatible targets updated', compatibleTargets);
 	}
 
 	onMount(async () => {
-		console.log('TransplantDbTargetTable: Component mounted');
+		logger.debug('Component mounted');
 
 		try {
 			// Subscribe to schema metadata
 			const unsubscribeMetadata = schemaService.metadata.subscribe((metadata) => {
 				schemaMetadata = metadata;
-				if (metadata) {
-					console.log('TransplantDbTargetTable: Schema metadata loaded');
-				}
 			});
 
 			// Subscribe to schema relationships
 			const unsubscribeRelationships = schemaService.relationships.subscribe((relationships) => {
 				schemaRelationships = relationships;
-				if (relationships) {
-					console.log('TransplantDbTargetTable: Schema relationships loaded');
-				}
 			});
 
 			// Subscribe to schema data
 			const unsubscribeSchemaData = schemaService.schemaData.subscribe((data) => {
 				if (data) {
-					console.log('TransplantDbTargetTable: Schema data loaded');
-					schemaData = data; // Correctly assign data to the schemaData variable
+					schemaData = data;
 
 					// Initialize table data with empty rows
 					const tables = Object.keys(data);
@@ -112,21 +126,19 @@
 						}
 					});
 					tableData = newTableData;
+					logger.debug('Schema data loaded and tables initialized');
 				}
 			});
 
 			// Subscribe to schema loading state
 			const unsubscribeLoading = schemaService.isLoading.subscribe((loading) => {
 				isSchemaLoading = loading;
-				if (!loading) {
-					console.log('TransplantDbTargetTable: Schema metadata loaded successfully');
-				}
 			});
 
 			const unsubscribeError = schemaService.error.subscribe((error) => {
 				schemaError = error;
 				if (error) {
-					console.error('TransplantDbTargetTable: Error loading schema metadata:', error);
+					logger.error('Error loading schema metadata:', error);
 				}
 			});
 
@@ -134,9 +146,9 @@
 			const transformedData = transformedDataService.get();
 			if (transformedData) {
 				transformData = transformedData;
-				console.log('TransplantDbTargetTable: Loaded data from transform service:', transformData);
+				logger.debug('Loaded data from transform service');
 			} else {
-				console.warn('TransplantDbTargetTable: No data available from transform service');
+				logger.warn('No data available from transform service');
 			}
 
 			// Return cleanup function
@@ -148,7 +160,7 @@
 				unsubscribeError();
 			};
 		} catch (error) {
-			console.error('TransplantDbTargetTable: Error in onMount:', error);
+			logger.error('Error in onMount:', error);
 			schemaError = error.message || 'Unknown error loading schema metadata';
 		}
 	});
@@ -218,7 +230,7 @@
 		const csvColumn = event.dataTransfer?.getData('text/plain');
 		if (!csvColumn || !transformData) return;
 
-		console.log(`Dropped ${csvColumn} onto ${table}.${field}`);
+		logger.debug(`Dropped ${csvColumn} onto ${table}.${field}`);
 
 		// Get the type of the CSV column - either from draggedColumn prop or from transformData
 		const csvColumnType =
@@ -231,7 +243,7 @@
 
 		// Validate type compatibility
 		if (!isTypeCompatible(csvColumnType, dbFieldType)) {
-			console.error(`Type mismatch: Cannot map ${csvColumnType} to ${dbFieldType}`);
+			logger.error(`Type mismatch: Cannot map ${csvColumnType} to ${dbFieldType}`);
 			// Show error message to user
 			const errorMessage = `Type mismatch: Cannot map ${csvColumnType} (${csvColumn}) to ${dbFieldType} (${field})`;
 			alert(errorMessage);
@@ -241,7 +253,7 @@
 		// FUNDAMENTAL RULE: A column can only be mapped to one field name
 		if (columnFieldMap[csvColumn] && columnFieldMap[csvColumn] !== field) {
 			// This column is already mapped to a different field name
-			console.log(`Column ${csvColumn} is already mapped to field "${columnFieldMap[csvColumn]}"`);
+			logger.warn(`Column ${csvColumn} is already mapped to field "${columnFieldMap[csvColumn]}"`);
 
 			// Alert the user and prevent the mapping
 			alert(
@@ -286,7 +298,7 @@
 	function updatePreviewData(table: string, field: string, csvColumn: string) {
 		if (!transformData || !transformData.records) return;
 
-		console.log(`Updating preview data for ${table}.${field} from ${csvColumn}`);
+		logger.debug(`Updating preview data for ${table}.${field} from ${csvColumn}`);
 
 		// Create a copy of the current table data
 		const updatedTableData = { ...tableData };
@@ -317,7 +329,7 @@
 						if (!isNaN(numValue)) {
 							value = numValue;
 						} else {
-							console.warn(`Failed to convert "${value}" to number for ${table}.${field}`);
+							logger.warn(`Failed to convert "${value}" to number for ${table}.${field}`);
 						}
 					} else if (fieldType.includes('date') || fieldType.includes('timestamp')) {
 						// Handle date conversion if needed
@@ -327,7 +339,7 @@
 								value = dateValue.toISOString();
 							}
 						} catch (error) {
-							console.warn(`Failed to convert "${value}" to date for ${table}.${field}`);
+							logger.warn(`Failed to convert "${value}" to date for ${table}.${field}`);
 						}
 					}
 				}
@@ -342,55 +354,30 @@
 
 		// Update the tableData state
 		tableData = updatedTableData;
-
-		console.log(`Updated preview data for ${table}.${field}`);
 	}
 
 	// Propagate data to related tables if needed
 	function propagateData(table: string, field: string, csvColumn: string) {
 		// Implementation for data propagation between tables based on schema relationships
 		if (!schemaRelationships || !transformData || !transformData.records || !schemaData) {
-			console.log(
-				'Cannot propagate: missing schema relationships, transform data, or table headers'
-			);
+			logger.warn('Cannot propagate: missing schema relationships, transform data, or schema data');
 			return;
 		}
 
-		console.log(`Checking propagation for ${table}.${field}`);
-
-		// Debug logging for state
-		console.log('=== DEBUG HEADER RELATIONSHIPS ===');
-		console.log('CSV Column:', csvColumn);
-
-		// Log all tables that have this field name
-		console.log(`Tables with field "${field}":`);
-		Object.entries(schemaData).forEach(([tableName, tableData]) => {
-			if (tableData.headers.includes(field)) {
-				console.log(`- ${tableName}`);
-			}
-		});
-
-		// Log all mappings for this column
-		console.log(`All mappings for column "${csvColumn}":`);
-		Object.entries(mappings).forEach(([col, target]) => {
-			if (col === csvColumn) {
-				const [mappedTable, mappedField] = target.split('.');
-				console.log(`- Mapped to ${mappedTable}.${mappedField}`);
-			}
-		});
-
-		// Log the field name this column is mapped to in columnFieldMap
-		console.log(`Field name in columnFieldMap for "${csvColumn}":`, columnFieldMap[csvColumn]);
-
-		// Log all columns mapped to this field name
-		console.log(`All columns mapped to field "${field}":`);
-		Object.entries(columnFieldMap).forEach(([col, fieldName]) => {
-			if (fieldName === field) {
-				console.log(`- ${col}`);
-			}
-		});
-
-		console.log('=== END DEBUG ===');
+		// Create a debug state snapshot for troubleshooting if needed
+		if (DEBUG) {
+			logger.debug(`Propagation state for ${table}.${field}:`, {
+				csvColumn,
+				field,
+				tables: Object.keys(schemaData).filter((tableName) =>
+					schemaData[tableName]?.headers?.includes(field)
+				),
+				mappings: Object.entries(mappings)
+					.filter(([col]) => col === csvColumn)
+					.map(([_, target]) => target),
+				fieldMap: columnFieldMap[csvColumn]
+			});
+		}
 
 		// Find all tables that have a field with the same name
 		Object.entries(schemaData).forEach(([targetTable, tableData]) => {
@@ -398,9 +385,8 @@
 			if (targetTable === table) return;
 
 			// Check if the target table has the same field name
-			if (tableData.headers.includes(field)) {
-				console.log(`Propagating ${field} from ${table} to ${targetTable} table`);
-				console.log(`Target table ${targetTable} headers:`, tableData.headers);
+			if (tableData && tableData.headers && tableData.headers.includes(field)) {
+				logger.info(`Propagating ${field} from ${table} to ${targetTable} table`);
 
 				// Update the preview data in the target table
 				updatePreviewData(targetTable, field, csvColumn);
@@ -409,10 +395,6 @@
 				const updatedMappings = { ...mappings };
 				updatedMappings[csvColumn] = `${targetTable}.${field}`;
 				mappings = updatedMappings;
-
-				console.log('AFTER PROPAGATION:');
-				console.log(`Column ${csvColumn} is now mapped to:`, mappings[csvColumn]);
-				console.log(`Column ${csvColumn} field in columnFieldMap:`, columnFieldMap[csvColumn]);
 
 				// Note: We don't need to update columnFieldMap here because
 				// the field name stays the same, just in a different table

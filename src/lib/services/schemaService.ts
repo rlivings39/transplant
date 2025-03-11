@@ -1,5 +1,24 @@
 import { writable, derived, get } from 'svelte/store';
 
+// Debug flag to control logging
+const DEBUG = false;
+
+// Logger utility for consistent and controlled logging
+const logger = {
+	debug: (message: string, ...args: any[]) => {
+		if (DEBUG) console.log(`[SchemaService] ${message}`, ...args);
+	},
+	info: (message: string, ...args: any[]) => {
+		console.log(`[SchemaService] ${message}`, ...args);
+	},
+	warn: (message: string, ...args: any[]) => {
+		console.warn(`[SchemaService] ${message}`, ...args);
+	},
+	error: (message: string, ...args: any[]) => {
+		console.error(`[SchemaService] ${message}`, ...args);
+	}
+};
+
 // Types
 export interface TableMetadata {
 	name: string;
@@ -35,13 +54,15 @@ const error = writable<string | null>(null);
 const schemaData = derived(
 	[tableHeaders, columnTypes, schemaMetadata],
 	([$tableHeaders, $columnTypes, $schemaMetadata]) => {
-		console.log('SchemaService: Deriving schema data...');
-		console.log('SchemaService: tableHeaders available:', !!$tableHeaders);
-		console.log('SchemaService: columnTypes available:', !!$columnTypes);
-		console.log('SchemaService: schemaMetadata available:', !!$schemaMetadata);
+		logger.debug('Deriving schema data...');
+		logger.debug('Data availability:', {
+			tableHeaders: !!$tableHeaders,
+			columnTypes: !!$columnTypes,
+			schemaMetadata: !!$schemaMetadata
+		});
 
 		if (!$tableHeaders || !$columnTypes) {
-			console.log('SchemaService: Missing required data for schema derivation');
+			logger.debug('Missing required data for schema derivation');
 			return null;
 		}
 
@@ -54,17 +75,14 @@ const schemaData = derived(
 			};
 		});
 
-		console.log(
-			'SchemaService: Derived schema data successfully with tables:',
-			Object.keys(result)
-		);
+		logger.debug('Derived schema data successfully with tables:', Object.keys(result));
 		return result;
 	}
 );
 
 // Load schema metadata
 async function loadSchemaMetadata() {
-	console.log('SchemaService: Loading schema metadata');
+	logger.info('Loading schema metadata');
 	isLoading.set(true);
 	error.set(null);
 
@@ -72,17 +90,15 @@ async function loadSchemaMetadata() {
 		const response = await fetch('/api/schema');
 
 		if (!response.ok) {
-			console.error('SchemaService: API error:', response.status, response.statusText);
+			logger.error('API error:', response.status, response.statusText);
 			throw new Error(`Failed to load schema metadata: ${response.status} ${response.statusText}`);
 		}
 
 		const data = await response.json();
-		console.log(
-			'SchemaService: Received schema with',
-			Object.keys(data.tables).length,
-			'tables:',
-			Object.keys(data.tables).join(', ')
-		);
+		logger.debug('Received schema data', {
+			tableCount: Object.keys(data.tables).length,
+			tables: Object.keys(data.tables)
+		});
 
 		schemaMetadata.set(data.tables);
 		schemaRelationships.set(data.relationships);
@@ -91,7 +107,7 @@ async function loadSchemaMetadata() {
 
 		return data;
 	} catch (err) {
-		console.error('SchemaService: Error loading schema metadata:', err);
+		logger.error('Error loading schema metadata:', err);
 		error.set(err.message);
 		return null;
 	} finally {
