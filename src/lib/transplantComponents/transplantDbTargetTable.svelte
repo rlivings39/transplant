@@ -412,8 +412,26 @@
 	}
 
 	function getMappedColumn(table: string, field: string): string {
+		// Direct mapping check
 		const entry = Object.entries(mappings).find(([_, value]) => value === `${table}.${field}`);
-		return entry ? entry[0] : '';
+		if (entry) return entry[0];
+
+		// Handle special case for Planting table
+		if (table === 'Planting') {
+			// For crop_name in Planting table, check if it's mapped in the Crop table
+			if (field === 'crop_name') {
+				const cropEntry = Object.entries(mappings).find(([_, value]) => value === 'Crop.crop_name');
+				return cropEntry ? cropEntry[0] : '';
+			}
+
+			// For land_name in Planting table, check if it's mapped in the Land table
+			if (field === 'land_name') {
+				const landEntry = Object.entries(mappings).find(([_, value]) => value === 'Land.land_name');
+				return landEntry ? landEntry[0] : '';
+			}
+		}
+
+		return '';
 	}
 
 	// Helper function to determine CSS class for required fields
