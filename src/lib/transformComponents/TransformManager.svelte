@@ -242,7 +242,9 @@
 					for (let i = 0; i < allTables.length; i++) {
 						const headerCells = allTables[i].querySelectorAll('thead th');
 						if (headerCells.length > 0) {
-							const headers = Array.from(headerCells).map((th) => th.textContent.trim());
+							const headers = Array.from(headerCells).map((th) =>
+								th.textContent ? th.textContent.trim() : ''
+							);
 							// Check if this table has headers that match our column types
 							const matchingHeaders = headers.filter((header) => columnTypes[header]);
 							if (matchingHeaders.length > 0) {
@@ -283,27 +285,60 @@
 					return null;
 				}
 
-				const headers = Array.from(headerCells).map((th) => th.textContent.trim());
+				const headers = Array.from(headerCells).map((th) =>
+					th.textContent ? th.textContent.trim() : ''
+				);
 				console.log('DOM debug: Headers found:', headers);
 
+				// Define a type for column types
+				type ColumnType = 'string' | 'number' | 'date' | 'gps';
+
+				// Define an interface for the domColumnTypes object to allow string indexing
+				interface ColumnTypeMap {
+					[key: string]: ColumnType;
+				}
+
 				// Get column types from our existing types or infer from content
-				const domColumnTypes = {};
+				const domColumnTypes: ColumnTypeMap = {};
+
+				// Debug the column names
+				console.log('DOM debug: Column names being processed:', headers);
+
+				// First, let's log the existing column types for reference
+				console.log('DOM debug: Existing column types:', columnTypes);
+
 				headers.forEach((header) => {
 					// Use existing column type if available
 					if (columnTypes[header]) {
 						domColumnTypes[header] = columnTypes[header];
 					}
 					// Otherwise infer from header name
-					else if (header.toLowerCase().includes('gps')) {
-						domColumnTypes[header] = 'gps';
-					} else if (header.toLowerCase().includes('lat')) {
-						domColumnTypes[header] = 'latitude';
-					} else if (header.toLowerCase().includes('lon')) {
-						domColumnTypes[header] = 'longitude';
-					} else {
-						domColumnTypes[header] = 'string';
+					else {
+						// Special case for the first GPS column
+						if (header === 'GPS') {
+							domColumnTypes[header] = 'gps';
+						}
+						// Special case for GPS DD column
+						else if (header.includes('GPS DD')) {
+							domColumnTypes[header] = 'gps';
+						}
+						// Special case for GPS DMS column
+						else if (header.includes('GPS DMS')) {
+							domColumnTypes[header] = 'gps';
+						}
+						// Special case for GPS UTM column
+						else if (header.includes('GPS UTM')) {
+							domColumnTypes[header] = 'gps';
+						}
+						// Special case for other columns - use string as default
+						else {
+							domColumnTypes[header] = 'string';
+						}
 					}
 				});
+
+				// Log the final column types
+				console.log('DOM debug: Final column types:', domColumnTypes);
 
 				// Get all visible rows
 				const bodyRows = table.querySelectorAll('tbody tr');
@@ -327,34 +362,49 @@
 						return; // Skip rows with no cells
 					}
 
-					const record = {};
+					// Define record with proper type to avoid TypeScript errors
+					const record: { [key: string]: string | number | null } = {};
 
 					// Map each cell to its corresponding header
 					cells.forEach((cell, index) => {
 						if (index < headers.length) {
 							const header = headers[index];
-							const value = cell.textContent.trim();
+							const value = cell.textContent?.trim() || '';
 
 							// Process based on column type
 							if (domColumnTypes[header] === 'gps') {
-								// Keep GPS as is - already formatted correctly in the DOM
-								record[header] = value;
+								// Special handling for GPS DMS_1 and GPS DD_ fields - ensure they're numbers
+								if (header.includes('GPS DMS_1') || header.includes('GPS DD_')) {
+									const num = Number(value);
+									if (!isNaN(num)) {
+										// Round to 7 decimal places for precision
+										record[header] = Number(num.toFixed(7));
+									} else {
+										record[header] = value;
+									}
+								} 
+								// For GPS coordinates with lat,lon format
+								else if (value.includes(',')) {
+									const parts = value.split(',').map(part => part.trim());
+									if (parts.length === 2) {
+										const lat = Number(parts[0]);
+										const lon = Number(parts[1]);
+										if (!isNaN(lat) && !isNaN(lon)) {
+											// Format with 7 decimal places as per requirements
+											record[header] = `${Number(lat.toFixed(7))},${Number(lon.toFixed(7))}`;
+										} else {
+											record[header] = value;
+										}
+									} else {
+										record[header] = value;
+									}
+								} else {
+									record[header] = value;
+								}
 							} else if (domColumnTypes[header] === 'number') {
 								// Convert to number if possible
 								const num = Number(value);
 								record[header] = isNaN(num) ? value : num;
-							} else if (
-								domColumnTypes[header] === 'latitude' ||
-								domColumnTypes[header] === 'longitude'
-							) {
-								// Handle lat/lon as numbers with precision
-								const num = Number(value);
-								if (!isNaN(num)) {
-									// Round to 7 decimal places as per requirements
-									record[header] = Number(num.toFixed(7));
-								} else {
-									record[header] = value;
-								}
 							} else {
 								record[header] = value;
 							}
@@ -398,19 +448,42 @@
 
 			// Use the transformed data as fallback
 			const filteredRecords = transformedData.map((row) => {
-				const filteredRow = {};
+				// Define filteredRow with proper type to avoid TypeScript errors
+				const filteredRow: { [key: string]: string | number | null } = {};
 				Object.entries(row).forEach(([header, value]) => {
 					// Only include columns that are not toggled off
 					if (!toggledColumns[header]) {
 						// Process GPS data to ensure proper formatting
-						if (columnTypes[header] === 'gps' && typeof value === 'string' && value.includes(',')) {
-							const parts = value.split(',').map((part) => part.trim());
-							if (parts.length === 2) {
-								const lat = Number(parts[0]);
-								const lon = Number(parts[1]);
-								if (!isNaN(lat) && !isNaN(lon)) {
-									// Format with 7 decimal places as per requirements
-									filteredRow[header] = `${Number(lat.toFixed(7))}, ${Number(lon.toFixed(7))}`;
+						if (columnTypes[header] === 'gps') {
+							// Special handling for GPS DMS_1 and GPS DD_ fields - ensure they're numbers
+							if (header.includes('GPS DMS_1') || header.includes('GPS DD_')) {
+								if (typeof value === 'string') {
+									const num = Number(value);
+									if (!isNaN(num)) {
+										// Round to 7 decimal places for precision
+										filteredRow[header] = Number(num.toFixed(7));
+									} else {
+										filteredRow[header] = value;
+									}
+								} else if (typeof value === 'number') {
+									// Already a number, just ensure precision
+									filteredRow[header] = Number(value.toFixed(7));
+								} else {
+									filteredRow[header] = value;
+								}
+							}
+							// For GPS coordinates with lat,lon format
+							else if (typeof value === 'string' && value.includes(',')) {
+								const parts = value.split(',').map((part) => part.trim());
+								if (parts.length === 2) {
+									const lat = Number(parts[0]);
+									const lon = Number(parts[1]);
+									if (!isNaN(lat) && !isNaN(lon)) {
+										// Format with 7 decimal places as per requirements
+										filteredRow[header] = `${Number(lat.toFixed(7))},${Number(lon.toFixed(7))}`;
+									} else {
+										filteredRow[header] = value;
+									}
 								} else {
 									filteredRow[header] = value;
 								}
@@ -418,15 +491,17 @@
 								filteredRow[header] = value;
 							}
 						}
-						// Process latitude/longitude to ensure proper formatting
-						else if (
-							(columnTypes[header] === 'latitude' || columnTypes[header] === 'longitude') &&
-							(typeof value === 'string' || typeof value === 'number')
-						) {
-							const num = typeof value === 'string' ? Number(value) : value;
-							if (!isNaN(num)) {
-								// Format with 7 decimal places as per requirements
-								filteredRow[header] = Number(num.toFixed(7));
+						// Handle number fields
+						else if (columnTypes[header] === 'number') {
+							if (typeof value === 'string') {
+								const num = Number(value);
+								if (!isNaN(num)) {
+									filteredRow[header] = num; // Store as actual number
+								} else {
+									filteredRow[header] = value;
+								}
+							} else if (typeof value === 'number') {
+								filteredRow[header] = value; // Already a number
 							} else {
 								filteredRow[header] = value;
 							}
@@ -437,11 +512,12 @@
 						}
 					}
 				});
+
 				return filteredRow;
 			});
 
 			// Also filter column types to match
-			const filteredColumnTypes = {};
+			const filteredColumnTypes: ColumnTypeMap = {};
 			Object.entries(columnTypes).forEach(([header, type]) => {
 				if (!toggledColumns[header]) {
 					filteredColumnTypes[header] = type;
@@ -459,6 +535,9 @@
 				Object.keys(filteredColumnTypes).length,
 				'columns'
 			);
+			
+			// Log a sample record for debugging
+			console.log('Sample record:', filteredRecords.length > 0 ? filteredRecords[0] : 'No records');
 
 			// Store in the service for TransPlant to access
 			transformedDataService.set(exportData);
@@ -472,6 +551,9 @@
 		};
 
 		console.log('Exported data from DOM:', Object.keys(domData.columnTypes).length, 'columns');
+		
+		// Log a sample record for debugging
+		console.log('Sample DOM record:', domData.records.length > 0 ? domData.records[0] : 'No records');
 
 		// Store in the service for TransPlant to access
 		transformedDataService.set(exportData);
