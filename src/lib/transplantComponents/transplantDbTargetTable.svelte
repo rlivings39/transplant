@@ -463,6 +463,7 @@
 									<th
 										class={`
 											${isFieldMapped(tableName, header) ? 'mapped-field' : ''} 
+											${tableName === 'Planting' && isFieldMapped(tableName, header) ? 'planting-mapped-attribute' : ''}
 											${dragOverField?.table === tableName && dragOverField?.field === header ? 'drag-over' : ''} 
 											${draggedColumn && isCompatibleTarget(tableName, header) ? 'compatible-target' : ''} 
 											${draggedColumn && !isCompatibleTarget(tableName, header) ? 'incompatible-target' : ''}
@@ -499,6 +500,7 @@
 										<td
 											class={`
 												${isFieldMapped(tableName, header) ? 'mapped-cell' : ''} 
+												${tableName === 'Planting' && isFieldMapped(tableName, header) ? 'planting-mapped-attribute' : ''}
 												${dragOverField?.table === tableName && dragOverField?.field === header ? 'drag-over' : ''} 
 												${draggedColumn && isCompatibleTarget(tableName, header) ? 'compatible-target' : ''} 
 												${draggedColumn && !isCompatibleTarget(tableName, header) ? 'incompatible-target' : ''}
@@ -606,5 +608,9 @@
 		content: ' *';
 		font-weight: bold;
 		color: #4caf50; /* Green color for mapped fields */
+	}
+
+	.planting-mapped-attribute {
+		opacity: 0.5;
 	}
 </style>
