@@ -147,7 +147,7 @@ export function extractSchemaMetadata(): SchemaMetadata {
 					crop_id: { name: 'crop_id', dataType: 'text', notNull: false },
 					planted: { name: 'planted', dataType: 'numeric', notNull: false },
 					planting_date: { name: 'planting_date', dataType: 'timestamp', notNull: false },
-					notes: { name: 'notes', dataType: 'text', notNull: false },
+					planting_notes: { name: 'planting_notes', dataType: 'text', notNull: false },
 					land_name: {
 						name: 'land_name',
 						dataType: 'text',
@@ -180,7 +180,7 @@ export function extractSchemaMetadata(): SchemaMetadata {
 					land_holder: { name: 'land_holder', dataType: 'text', notNull: false },
 					gps_lat: { name: 'gps_lat', dataType: 'numeric', notNull: false },
 					gps_lon: { name: 'gps_lon', dataType: 'numeric', notNull: false },
-					notes: { name: 'notes', dataType: 'text', notNull: false }
+					land_notes: { name: 'land_notes', dataType: 'text', notNull: false }
 				},
 				primaryKeys: ['land_id'],
 				foreignKeys: [],
@@ -195,7 +195,7 @@ export function extractSchemaMetadata(): SchemaMetadata {
 					crop_stock: { name: 'crop_stock', dataType: 'integer', notNull: false },
 					seedlot: { name: 'seedlot', dataType: 'text', notNull: false },
 					seedzone: { name: 'seedzone', dataType: 'text', notNull: false },
-					notes: { name: 'notes', dataType: 'text', notNull: false }
+					crop_notes: { name: 'crop_notes', dataType: 'text', notNull: false }
 				},
 				primaryKeys: ['crop_id'],
 				foreignKeys: [],
@@ -259,7 +259,7 @@ function extractTableMetadata(
 			columns.crop_id = { name: 'crop_id', dataType: 'text', notNull: false };
 			columns.planted = { name: 'planted', dataType: 'numeric', notNull: false };
 			columns.planting_date = { name: 'planting_date', dataType: 'timestamp', notNull: false };
-			columns.notes = { name: 'notes', dataType: 'text', notNull: false };
+			columns.planting_notes = { name: 'planting_notes', dataType: 'text', notNull: false };
 			primaryKey = 'id';
 		}
 		// For the Land table
@@ -270,7 +270,7 @@ function extractTableMetadata(
 			columns.land_holder = { name: 'land_holder', dataType: 'text', notNull: false };
 			columns.gps_lat = { name: 'gps_lat', dataType: 'numeric', notNull: false };
 			columns.gps_lon = { name: 'gps_lon', dataType: 'numeric', notNull: false };
-			columns.notes = { name: 'notes', dataType: 'text', notNull: false };
+			columns.land_notes = { name: 'land_notes', dataType: 'text', notNull: false };
 			primaryKey = 'land_id';
 		}
 		// For the Crop table
@@ -280,7 +280,7 @@ function extractTableMetadata(
 			columns.crop_stock = { name: 'crop_stock', dataType: 'integer', notNull: false };
 			columns.seedlot = { name: 'seedlot', dataType: 'text', notNull: false };
 			columns.seedzone = { name: 'seedzone', dataType: 'text', notNull: false };
-			columns.notes = { name: 'notes', dataType: 'text', notNull: false };
+			columns.crop_notes = { name: 'crop_notes', dataType: 'text', notNull: false };
 			primaryKey = 'crop_id';
 		} else {
 			console.warn(`Unknown table name: ${tableName}, no metadata extracted`);
@@ -367,7 +367,7 @@ export function mapColumnTypes(
 				crop_id: 'string',
 				planted: 'number',
 				planting_date: 'date',
-				notes: 'string',
+				planting_notes: 'string',
 				land_name: 'string',
 				crop_name: 'string'
 			},
@@ -378,7 +378,7 @@ export function mapColumnTypes(
 				land_holder: 'string',
 				gps_lat: 'latitude',
 				gps_lon: 'longitude',
-				notes: 'string'
+				land_notes: 'string'
 			},
 			Crop: {
 				crop_id: 'string',
@@ -386,7 +386,7 @@ export function mapColumnTypes(
 				crop_stock: 'number',
 				seedlot: 'string',
 				seedzone: 'string',
-				notes: 'string'
+				crop_notes: 'string'
 			}
 		};
 
@@ -433,9 +433,9 @@ export function getTableHeaders(tables: Record<string, TableMetadata>): Record<s
 
 		// Provide fallback table headers with natural keys for Planting
 		const fallbackTableHeaders: Record<string, string[]> = {
-			Planting: ['land_name', 'crop_name', 'id', 'planted', 'planting_date', 'notes'],
-			Land: ['land_id', 'land_name', 'hectares', 'land_holder', 'gps_lat', 'gps_lon', 'notes'],
-			Crop: ['crop_id', 'crop_name', 'crop_stock', 'seedlot', 'seedzone', 'notes']
+			Planting: ['land_name', 'crop_name', 'id', 'planted', 'planting_date', 'planting_notes'],
+			Land: ['land_id', 'land_name', 'hectares', 'land_holder', 'gps_lat', 'gps_lon', 'land_notes'],
+			Crop: ['crop_id', 'crop_name', 'crop_stock', 'seedlot', 'seedzone', 'crop_notes']
 		};
 
 		return fallbackTableHeaders;

@@ -29,8 +29,8 @@ const baseColumns = {
 	approval_status: text('approval_status').notNull().default('pending'), // Can be: 'pending', 'approved', 'rejected'
 	approved_at: timestamp('approved_at'),
 	approved_by: text('approved_by'),
-	deleted: boolean('deleted'),
-	notes: text('notes')
+	deleted: boolean('deleted')
+	// notes field removed from baseColumns and added specifically to each table
 };
 
 // 👍️🌲️ TABLE DEFINITIONS
@@ -46,6 +46,7 @@ export const planting = pgTable('planting', {
 	crop_id: text('crop_id').references(() => crop.crop_id),
 	planted: numeric('planted'),
 	planting_date: timestamp('planting_date'),
+	notes: text('notes'), // Keeping original notes field for planting table
 	...baseColumns
 });
 
@@ -67,6 +68,7 @@ export const land: PgTable = pgTable('land', {
 	polygon_id: text('polygon_id').references(() => polygons.polygon_id),
 	preparation_id: integer('preparation_id').references(() => preparationTypes.preparation_id),
 	project_id: text('project_id').references(() => projects.project_id),
+	land_notes: text('land_notes'), // Renamed from notes to land_notes
 	...baseColumns
 });
 
@@ -88,6 +90,7 @@ export const crop = pgTable('crop', {
 	crop_stock: integer('crop_stock'),
 	seedlot: text('seedlot'),
 	seedzone: text('seedzone'),
+	crop_notes: text('crop_notes'), // Renamed from notes to crop_notes
 	...baseColumns
 });
 
@@ -103,6 +106,7 @@ export const species = pgTable('species', {
 	family: text('family'),
 	type: text('type'),
 	reference: text('reference'),
+	notes: text('notes'), // Keeping original notes field for species table
 	...baseColumns
 });
 
@@ -122,6 +126,7 @@ export const organizations = pgTable('Organizations', {
 	is_nursery: boolean('is_nursery'),
 	gps_lat: numeric('gps_lat'),
 	gps_lon: numeric('gps_lon'),
+	notes: text('notes'), // Keeping original notes field for organizations table
 	...baseColumns
 });
 
@@ -134,6 +139,7 @@ export const polygons: PgTable = pgTable('Polygons', {
 	polygon_id: text('polygon_id').primaryKey(),
 	land_id: text('land_id').references(() => land.land_id),
 	geojson: json('geojson'),
+	poly_notes: text('poly_notes'), // Renamed from notes to poly_notes
 	...baseColumns
 });
 
@@ -145,6 +151,7 @@ export const preparationTypes = pgTable('PreparationTypes', {
 	preparation_id: serial('preparation_id').primaryKey(),
 	name: text('name').notNull(),
 	description: text('description'),
+	notes: text('notes'), // Keeping original notes field for preparationTypes table
 	...baseColumns
 });
 
@@ -155,6 +162,7 @@ export const preparationTypes = pgTable('PreparationTypes', {
 export const projects = pgTable('Projects', {
 	project_id: text('project_id').primaryKey(),
 	project_name: text('project_name'),
+	project_notes: text('project_notes'), // Renamed from notes to project_notes
 	...baseColumns
 });
 

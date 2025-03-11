@@ -12,7 +12,7 @@ export interface BaseEntity {
 	last_edited_at?: string;
 	edited_by?: string;
 	deleted?: boolean;
-	notes?: string;
+	// notes field removed from BaseEntity and added specifically to each entity
 }
 
 export interface Land extends BaseEntity {
@@ -26,6 +26,7 @@ export interface Land extends BaseEntity {
 	preparation?: PreparationType;
 	preparation_id?: number;
 	project_id?: string;
+	land_notes?: string;
 }
 
 export interface Crop extends BaseEntity {
@@ -36,6 +37,7 @@ export interface Crop extends BaseEntity {
 	project_id?: string;
 	crop_stock?: string;
 	seed_info?: string;
+	crop_notes?: string;
 }
 
 export interface Planting extends BaseEntity {
@@ -44,6 +46,26 @@ export interface Planting extends BaseEntity {
 	crop_id?: string;
 	planted?: number;
 	planting_date?: string;
+	notes?: string; // Keeping original notes field for Planting
+}
+
+export interface Polygon extends BaseEntity {
+	polygon_id: string;
+	land_id?: string;
+	geojson?: unknown;
+	poly_notes?: string;
+}
+
+export interface Project extends BaseEntity {
+	project_id: string;
+	project_name: string;
+	project_notes?: string;
+}
+
+export interface Stakeholder extends BaseEntity {
+	stakeholder_id: string;
+	stakeholder_name?: string;
+	stake_notes?: string;
 }
 
 export interface Species extends BaseEntity {
@@ -53,6 +75,7 @@ export interface Species extends BaseEntity {
 	family?: string;
 	type?: string;
 	reference?: string;
+	notes?: string; // Keeping original notes field for Species
 }
 
 export interface Organization extends BaseEntity {
@@ -66,4 +89,5 @@ export interface Organization extends BaseEntity {
 	is_nursery?: boolean;
 	gps_lat?: number;
 	gps_lon?: number;
+	notes?: string; // Keeping original notes field for Organization
 }

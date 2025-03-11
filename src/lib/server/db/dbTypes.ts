@@ -13,12 +13,14 @@ export interface LandRow {
 	polygon_id?: string;
 	preparation_id?: number;
 	project_id?: string;
+	land_notes?: string;
 }
 
 export interface PolygonRow {
 	polygon_id: string;
 	land_id?: string;
 	geojson?: unknown;
+	poly_notes?: string;
 }
 
 export interface BaseColumns {
@@ -29,16 +31,18 @@ export interface BaseColumns {
 	approved_at?: Date;
 	approved_by?: string;
 	deleted?: boolean;
-	notes?: string;
+	// notes field removed from BaseColumns and added specifically to each table
 }
 
 export interface PreparationTypeRow extends BaseColumns {
 	preparation_id: number;
 	name: string;
 	description?: string;
+	notes?: string; // Keeping original notes field for preparation types
 }
 
 export interface ProjectRow extends BaseColumns {
 	project_id: string;
 	project_name: string;
+	project_notes?: string;
 }
