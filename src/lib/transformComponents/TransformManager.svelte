@@ -22,7 +22,13 @@
 	let originalData = $state<Record<string, string>[]>([]);
 	let data = $state<Record<string, string>[]>([]);
 	let columnTypes = $state<Record<string, string>>({});
-	export let toggledColumns = $state<Record<string, boolean>>({});
+	let toggledColumns = $state<Record<string, boolean>>({});
+	const props = $props<{ toggledColumns?: Record<string, boolean> }>();
+	$effect(() => {
+		if (props.toggledColumns) {
+			toggledColumns = props.toggledColumns;
+		}
+	});
 	let invalidCells = $state<Record<string, Set<number>>>({});
 	let transformedData = $state<Record<string, string>[]>([]);
 	let canTransform = $state(false);

@@ -193,7 +193,7 @@
 							ondragend={handleDragEnd}
 							class={draggedHeader === header ? 'dragging' : ''}
 							style={mappedColumns.includes(header)
-								? 'color: #777 !important; background-color: #f7f7f7 !important;'
+								? 'opacity: 0.5;'
 								: ''}
 						>
 							<div class="header-controls">
@@ -218,7 +218,7 @@
 								ondragstart={(e) => handleDragStart(e, header)}
 								ondragend={handleDragEnd}
 								style={mappedColumns.includes(header)
-									? 'color: #777 !important; background-color: #f7f7f7 !important;'
+									? 'color: var(--color-light-grey)'
 									: ''}>{record[header]}</td
 							>
 						{/each}
@@ -249,10 +249,4 @@
 		cursor: grabbing;
 	}
 
-	/* Hover effect for all cells */
-	th:hover,
-	td:hover {
-		color: #333 !important;
-		background-color: #e8f4ff !important;
-	}
 </style>
