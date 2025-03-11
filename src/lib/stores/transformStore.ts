@@ -4,27 +4,23 @@
  */
 
 // Debug flag to control logging
-const DEBUG = false;
+const DEBUG = true;
 
-// Logger utility for consistent and controlled logging
+// Simple logger with reduced output
 const logger = {
-	debug: (message: string, ...args: any[]) => {
-		if (DEBUG) console.log(`[TransformStore] ${message}`, ...args);
+	debug: function (message, ...args) {
+		// Only log important messages
+		if (message.includes('Setting') || message.includes('Error')) {
+			console.log('[TransformStore]', message);
+		}
 	},
-	info: (message: string, ...args: any[]) => {
-		console.log(`[TransformStore] ${message}`, ...args);
-	},
-	warn: (message: string, ...args: any[]) => {
-		console.warn(`[TransformStore] ${message}`, ...args);
-	},
-	error: (message: string, ...args: any[]) => {
-		console.error(`[TransformStore] ${message}`, ...args);
+	error: function (message, ...args) {
+		console.error('[TransformStore]', message, ...args);
 	}
 };
 
-// Simple variable to store the transformed data
+// Store for transformed data
 let transformedData = null;
-// Store for DOM-extracted data
 let domExtractedData = null;
 
 /**
@@ -36,13 +32,54 @@ export const transformedDataService = {
 	 * @param {Object} data - The transformed data to store
 	 */
 	set: function (data) {
-		// Make a clean copy to avoid Svelte 5 proxy issues
+		logger.debug('Setting transformed data');
+
+		if (!data) {
+			transformedData = null;
+			return;
+		}
+
 		try {
-			transformedData = JSON.parse(JSON.stringify(data));
-			logger.debug('Transformed data set successfully');
+			// Create a deep copy while preserving number types for GPS data
+			const processedData = {
+				records: data.records.map((record) => {
+					const newRecord = {};
+					// Process each field in the record
+					Object.entries(record).forEach(([key, value]) => {
+						// Handle GPS coordinates (string with comma)
+						if (
+							data.columnTypes[key] === 'gps' &&
+							typeof value === 'string' &&
+							value.includes(',')
+						) {
+							// Store as a formatted string with consistent precision
+							newRecord[key] = value;
+							return;
+						}
+
+						// Handle regular numbers
+						if (data.columnTypes[key] === 'number' && typeof value === 'string') {
+							const num = Number(value);
+							if (!isNaN(num)) {
+								newRecord[key] = num;
+								return;
+							}
+						}
+
+						// Default case: pass through as is
+						newRecord[key] = value;
+					});
+					return newRecord;
+				}),
+				columnTypes: { ...data.columnTypes }
+			};
+
+			transformedData = processedData;
+			logger.debug('Transformed data processed and set successfully');
 		} catch (error) {
-			logger.warn('Error creating clean copy, using direct assignment', error);
-			transformedData = data; // Fallback to direct assignment if JSON fails
+			logger.error('Error processing data', error);
+			// Fallback to direct assignment
+			transformedData = data;
 		}
 	},
 
@@ -76,7 +113,6 @@ export const transformedDataService = {
 	 * @returns {Object|null} The DOM-extracted data or null if not set
 	 */
 	getDomExtractedData: function () {
-		logger.debug('Getting DOM-extracted data');
 		return domExtractedData;
 	},
 

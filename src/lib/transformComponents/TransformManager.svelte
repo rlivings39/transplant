@@ -211,45 +211,270 @@
 
 	// Export data to TransPlant, filtering out toggled-off columns entirely
 	export function exportToTransplant() {
-		console.log('exportToTransplant called');
-		console.log('transformedData length:', transformedData.length);
-		console.log('toggledColumns:', toggledColumns);
+		console.log('Exporting data to TransPlant');
 
-		if (transformedData.length === 0) {
-			console.error('No transformed data available to export');
-			return null;
-		}
+		// Extract data directly from the DOM table
+		const extractDataFromDOM = () => {
+			try {
+				// Debug DOM structure to find tables
+				console.log('DOM debug: Looking for tables in the document');
+				const allTables = document.querySelectorAll('table');
+				console.log(`DOM debug: Found ${allTables.length} tables in the document`);
 
-		// Filter out toggled-off columns from the data
-		const filteredRecords = transformedData.map((row) => {
-			const filteredRow = {};
-			Object.entries(row).forEach(([header, value]) => {
-				// Only include columns that are not toggled off
+				// Log table details to help identify the correct one
+				Array.from(allTables).forEach((table, index) => {
+					const rows = table.querySelectorAll('tr').length;
+					const cols = table.querySelector('tr')?.querySelectorAll('th, td').length || 0;
+					console.log(`DOM debug: Table ${index}: ${rows} rows, ${cols} columns`);
+				});
+
+				// Try to find the table with our data
+				let table = null;
+
+				// If we have exactly one table, use it
+				if (allTables.length === 1) {
+					table = allTables[0];
+					console.log('DOM debug: Using the only table found in the document');
+				}
+				// If we have multiple tables, try to find the one with our data
+				else if (allTables.length > 1) {
+					// Look for a table with headers that match our column types
+					for (let i = 0; i < allTables.length; i++) {
+						const headerCells = allTables[i].querySelectorAll('thead th');
+						if (headerCells.length > 0) {
+							const headers = Array.from(headerCells).map((th) => th.textContent.trim());
+							// Check if this table has headers that match our column types
+							const matchingHeaders = headers.filter((header) => columnTypes[header]);
+							if (matchingHeaders.length > 0) {
+								table = allTables[i];
+								console.log(
+									`DOM debug: Found table ${i} with ${matchingHeaders.length} matching headers`
+								);
+								break;
+							}
+						}
+					}
+
+					// If we still don't have a table, use the one with the most rows
+					if (!table) {
+						let maxRows = 0;
+						let maxRowsIndex = 0;
+						for (let i = 0; i < allTables.length; i++) {
+							const rowCount = allTables[i].querySelectorAll('tr').length;
+							if (rowCount > maxRows) {
+								maxRows = rowCount;
+								maxRowsIndex = i;
+							}
+						}
+						table = allTables[maxRowsIndex];
+						console.log(`DOM debug: Using table ${maxRowsIndex} with the most rows (${maxRows})`);
+					}
+				}
+
+				if (!table) {
+					console.error('DOM debug: No table found in the document');
+					return null;
+				}
+
+				// Get all headers from the table
+				const headerCells = table.querySelectorAll('thead th');
+				if (headerCells.length === 0) {
+					console.error('DOM debug: No header cells found in the table');
+					return null;
+				}
+
+				const headers = Array.from(headerCells).map((th) => th.textContent.trim());
+				console.log('DOM debug: Headers found:', headers);
+
+				// Get column types from our existing types or infer from content
+				const domColumnTypes = {};
+				headers.forEach((header) => {
+					// Use existing column type if available
+					if (columnTypes[header]) {
+						domColumnTypes[header] = columnTypes[header];
+					}
+					// Otherwise infer from header name
+					else if (header.toLowerCase().includes('gps')) {
+						domColumnTypes[header] = 'gps';
+					} else if (header.toLowerCase().includes('lat')) {
+						domColumnTypes[header] = 'latitude';
+					} else if (header.toLowerCase().includes('lon')) {
+						domColumnTypes[header] = 'longitude';
+					} else {
+						domColumnTypes[header] = 'string';
+					}
+				});
+
+				// Get all visible rows
+				const bodyRows = table.querySelectorAll('tbody tr');
+				if (bodyRows.length === 0) {
+					console.error('DOM debug: No rows found in the table body');
+					return null;
+				}
+
+				console.log(`DOM debug: Found ${bodyRows.length} rows in the table`);
+
+				// Extract data from each row
+				const records = [];
+				bodyRows.forEach((row) => {
+					// Skip hidden rows
+					if (row.classList.contains('hidden') || window.getComputedStyle(row).display === 'none') {
+						return;
+					}
+
+					const cells = row.querySelectorAll('td');
+					if (cells.length === 0) {
+						return; // Skip rows with no cells
+					}
+
+					const record = {};
+
+					// Map each cell to its corresponding header
+					cells.forEach((cell, index) => {
+						if (index < headers.length) {
+							const header = headers[index];
+							const value = cell.textContent.trim();
+
+							// Process based on column type
+							if (domColumnTypes[header] === 'gps') {
+								// Keep GPS as is - already formatted correctly in the DOM
+								record[header] = value;
+							} else if (domColumnTypes[header] === 'number') {
+								// Convert to number if possible
+								const num = Number(value);
+								record[header] = isNaN(num) ? value : num;
+							} else if (
+								domColumnTypes[header] === 'latitude' ||
+								domColumnTypes[header] === 'longitude'
+							) {
+								// Handle lat/lon as numbers with precision
+								const num = Number(value);
+								if (!isNaN(num)) {
+									// Round to 7 decimal places as per requirements
+									record[header] = Number(num.toFixed(7));
+								} else {
+									record[header] = value;
+								}
+							} else {
+								record[header] = value;
+							}
+						}
+					});
+
+					// Only add records with data
+					if (Object.keys(record).length > 0) {
+						records.push(record);
+					}
+				});
+
+				if (records.length === 0) {
+					console.error('DOM debug: No records extracted from the table');
+					return null;
+				}
+
+				// Log a sample for debugging
+				console.log('DOM debug: First record:', records[0]);
+				console.log('DOM debug: Column types:', domColumnTypes);
+
+				return {
+					records,
+					columnTypes: domColumnTypes
+				};
+			} catch (error) {
+				console.error('Error extracting data from DOM:', error);
+				return null;
+			}
+		};
+
+		// Try to extract from DOM first, fall back to transformed data if that fails
+		const domData = extractDataFromDOM();
+		if (!domData || !domData.records || domData.records.length === 0) {
+			console.warn('DOM extraction failed, falling back to transformed data');
+
+			if (transformedData.length === 0) {
+				console.error('No transformed data available to export');
+				return null;
+			}
+
+			// Use the transformed data as fallback
+			const filteredRecords = transformedData.map((row) => {
+				const filteredRow = {};
+				Object.entries(row).forEach(([header, value]) => {
+					// Only include columns that are not toggled off
+					if (!toggledColumns[header]) {
+						// Process GPS data to ensure proper formatting
+						if (columnTypes[header] === 'gps' && typeof value === 'string' && value.includes(',')) {
+							const parts = value.split(',').map((part) => part.trim());
+							if (parts.length === 2) {
+								const lat = Number(parts[0]);
+								const lon = Number(parts[1]);
+								if (!isNaN(lat) && !isNaN(lon)) {
+									// Format with 7 decimal places as per requirements
+									filteredRow[header] = `${Number(lat.toFixed(7))}, ${Number(lon.toFixed(7))}`;
+								} else {
+									filteredRow[header] = value;
+								}
+							} else {
+								filteredRow[header] = value;
+							}
+						}
+						// Process latitude/longitude to ensure proper formatting
+						else if (
+							(columnTypes[header] === 'latitude' || columnTypes[header] === 'longitude') &&
+							(typeof value === 'string' || typeof value === 'number')
+						) {
+							const num = typeof value === 'string' ? Number(value) : value;
+							if (!isNaN(num)) {
+								// Format with 7 decimal places as per requirements
+								filteredRow[header] = Number(num.toFixed(7));
+							} else {
+								filteredRow[header] = value;
+							}
+						}
+						// Pass other values through as-is
+						else {
+							filteredRow[header] = value;
+						}
+					}
+				});
+				return filteredRow;
+			});
+
+			// Also filter column types to match
+			const filteredColumnTypes = {};
+			Object.entries(columnTypes).forEach(([header, type]) => {
 				if (!toggledColumns[header]) {
-					filteredRow[header] = value;
+					filteredColumnTypes[header] = type;
 				}
 			});
-			return filteredRow;
-		});
 
-		// Also filter column types to match
-		const filteredColumnTypes = {};
-		Object.entries(columnTypes).forEach(([header, type]) => {
-			if (!toggledColumns[header]) {
-				filteredColumnTypes[header] = type;
-			}
-		});
+			// Create the final data structure
+			const exportData = {
+				records: filteredRecords,
+				columnTypes: filteredColumnTypes
+			};
 
-		// Create the final data structure
+			console.log(
+				'Exported data from transformed data:',
+				Object.keys(filteredColumnTypes).length,
+				'columns'
+			);
+
+			// Store in the service for TransPlant to access
+			transformedDataService.set(exportData);
+			return exportData;
+		}
+
+		// Process the DOM data
 		const exportData = {
-			records: filteredRecords,
-			columnTypes: filteredColumnTypes
+			records: domData.records,
+			columnTypes: domData.columnTypes
 		};
+
+		console.log('Exported data from DOM:', Object.keys(domData.columnTypes).length, 'columns');
 
 		// Store in the service for TransPlant to access
 		transformedDataService.set(exportData);
-
-		console.log('Exporting filtered data to TransPlant:', exportData);
 		return exportData;
 	}
 
