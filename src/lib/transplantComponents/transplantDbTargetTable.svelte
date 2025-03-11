@@ -388,7 +388,27 @@
 
 	// Helper functions for the UI
 	function isFieldMapped(table: string, field: string): boolean {
-		return Object.values(mappings).includes(`${table}.${field}`);
+		// Direct mapping check - field is mapped in its own table
+		const isDirectlyMapped = Object.values(mappings).includes(`${table}.${field}`);
+
+		if (isDirectlyMapped) {
+			return true;
+		}
+
+		// Handle natural keys from related tables
+		if (table === 'Planting') {
+			// For crop_name in Planting table, check if it's mapped in the Crop table
+			if (field === 'crop_name') {
+				return Object.values(mappings).includes('Crop.crop_name');
+			}
+
+			// For land_name in Planting table, check if it's mapped in the Land table
+			if (field === 'land_name') {
+				return Object.values(mappings).includes('Land.land_name');
+			}
+		}
+
+		return false;
 	}
 
 	function getMappedColumn(table: string, field: string): string {
@@ -560,15 +580,33 @@
 		margin: 0;
 	}
 
-	.required-field {
-		border: 1px solid red;
+	.mapped-indicator {
+		font-size: 0.8rem;
+		color: #4caf50;
+		background-color: rgba(76, 175, 80, 0.1);
+		padding: 0.1rem 0.3rem;
+		border-radius: 3px;
+		display: inline-block;
+		margin-bottom: 0.25rem;
 	}
 
-	.required-mapped {
-		border: 1px solid green;
+	span.required-mapped {
+		border-left: 2px solid rgba(76, 175, 80, 0.8);
+		padding-left: 4px;
+		color: #4caf50;
 	}
 
-	.required-unmapped {
-		border: 1px solid red;
+	span.required-unmapped {
+		border-left: 2px solid rgba(255, 82, 82, 0.8);
+		padding-left: 4px;
+		color: #ff5252;
 	}
+
+	span.required-mapped::after {
+		content: ' *';
+		font-weight: bold;
+		color: #4caf50; /* Green color for mapped fields */
+	}
+
+	
 </style>
