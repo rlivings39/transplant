@@ -473,19 +473,17 @@ th span.required-mapped {
 	font-weight: bold;
 }
 
-th span.required-unmapped {
-	position: relative;
-	display: block;
-	border-left: 3px solid #ff5252;
-	padding-left: 5px;
-	font-weight: bold;
-}
+// th span.required-unmapped {
+// 	position: relative;
+// 	display: block;
+// 	border-left: 1px solid #ff5252;
+// 	padding-left: 5px;
+// 	font-weight: bold;
+// }
 
-/* Add asterisk to required fields */
+/* Remove global asterisk styling to avoid conflicts */
 th.required-field span:not([class^='type-']):after {
-	content: ' *';
-	color: #ff5252;
-	font-weight: bold;
+	content: none; /* Completely remove the global asterisk */
 }
 
 /* Existing compatible target styles */
