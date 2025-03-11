@@ -42,7 +42,7 @@ export interface JoinMetadata {
 	targetColumn: string;
 }
 
-// Stores for schema metadata
+// Stores for schema metadata - where Joe had me combine schemaColumnTypes & schemaTableHeaders
 const schemaMetadata = writable<Record<string, TableMetadata> | null>(null);
 const schemaRelationships = writable<Record<string, RelationshipMetadata> | null>(null);
 const columnTypes = writable<Record<string, Record<string, string>> | null>(null);
