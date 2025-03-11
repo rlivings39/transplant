@@ -2,7 +2,6 @@
 	import { onMount, createEventDispatcher } from 'svelte';
 	import { transformedDataService } from '$lib/stores/transformStore';
 	import { schemaService } from '$lib/services/schemaService';
-	import { getPersistentState, addMapping, removeMapping } from '$lib/utils/persistentStateManager';
 
 	// Props from parent
 	const { draggedColumn = null } = $props<{
@@ -98,18 +97,21 @@
 			});
 
 			// Subscribe to schema data
-			const unsubscribeSchemaData = schemaService.schemaData.subscribe((schemaData) => {
-				schemaData = schemaData;
-				if (schemaData) {
+			const unsubscribeSchemaData = schemaService.schemaData.subscribe((data) => {
+				if (data) {
 					console.log('TransplantDbTargetTable: Schema data loaded');
+					schemaData = data; // Correctly assign data to the schemaData variable
+
 					// Initialize table data with empty rows
-					const tables = Object.keys(schemaData);
+					const tables = Object.keys(data);
 					tableNames = tables;
+					const newTableData = { ...tableData };
 					tables.forEach((table) => {
-						if (!tableData[table]) {
-							tableData[table] = Array(emptyRows).fill({});
+						if (!newTableData[table]) {
+							newTableData[table] = Array(emptyRows).fill({});
 						}
 					});
+					tableData = newTableData;
 				}
 			});
 

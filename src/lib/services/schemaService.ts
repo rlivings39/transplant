@@ -31,6 +31,37 @@ const tableHeaders = writable<Record<string, string[]> | null>(null);
 const isLoading = writable(true);
 const error = writable<string | null>(null);
 
+// Derive schema data from tableHeaders and columnTypes
+const schemaData = derived(
+	[tableHeaders, columnTypes, schemaMetadata],
+	([$tableHeaders, $columnTypes, $schemaMetadata]) => {
+		console.log('SchemaService: Deriving schema data...');
+		console.log('SchemaService: tableHeaders available:', !!$tableHeaders);
+		console.log('SchemaService: columnTypes available:', !!$columnTypes);
+		console.log('SchemaService: schemaMetadata available:', !!$schemaMetadata);
+
+		if (!$tableHeaders || !$columnTypes) {
+			console.log('SchemaService: Missing required data for schema derivation');
+			return null;
+		}
+
+		const result: Record<string, { headers: string[]; columnTypes: Record<string, string> }> = {};
+
+		Object.keys($tableHeaders).forEach((tableName) => {
+			result[tableName] = {
+				headers: $tableHeaders[tableName] || [],
+				columnTypes: $columnTypes[tableName] || {}
+			};
+		});
+
+		console.log(
+			'SchemaService: Derived schema data successfully with tables:',
+			Object.keys(result)
+		);
+		return result;
+	}
+);
+
 // Load schema metadata
 async function loadSchemaMetadata() {
 	console.log('SchemaService: Loading schema metadata');
@@ -146,6 +177,7 @@ export const schemaService = {
 	relationships: { subscribe: schemaRelationships.subscribe },
 	columnTypes: { subscribe: columnTypes.subscribe },
 	tableHeaders: { subscribe: tableHeaders.subscribe },
+	schemaData: { subscribe: schemaData.subscribe },
 	isLoading: { subscribe: isLoading.subscribe },
 	error: { subscribe: error.subscribe },
 	getFieldPropagation,

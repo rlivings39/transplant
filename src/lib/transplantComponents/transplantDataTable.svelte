@@ -29,8 +29,8 @@
 	// Add drag state
 	let draggedHeader = $state<string | null>(null);
 
-	// Accept mappedColumns as a prop
-	export let mappedColumns: string[] = [];
+	// Accept mappedColumns as a prop using $props() rune
+	const { mappedColumns = [] } = $props<{ mappedColumns?: string[] }>();
 
 	// Function to return to transform page
 	function returnToTransform() {

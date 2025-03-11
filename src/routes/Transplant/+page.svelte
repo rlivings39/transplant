@@ -4,13 +4,6 @@
 	import TransplantDbTargetTable from '$lib/transplantComponents/transplantDbTargetTable.svelte';
 	import { schemaService } from '$lib/services/schemaService';
 	import { transformedDataService } from '$lib/stores/transformStore';
-	import {
-		getPersistentState,
-		updatePersistentState,
-		addMapping,
-		removeMapping,
-		PersistentState
-	} from '$lib/utils/persistentStateManager';
 
 	// State for drag-and-drop coordination
 	let draggedColumn = $state<{ header: string; columnType: string } | null>(null);
@@ -20,8 +13,8 @@
 	let schemaError = $state<string | null>(null);
 	let hasTransformData = $state(false);
 
-	// Add persistent state
-	let persistentState = $state<PersistentState>(getPersistentState());
+	// Add state for tracking mapped columns
+	let mappedColumns = $state<string[]>([]);
 
 	// Handle drag start from the data table
 	function handleDragStart(event: CustomEvent) {
@@ -38,14 +31,20 @@
 
 	// Handle successful mapping
 	function handleMappingCreated(event: CustomEvent) {
-		const { csvColumn, tableName, fieldName } = event.detail;
+		const { csvColumn, tableName, fieldName, mappedColumns: newMappedColumns } = event.detail;
 		console.log(`Parent: Mapping created: ${csvColumn} -> ${tableName}.${fieldName}`);
 
-		// Update the persistent state with the new mapping
-		addMapping(csvColumn, fieldName, columnType, tableName);
-
-		// Update the local state to trigger a re-render
-		persistentState = getPersistentState();
+		// Update the list of mapped columns
+		if (newMappedColumns && Array.isArray(newMappedColumns)) {
+			mappedColumns = [...newMappedColumns];
+			console.log('Parent: Updated mapped columns from event:', mappedColumns);
+		} else if (csvColumn) {
+			// If mappedColumns not provided, just add the current column
+			if (!mappedColumns.includes(csvColumn)) {
+				mappedColumns = [...mappedColumns, csvColumn];
+				console.log('Parent: Added column to mapped columns:', csvColumn);
+			}
+		}
 	}
 
 	// Initialize schema service on component mount
@@ -77,16 +76,6 @@
 		} finally {
 			isSchemaLoading = false;
 		}
-		// Listen for persistent state changes
-		window.addEventListener('persistent-state-changed', (event: CustomEvent) => {
-			persistentState = event.detail.state;
-		});
-		// Cleanup listener on component destroy
-		return () => {
-			window.removeEventListener('persistent-state-changed', (event: CustomEvent) => {
-				persistentState = event.detail.state;
-			});
-		};
 	});
 </script>
 
@@ -110,7 +99,11 @@
 			<button onclick={() => (window.location.href = '/transform')}> Go to Transform </button>
 		</div>
 	{:else}
-		<TransplantDataTable on:dragStart={handleDragStart} on:dragEnd={handleDragEnd} />
+		<TransplantDataTable
+			on:dragStart={handleDragStart}
+			on:dragEnd={handleDragEnd}
+			{mappedColumns}
+		/>
 		<h3
 			style="color: var(--color-purple) ; padding: 0.25rem; border-radius: 0.25rem; margin-top: 1rem; text-align: center;"
 		>
@@ -133,7 +126,7 @@
 </div>
 <div class="persistent-state-container">
 	<h3>Persistent Visible State</h3>
-	<pre id="persistent-state-display">{JSON.stringify(persistentState, null, 2)}</pre>
+	<pre id="persistent-state-display">{JSON.stringify(mappedColumns, null, 2)}</pre>
 </div>
 
 <style>
