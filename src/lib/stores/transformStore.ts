@@ -1,7 +1,26 @@
-// src/lib/stores/transformStore.ts	
+// src/lib/stores/transformStore.ts
 /**
  * Store for transformed data to be shared between Transform and TransPlant stages
  */
+
+// Debug flag to control logging
+const DEBUG = false;
+
+// Logger utility for consistent and controlled logging
+const logger = {
+	debug: (message: string, ...args: any[]) => {
+		if (DEBUG) console.log(`[TransformStore] ${message}`, ...args);
+	},
+	info: (message: string, ...args: any[]) => {
+		console.log(`[TransformStore] ${message}`, ...args);
+	},
+	warn: (message: string, ...args: any[]) => {
+		console.warn(`[TransformStore] ${message}`, ...args);
+	},
+	error: (message: string, ...args: any[]) => {
+		console.error(`[TransformStore] ${message}`, ...args);
+	}
+};
 
 // Simple variable to store the transformed data
 let transformedData = null;
@@ -17,11 +36,12 @@ export const transformedDataService = {
 	 * @param {Object} data - The transformed data to store
 	 */
 	set: function (data) {
-
 		// Make a clean copy to avoid Svelte 5 proxy issues
 		try {
 			transformedData = JSON.parse(JSON.stringify(data));
+			logger.debug('Transformed data set successfully');
 		} catch (error) {
+			logger.warn('Error creating clean copy, using direct assignment', error);
 			transformedData = data; // Fallback to direct assignment if JSON fails
 		}
 	},
@@ -31,14 +51,14 @@ export const transformedDataService = {
 	 * @param {Object} data - The DOM-extracted data to store
 	 */
 	setDomExtractedData: function (data) {
-		console.log('transformStore: Setting DOM-extracted data', data);
+		logger.debug('Setting DOM-extracted data');
 
 		// Make a clean copy to avoid Svelte 5 proxy issues
 		try {
 			domExtractedData = JSON.parse(JSON.stringify(data));
-			console.log('transformStore: DOM-extracted data set successfully', domExtractedData);
+			logger.debug('DOM-extracted data set successfully');
 		} catch (error) {
-			console.error('transformStore: Error setting DOM-extracted data', error);
+			logger.error('Error setting DOM-extracted data', error);
 			domExtractedData = data; // Fallback to direct assignment if JSON fails
 		}
 	},
@@ -56,7 +76,7 @@ export const transformedDataService = {
 	 * @returns {Object|null} The DOM-extracted data or null if not set
 	 */
 	getDomExtractedData: function () {
-		console.log('transformStore: Getting DOM-extracted data', domExtractedData);
+		logger.debug('Getting DOM-extracted data');
 		return domExtractedData;
 	},
 
@@ -69,10 +89,11 @@ export const transformedDataService = {
 	},
 
 	/**
-	 * Clear the transformed data
+	 * Clear all stored data
 	 */
 	clear: function () {
 		transformedData = null;
 		domExtractedData = null;
+		logger.debug('All transform data cleared');
 	}
 };

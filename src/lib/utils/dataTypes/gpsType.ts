@@ -160,53 +160,46 @@ export function detectCoordinateType(
 
 // Auto-detect the type of a column based on header and samples
 export function detectType(header: string, samples: string[]): GpsTypes | null {
-	console.log(`GPS detectType called for header "${header}" with ${samples.length} samples`);
+	// Skip empty headers or samples
+	if (!header || !samples || samples.length === 0) return null;
 
-	// First check if it's a GPS coordinate pair
+	// Get valid samples for testing
 	const validSamples = samples.filter((s) => s?.trim());
-	console.log(`GPS detectType: ${validSamples.length} valid samples`);
+	const validSampleCount = validSamples.length;
 
-	if (!validSamples.length) return null;
+	// Skip if no valid samples
+	if (validSampleCount === 0) return null;
 
-	const samplesToCheck = validSamples.slice(
-		0,
-		Math.min(nonBlankValidSampleCount, validSamples.length)
-	);
-	console.log(`GPS detectType: Checking ${samplesToCheck.length} samples`);
+	// First, check if the header name suggests a coordinate type
+	const headerType = detectCoordinateType(header, validSamples);
+	if (headerType) {
+		return headerType;
+	}
 
-	// Check if any sample is a valid GPS coordinate pair
-	const hasGpsCoordinate = samplesToCheck.some((value) => {
-		const result = parseGpsCoordinate(value) !== null;
-		console.log(`GPS detectType: Sample "${value}" is GPS coordinate: ${result}`);
-		return result;
-	});
+	// Check a subset of samples to see if they look like coordinates
+	const samplesToCheck = validSamples.slice(0, Math.min(5, validSampleCount));
 
-	if (hasGpsCoordinate) {
-		console.log(`GPS detectType: Detected GPS type for "${header}"`);
+	// Check if any samples are valid GPS coordinates
+	const validCoordinates = samplesToCheck.filter((sample) => parseGpsCoordinate(sample) !== null);
+
+	// If we found valid GPS coordinates, determine the type
+	if (validCoordinates.length > 0) {
 		return 'gps';
 	}
 
-	// Check if it's latitude or longitude - be more aggressive about detection
-	const headerLower = header.toLowerCase();
-	if (headerLower.includes('lat')) {
-		console.log(`GPS detectType: Detected latitude type for "${header}" based on header name`);
-		return 'latitude';
-	}
-	if (headerLower.includes('lon') || headerLower.includes('lng')) {
-		console.log(`GPS detectType: Detected longitude type for "${header}" based on header name`);
+	// Check for patterns in the data that might suggest longitude values
+	// (This is a heuristic - longitude values tend to have more variation in sign and decimals)
+	const possibleLongitudes = validSamples.filter((sample) => {
+		const num = Number(sample);
+		return !isNaN(num) && Math.abs(num) <= 180;
+	});
+
+	if (possibleLongitudes.length > validSampleCount * 0.8) {
+		// If 80% of values could be longitudes, mark as longitude
 		return 'longitude';
 	}
 
-	// If not found by header, try to detect by value patterns
-	const coordinateType = detectCoordinateType(header, samplesToCheck);
-	if (coordinateType) {
-		console.log(
-			`GPS detectType: Detected ${coordinateType} type for "${header}" based on value patterns`
-		);
-		return coordinateType;
-	}
-
-	console.log(`GPS detectType: No GPS type detected for "${header}"`);
+	// No GPS type detected
 	return null;
 }
 

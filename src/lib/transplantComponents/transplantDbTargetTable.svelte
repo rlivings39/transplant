@@ -3,25 +3,6 @@
 	import { transformedDataService } from '$lib/stores/transformStore';
 	import { schemaService } from '$lib/services/schemaService';
 
-	// Debug flag to control logging
-	const DEBUG = false;
-
-	// Logger utility for consistent and controlled logging
-	const logger = {
-		debug: (message: string, ...args: any[]) => {
-			if (DEBUG) console.log(`[TransplantDbTarget] ${message}`, ...args);
-		},
-		info: (message: string, ...args: any[]) => {
-			console.log(`[TransplantDbTarget] ${message}`, ...args);
-		},
-		warn: (message: string, ...args: any[]) => {
-			console.warn(`[TransplantDbTarget] ${message}`, ...args);
-		},
-		error: (message: string, ...args: any[]) => {
-			console.error(`[TransplantDbTarget] ${message}`, ...args);
-		}
-	};
-
 	// Props from parent
 	const { draggedColumn = null } = $props<{
 		draggedColumn?: { header: string; columnType: string } | null;
@@ -62,6 +43,11 @@
 	// Track last processed column type to prevent infinite loop
 	let lastProcessedColumnType = $state<string | null>(null);
 
+	// Add these state variables for the mapping display
+	let showMappingState = $state(false);
+	let currentMappings = $state([]);
+	let mappingsByTableName = $state({});
+
 	// Watch for changes to draggedColumn prop
 	$effect(() => {
 		if (draggedColumn && draggedColumn.columnType !== lastProcessedColumnType) {
@@ -94,12 +80,9 @@
 		}
 
 		compatibleTargets = newCompatibleTargets;
-		logger.debug('Compatible targets updated', compatibleTargets);
 	}
 
 	onMount(async () => {
-		logger.debug('Component mounted');
-
 		try {
 			// Subscribe to schema metadata
 			const unsubscribeMetadata = schemaService.metadata.subscribe((metadata) => {
@@ -126,7 +109,6 @@
 						}
 					});
 					tableData = newTableData;
-					logger.debug('Schema data loaded and tables initialized');
 				}
 			});
 
@@ -138,7 +120,7 @@
 			const unsubscribeError = schemaService.error.subscribe((error) => {
 				schemaError = error;
 				if (error) {
-					logger.error('Error loading schema metadata:', error);
+					console.error('Error loading schema metadata:', error);
 				}
 			});
 
@@ -146,9 +128,8 @@
 			const transformedData = transformedDataService.get();
 			if (transformedData) {
 				transformData = transformedData;
-				logger.debug('Loaded data from transform service');
 			} else {
-				logger.warn('No data available from transform service');
+				console.warn('No data available from transform service');
 			}
 
 			// Return cleanup function
@@ -160,7 +141,7 @@
 				unsubscribeError();
 			};
 		} catch (error) {
-			logger.error('Error in onMount:', error);
+			console.error('Error in onMount:', error);
 			schemaError = error.message || 'Unknown error loading schema metadata';
 		}
 	});
@@ -230,7 +211,7 @@
 		const csvColumn = event.dataTransfer?.getData('text/plain');
 		if (!csvColumn || !transformData) return;
 
-		logger.debug(`Dropped ${csvColumn} onto ${table}.${field}`);
+		console.log(`MAPPING: "${csvColumn}" → ${table}.${field}`);
 
 		// Get the type of the CSV column - either from draggedColumn prop or from transformData
 		const csvColumnType =
@@ -243,7 +224,9 @@
 
 		// Validate type compatibility
 		if (!isTypeCompatible(csvColumnType, dbFieldType)) {
-			logger.error(`Type mismatch: Cannot map ${csvColumnType} to ${dbFieldType}`);
+			console.error(
+				`TYPE MISMATCH: Cannot map ${csvColumnType} (${csvColumn}) to ${dbFieldType} (${field})`
+			);
 			// Show error message to user
 			const errorMessage = `Type mismatch: Cannot map ${csvColumnType} (${csvColumn}) to ${dbFieldType} (${field})`;
 			alert(errorMessage);
@@ -253,7 +236,9 @@
 		// FUNDAMENTAL RULE: A column can only be mapped to one field name
 		if (columnFieldMap[csvColumn] && columnFieldMap[csvColumn] !== field) {
 			// This column is already mapped to a different field name
-			logger.warn(`Column ${csvColumn} is already mapped to field "${columnFieldMap[csvColumn]}"`);
+			console.warn(
+				`CONFLICT: Column "${csvColumn}" is already mapped to field "${columnFieldMap[csvColumn]}"`
+			);
 
 			// Alert the user and prevent the mapping
 			alert(
@@ -298,8 +283,6 @@
 	function updatePreviewData(table: string, field: string, csvColumn: string) {
 		if (!transformData || !transformData.records) return;
 
-		logger.debug(`Updating preview data for ${table}.${field} from ${csvColumn}`);
-
 		// Create a copy of the current table data
 		const updatedTableData = { ...tableData };
 
@@ -329,7 +312,7 @@
 						if (!isNaN(numValue)) {
 							value = numValue;
 						} else {
-							logger.warn(`Failed to convert "${value}" to number for ${table}.${field}`);
+							console.warn(`Failed to convert "${value}" to number for ${table}.${field}`);
 						}
 					} else if (fieldType.includes('date') || fieldType.includes('timestamp')) {
 						// Handle date conversion if needed
@@ -339,7 +322,7 @@
 								value = dateValue.toISOString();
 							}
 						} catch (error) {
-							logger.warn(`Failed to convert "${value}" to date for ${table}.${field}`);
+							console.warn(`Failed to convert "${value}" to date for ${table}.${field}`);
 						}
 					}
 				}
@@ -360,23 +343,10 @@
 	function propagateData(table: string, field: string, csvColumn: string) {
 		// Implementation for data propagation between tables based on schema relationships
 		if (!schemaRelationships || !transformData || !transformData.records || !schemaData) {
-			logger.warn('Cannot propagate: missing schema relationships, transform data, or schema data');
+			console.warn(
+				'Cannot propagate: missing schema relationships, transform data, or schema data'
+			);
 			return;
-		}
-
-		// Create a debug state snapshot for troubleshooting if needed
-		if (DEBUG) {
-			logger.debug(`Propagation state for ${table}.${field}:`, {
-				csvColumn,
-				field,
-				tables: Object.keys(schemaData).filter((tableName) =>
-					schemaData[tableName]?.headers?.includes(field)
-				),
-				mappings: Object.entries(mappings)
-					.filter(([col]) => col === csvColumn)
-					.map(([_, target]) => target),
-				fieldMap: columnFieldMap[csvColumn]
-			});
 		}
 
 		// Find all tables that have a field with the same name
@@ -386,7 +356,7 @@
 
 			// Check if the target table has the same field name
 			if (tableData && tableData.headers && tableData.headers.includes(field)) {
-				logger.info(`Propagating ${field} from ${table} to ${targetTable} table`);
+				console.log(`PROPAGATION: "${csvColumn}" → ${targetTable}.${field} (from ${table})`);
 
 				// Update the preview data in the target table
 				updatePreviewData(targetTable, field, csvColumn);
@@ -438,17 +408,6 @@
 	</div>
 {:else}
 	<div class="database-tables-container">
-		<!-- Debug information -->
-		<!-- <div class="debug-info">
-			
-			{#if Object.keys(mappings).length > 0}
-				<p>Current mappings: {Object.keys(mappings).length}</p>
-			{/if}
-			{#if draggedColumn}
-				<p>Dragging: {draggedColumn.header} (Type: {draggedColumn.columnType})</p>
-			{/if}
-		</div> -->
-
 		{#each tableNames as tableName}
 			<div class="table-section">
 				<h4 class="table-title">{tableName}</h4>
@@ -513,3 +472,63 @@
 		{/each}
 	</div>
 {/if}
+
+<!-- Simple Debug State Panel -->
+<div class="debug-state-panel">
+	<h4>Current Mapping State (Debug View)</h4>
+	<div class="state-section">
+		<h5>Mappings</h5>
+		<pre>{JSON.stringify(mappings, null, 2)}</pre>
+	</div>
+	<div class="state-section">
+		<h5>Column Field Map</h5>
+		<pre>{JSON.stringify(columnFieldMap, null, 2)}</pre>
+	</div>
+	<div class="state-section">
+		<h5>Preview Data (First 2 rows per table)</h5>
+		<pre>{JSON.stringify(
+				Object.fromEntries(
+					Object.entries(tableData).map(([table, rows]) => [table, rows.slice(0, 2)])
+				),
+				null,
+				2
+			)}</pre>
+	</div>
+</div>
+
+<style>
+	.debug-state-panel {
+		margin-top: 20px;
+		padding: 10px;
+		border: 1px solid #ddd;
+		border-radius: 4px;
+		background-color: #f8f9fa;
+		font-family: monospace;
+	}
+
+	.debug-state-panel h4 {
+		margin-top: 0;
+		margin-bottom: 10px;
+		font-size: 16px;
+	}
+
+	.debug-state-panel h5 {
+		margin-top: 10px;
+		margin-bottom: 5px;
+		font-size: 14px;
+	}
+
+	.state-section {
+		margin-bottom: 15px;
+	}
+
+	.debug-state-panel pre {
+		background-color: #f1f1f1;
+		padding: 8px;
+		border-radius: 4px;
+		overflow-x: auto;
+		max-height: 200px;
+		overflow-y: auto;
+		margin: 0;
+	}
+</style>

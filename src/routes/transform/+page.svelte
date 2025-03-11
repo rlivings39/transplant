@@ -35,9 +35,6 @@
 		// Get the data from the event
 		const { records, columnTypes } = event.detail;
 
-		// // console.log('Received transformed data:', records);
-		// // console.log('Column types:', columnTypes);
-
 		// Update local state
 		transformedRecords = records;
 		columnTypeMap = columnTypes;
@@ -48,38 +45,33 @@
 		csvDataLoaded = true;
 	}
 
-	
 	// Function to send data to TransPlant
 	function sendToTransplant() {
 		// Extract data from the DOM table
 		try {
 			// Get all table rows
 			const tableRows = document.querySelectorAll('table tbody tr');
-			
+
 			if (tableRows.length === 0) {
-				console.error('No table rows found');
-				
+				alert('No table rows found. Please transform data first.');
+
 				// Fall back to using transformed records if available
 				if (transformedRecords.length === 0) {
-					alert('No data available. Please transform data first.');
 					return;
 				}
 			}
-			
+
 			// Get headers from the table head
 			const headerCells = document.querySelectorAll('table thead th');
-			
+
 			if (headerCells.length === 0) {
-				console.error('No header cells found');
-				
+				alert('No header cells found. Please transform data first.');
+
 				// Fall back to using transformed records if available
 				if (transformedRecords.length === 0) {
-					alert('No data available. Please transform data first.');
 					return;
 				}
 			}
-			// let tableHeaders: unknown[] = [];
-			
 			// Extract headers and selector types
 			const tableHeaders = [];
 			const selectorTypes = {};
@@ -168,9 +160,6 @@
 				records: extractedRecords
 			};
 
-			// Log to console
-			console.log('DOM EXTRACTED DATA:', domExtractedData);
-
 			// If we have DOM-extracted data, use it
 			if (extractedRecords.length > 0) {
 				// Create validated data object for the regular transplant flow
@@ -188,7 +177,7 @@
 				return;
 			}
 		} catch (err) {
-			console.error('Error extracting data from DOM:', err);
+			alert('Error extracting data: ' + err.message);
 		}
 
 		// If DOM extraction fails or no data is found, fall back to using transformed records
@@ -223,4 +212,3 @@
 	</div>
 	<TransformManager on:dataTransformed={handleTransformedData} on:csvLoaded={handleCsvLoaded} />
 </div>
-

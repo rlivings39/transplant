@@ -5,6 +5,25 @@
  * Used by both data tables and database target tables
  */
 
+// Debug flag to control logging
+const DEBUG = false;
+
+// Logger utility for consistent and controlled logging
+const logger = {
+	debug: (message: string, ...args: any[]) => {
+		if (DEBUG) console.log(`[DragColumnUtils] ${message}`, ...args);
+	},
+	info: (message: string, ...args: any[]) => {
+		console.log(`[DragColumnUtils] ${message}`, ...args);
+	},
+	warn: (message: string, ...args: any[]) => {
+		console.warn(`[DragColumnUtils] ${message}`, ...args);
+	},
+	error: (message: string, ...args: any[]) => {
+		console.error(`[DragColumnUtils] ${message}`, ...args);
+	}
+};
+
 /**
  * Creates a custom drag image showing the entire column (header and data)
  * @param header The column header text
@@ -160,7 +179,7 @@ export function setupColumnDrag(
 			}
 		}, 0);
 	} catch (error) {
-		console.error('Error setting custom drag image:', error);
+		logger.error('Error setting custom drag image:', error);
 		// Fall back to default drag behavior if custom image fails
 	}
 }

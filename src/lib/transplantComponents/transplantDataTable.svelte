@@ -4,6 +4,25 @@
 	import { goto } from '$app/navigation';
 	import { setupColumnDrag, addDragDropStyles } from '$lib/utils/dragColumnUtils';
 
+	// Debug flag to control logging
+	const DEBUG = false;
+
+	// Logger utility for consistent and controlled logging
+	const logger = {
+		debug: (message: string, ...args: any[]) => {
+			if (DEBUG) console.log(`[TransplantDataTable] ${message}`, ...args);
+		},
+		info: (message: string, ...args: any[]) => {
+			console.log(`[TransplantDataTable] ${message}`, ...args);
+		},
+		warn: (message: string, ...args: any[]) => {
+			console.warn(`[TransplantDataTable] ${message}`, ...args);
+		},
+		error: (message: string, ...args: any[]) => {
+			console.error(`[TransplantDataTable] ${message}`, ...args);
+		}
+	};
+
 	// Event dispatcher
 	const dispatch = createEventDispatcher();
 
@@ -75,7 +94,7 @@
 				columnType
 			});
 
-			console.log(`Drag started for ${header} of type ${columnType}`);
+			logger.debug(`Drag started for ${header} of type ${columnType}`);
 		}
 	}
 
@@ -85,7 +104,7 @@
 		// Dispatch event to parent component
 		dispatch('dragEnd');
 
-		console.log('Drag ended');
+		logger.debug('Drag ended');
 	}
 
 	// Load data on component mount
@@ -107,39 +126,43 @@
 			dataSource = 'store';
 			debug = 'Data successfully loaded from Transform stage';
 
-			// Enhanced console logs to show detailed information about the data
-			console.log('===== TRANSPLANT DATA VERIFICATION =====');
-			console.log('Total Records Received from Transform:', totalRecords);
-			console.log('Records Being Displayed in UI:', Math.min(maxRowsToShow, totalRecords));
-			console.log('First 4 Records (Displayed in UI):', localData.records.slice(0, maxRowsToShow));
-			console.log('All Records (Stored in Memory):', localData.records);
-			console.log('Column Types:', localData.columnTypes);
-			console.log('=======================================');
+			// Log data summary information
+			if (DEBUG) {
+				logger.debug('===== TRANSPLANT DATA VERIFICATION =====');
+				logger.debug(`Total Records: ${totalRecords}`);
+				logger.debug(`Records Displayed: ${Math.min(maxRowsToShow, totalRecords)}`);
+				logger.debug('First 4 Records:', localData.records.slice(0, maxRowsToShow));
+				logger.debug('All Records:', localData.records);
+				logger.debug('Column Types:', localData.columnTypes);
+				logger.debug('=======================================');
+			} else {
+				// Minimal logging when not in debug mode
+				logger.info(`Loaded ${totalRecords} records from transform service`);
+			}
 
 			// Create JSON object structure
 			let jsonObject: {
 				headers: Array<{ header: string; category: string }>;
-				data: Record<string, any[]>;
+				data: Array<Record<string, any>>;
 			} = {
 				headers: [],
-				data: {}
+				data: []
 			};
 
-			if (localData && localData.records) {
-				// Populate the headers
-				Object.keys(localData.records[0]).forEach((header) => {
-					jsonObject.headers.push({ header: header, category: 'random' }); // Treat as a random attribute
-					jsonObject.data[header] = []; // Initialize the array for this header
+			// Populate headers
+			if (localData.records.length > 0) {
+				const firstRecord = localData.records[0];
+				jsonObject.headers = Object.keys(firstRecord).map((header) => {
+					return {
+						header,
+						category: getColumnType(header)
+					};
 				});
 
-				// Populate the data
-				localData.records.forEach((record) => {
-					Object.keys(record).forEach((header) => {
-						jsonObject.data[header].push(record[header]); // Push the value into the array
-					});
-				});
+				// Populate data (limited to maxRowsToShow for UI)
+				jsonObject.data = localData.records.slice(0, maxRowsToShow);
 
-				console.log('JSON Object:', JSON.stringify(jsonObject, null, 2)); // Log the JSON object
+				logger.debug('JSON structure created for UI rendering');
 			}
 		} else {
 			debug = 'No data found. Please go to transform page first.';

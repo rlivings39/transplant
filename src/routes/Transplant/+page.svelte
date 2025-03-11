@@ -5,6 +5,25 @@
 	import { schemaService } from '$lib/services/schemaService';
 	import { transformedDataService } from '$lib/stores/transformStore';
 
+	// Debug flag to control logging
+	const DEBUG = false;
+
+	// Logger utility for consistent and controlled logging
+	const logger = {
+		debug: (message: string, ...args: any[]) => {
+			if (DEBUG) console.log(`[TransplantPage] ${message}`, ...args);
+		},
+		info: (message: string, ...args: any[]) => {
+			console.log(`[TransplantPage] ${message}`, ...args);
+		},
+		warn: (message: string, ...args: any[]) => {
+			console.warn(`[TransplantPage] ${message}`, ...args);
+		},
+		error: (message: string, ...args: any[]) => {
+			console.error(`[TransplantPage] ${message}`, ...args);
+		}
+	};
+
 	// State for drag-and-drop coordination
 	let draggedColumn = $state<{ header: string; columnType: string } | null>(null);
 
@@ -54,9 +73,12 @@
 
 			if (!schemaData) {
 				schemaError = 'Failed to load schema metadata. Please try again.';
+				logger.warn('Schema data failed to load');
+			} else {
+				logger.debug('Schema metadata loaded successfully');
 			}
 		} catch (error) {
-			console.error('Error loading schema metadata:', error);
+			logger.error('Error loading schema metadata:', error);
 			schemaError = error.message || 'Unknown error loading schema metadata';
 		} finally {
 			isSchemaLoading = false;
