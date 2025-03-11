@@ -14,13 +14,15 @@
 	const dispatch = createEventDispatcher<{
 		dataTransformed: TransformedData;
 		csvLoaded: void;
+		toggledColumnsUpdate: Record<string, boolean>;
+		exportedData: TransformedData;
 	}>();
 
 	// States
 	let originalData = $state<Record<string, string>[]>([]);
 	let data = $state<Record<string, string>[]>([]);
 	let columnTypes = $state<Record<string, string>>({});
-	let toggledColumns = $state<Record<string, boolean>>({});
+	export let toggledColumns = $state<Record<string, boolean>>({});
 	let invalidCells = $state<Record<string, Set<number>>>({});
 	let transformedData = $state<Record<string, string>[]>([]);
 	let canTransform = $state(false);
@@ -28,6 +30,7 @@
 	interface TransformedData {
 		records: Array<Record<string, any>>;
 		columnTypes: Record<string, string>;
+		toggledColumns?: Record<string, boolean>;
 	}
 
 	// Update canTransform whenever data or invalidCells changes
@@ -155,6 +158,13 @@
 
 		invalidCells = newInvalidCells;
 		transformedData = newTransformedData;
+
+		// Dispatch the transformed data event with the current state
+		dispatch('dataTransformed', {
+			records: transformedData,
+			columnTypes: columnTypes,
+			toggledColumns: toggledColumns
+		});
 	}
 
 	// Handle manual type selection change
@@ -171,6 +181,69 @@
 		validateAndTransformData();
 	}
 
+	// Export data to TransPlant, filtering out toggled-off columns entirely
+	export function exportToTransplant() {
+		console.log('exportToTransplant called');
+		console.log('transformedData length:', transformedData.length);
+		console.log('toggledColumns:', toggledColumns);
+
+		if (transformedData.length === 0) {
+			console.error('No transformed data available to export');
+			return null;
+		}
+
+		// Filter out toggled-off columns from the data
+		const filteredRecords = transformedData.map((row) => {
+			const filteredRow = {};
+			Object.entries(row).forEach(([header, value]) => {
+				// Only include columns that are not toggled off
+				if (!toggledColumns[header]) {
+					filteredRow[header] = value;
+				}
+			});
+			return filteredRow;
+		});
+
+		// Also filter column types to match
+		const filteredColumnTypes = {};
+		Object.entries(columnTypes).forEach(([header, type]) => {
+			if (!toggledColumns[header]) {
+				filteredColumnTypes[header] = type;
+			}
+		});
+
+		// Create the final data structure
+		const exportData = {
+			records: filteredRecords,
+			columnTypes: filteredColumnTypes
+		};
+
+		// Store in the service for TransPlant to access
+		transformedDataService.set(exportData);
+
+		console.log('Exporting filtered data to TransPlant:', exportData);
+		return exportData;
+	}
+
+	// Set up event listener for export-to-transplant event
+	$effect(() => {
+		if (typeof window !== 'undefined') {
+			const handleExportEvent = () => {
+				exportToTransplant();
+			};
+
+			// Add event listener to the transform-manager div
+			const transformManagerElement = document.querySelector('.transform-manager');
+			if (transformManagerElement) {
+				transformManagerElement.addEventListener('export-to-transplant', handleExportEvent);
+
+				// Clean up when component is destroyed
+				return () => {
+					transformManagerElement.removeEventListener('export-to-transplant', handleExportEvent);
+				};
+			}
+		}
+	});
 </script>
 
 <div class="transform-manager">
@@ -190,5 +263,4 @@
 			<p></p>
 		</div>
 	{/if}
-
 </div>
