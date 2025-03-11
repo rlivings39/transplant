@@ -607,6 +607,4 @@
 		font-weight: bold;
 		color: #4caf50; /* Green color for mapped fields */
 	}
-
-	
 </style>
