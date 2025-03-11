@@ -32,6 +32,8 @@
 	let invalidCells = $state<Record<string, Set<number>>>({});
 	let transformedData = $state<Record<string, string>[]>([]);
 	let canTransform = $state(false);
+	// Add a flag to track if we're currently processing data
+	let isProcessing = $state(false);
 
 	interface TransformedData {
 		records: Array<Record<string, any>>;
@@ -70,9 +72,12 @@
 
 	// Initialize types and validation on data change
 	$effect(() => {
-		if (!data.length) return;
+		// Return early if no data or already processing
+		if (!data.length || isProcessing) return;
 
 		const headers = Object.keys(data[0]);
+		let typeChanged = false;
+
 		headers.forEach((header) => {
 			if (!columnTypes[header]) {
 				// Only detect and set the type if it's not already set
@@ -88,15 +93,29 @@
 					if (detectedType) break;
 				}
 
-				columnTypes[header] = detectedType || 'string'; // Set type once
+				// Set type once
+				if (detectedType) {
+					columnTypes[header] = detectedType;
+					typeChanged = true;
+				} else {
+					columnTypes[header] = 'string';
+					typeChanged = true;
+				}
 			}
 		});
 
-		validateAndTransformData();
+		// Only validate if types were actually changed or this is initial load
+		if (typeChanged || transformedData.length === 0) {
+			validateAndTransformData();
+		}
 	});
 
 	// Single-pass validation and transformation
 	function validateAndTransformData() {
+		// Set processing flag to prevent re-entry
+		if (isProcessing) return;
+		isProcessing = true;
+
 		const newInvalidCells: Record<string, Set<number>> = {};
 		const newTransformedData = data.map((row, rowIndex) => {
 			const newRow: Record<string, string> = {};
@@ -171,6 +190,9 @@
 			columnTypes: columnTypes,
 			toggledColumns: toggledColumns
 		});
+
+		// Reset processing flag
+		isProcessing = false;
 	}
 
 	// Handle manual type selection change
