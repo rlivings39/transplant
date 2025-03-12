@@ -3,6 +3,13 @@
  * 
  * This file provides concrete implementations of the Column interfaces
  * defined in columnTypes.ts, with methods for working with column data.
+ *
+ * REFACTORING ANNOTATIONS:
+ * [NEW] - Part of the new Column architecture
+ * [BRIDGE] - Temporary compatibility functions
+ * [DELETE] - Legacy code that will be removed
+ * [REPLACE: X] - Will be replaced by function X
+ * [INTENTION: X] - Future implementation plans
  */
 
 import type { 
@@ -16,6 +23,9 @@ import type {
 
 /**
  * Base column model with shared implementation
+ * 
+ * [NEW] Core class of the Column architecture
+ * [INTENTION: Will replace existing column handling in TransformManager.svelte]
  */
 export class BaseColumnModel implements BaseColumn {
   name: string;
@@ -39,6 +49,8 @@ export class BaseColumnModel implements BaseColumn {
 
 /**
  * String column implementation
+ * 
+ * [NEW] Core class of the Column architecture
  */
 export class StringColumnModel extends BaseColumnModel implements StringColumn {
   type: 'string' = 'string';
@@ -68,6 +80,9 @@ export class StringColumnModel extends BaseColumnModel implements StringColumn {
 
 /**
  * Number column implementation
+ * 
+ * [NEW] Core class of the Column architecture
+ * [INTENTION: Will handle proper numeric precision for GPS coordinates]
  */
 export class NumberColumnModel extends BaseColumnModel implements NumberColumn {
   type: 'number' = 'number';
@@ -113,6 +128,8 @@ export class NumberColumnModel extends BaseColumnModel implements NumberColumn {
 
 /**
  * Date column implementation
+ * 
+ * [NEW] Core class of the Column architecture
  */
 export class DateColumnModel extends BaseColumnModel implements DateColumn {
   type: 'date' = 'date';
@@ -149,6 +166,9 @@ export class DateColumnModel extends BaseColumnModel implements DateColumn {
 
 /**
  * GPS column implementation
+ * 
+ * [NEW] Core class of the Column architecture
+ * [INTENTION: Will solve GPS precision issues by storing coordinates as numbers with 7 decimal places]
  */
 export class GpsColumnModel extends BaseColumnModel implements GpsColumn {
   type: 'gps' = 'gps';

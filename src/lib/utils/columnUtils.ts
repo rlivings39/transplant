@@ -6,6 +6,14 @@
  * 2. Converting between legacy and Column-based formats
  * 3. Detecting column types
  * 4. Validating column data
+ * 5. Managing cell validation states
+ *
+ * REFACTORING ANNOTATIONS:
+ * [NEW] - Part of the new Column architecture
+ * [BRIDGE] - Temporary compatibility functions
+ * [DELETE] - Legacy code that will be removed
+ * [REPLACE: X] - Will be replaced by function X
+ * [INTENTION: X] - Future implementation plans
  */
 
 import type { 
@@ -17,7 +25,9 @@ import type {
   ColumnTypeMap,
   LegacyValidatedTransformData,
   ColumnBasedTransformData,
-  GpsCoordinate
+  GpsCoordinate,
+  CellValidationState,
+  TypeCoercion
 } from '$lib/types/columnTypes';
 
 import { 
@@ -31,6 +41,7 @@ import { parseGpsCoordinate } from './dataTypes/gpsType';
 
 /**
  * Create a column of the appropriate type
+ * [NEW] Core function of the Column architecture
  */
 export function createColumn(name: string, type: 'string' | 'number' | 'date' | 'gps'): Column {
   switch (type) {
@@ -48,7 +59,167 @@ export function createColumn(name: string, type: 'string' | 'number' | 'date' | 
 }
 
 /**
+ * Update cell validation states for a column
+ * This is the "lever" that controls the isGreyedOut state based on:
+ * 1. Whether a cell passes type validation (failedSelectDetection)
+ * 2. Whether the column is toggled on/off (isToggled)
+ * 
+ * [NEW] Core function of the Column architecture
+ */
+export function updateCellValidationStates<T extends Column>(column: T): T {
+  // If no cellValidation exists yet, create it
+  if (!column.cellValidation) {
+    column.cellValidation = [];
+  }
+  
+  // Process each value in the column
+  column.values.forEach((value, rowIndex) => {
+    // Find existing validation state or create a new one
+    let validationState = column.cellValidation!.find(v => v.rowIndex === rowIndex);
+    
+    if (!validationState) {
+      validationState = {
+        rowIndex,
+        isValid: true,
+        failedSelectDetection: false,
+        isGreyedOut: false,
+        originalValue: value
+      };
+      column.cellValidation!.push(validationState);
+    }
+    
+    // Check if the value is valid for the column type
+    validationState.isValid = validateValueForType(value, column.type, column.typeCoercion);
+    
+    // Update failedSelectDetection based on validity
+    validationState.failedSelectDetection = !validationState.isValid;
+    
+    // The key logic: a cell is greyed out if it fails type detection OR the column is toggled off
+    validationState.isGreyedOut = validationState.failedSelectDetection || !column.isToggled;
+  });
+  
+  return column;
+}
+
+/**
+ * Validate a single value against a column type
+ * Takes into account any type coercion that may have been applied
+ * 
+ * [NEW] Core validation function for the Column architecture
+ */
+export function validateValueForType(
+  value: any, 
+  type: 'string' | 'number' | 'date' | 'gps',
+  typeCoercion?: TypeCoercion
+): boolean {
+  // Null values are valid for all types
+  if (value === null || value === undefined || value === '') {
+    return true;
+  }
+  
+  // If the type has been coerced, use the coerced type for validation
+  const effectiveType = typeCoercion?.isCoerced ? typeCoercion.coercedTo : type;
+  
+  switch (effectiveType) {
+    case 'string':
+      // All values can be strings
+      return true;
+    
+    case 'number':
+      // For number validation, try to convert to number and check if it's not NaN
+      if (typeof value === 'number') {
+        return !isNaN(value);
+      } else {
+        const num = Number(value);
+        return !isNaN(num);
+      }
+    
+    case 'date':
+      // For date validation, try to create a Date object
+      try {
+        if (value instanceof Date) {
+          return !isNaN(value.getTime());
+        } else {
+          const date = new Date(value);
+          return !isNaN(date.getTime());
+        }
+      } catch (e) {
+        return false;
+      }
+    
+    case 'gps':
+      // For GPS validation, handle multiple formats
+      
+      // Handle GpsCoordinate object
+      if (typeof value === 'object' && value !== null) {
+        return (
+          'latitude' in value && 
+          'longitude' in value && 
+          !isNaN(Number(value.latitude)) && 
+          !isNaN(Number(value.longitude))
+        );
+      }
+      // Handle string format "lat,lon"
+      else if (typeof value === 'string' && value.includes(',')) {
+        const [latStr, lonStr] = value.split(',');
+        const lat = Number(latStr.trim());
+        const lon = Number(lonStr.trim());
+        return !isNaN(lat) && !isNaN(lon);
+      }
+      // Try to parse using GPS parser
+      else if (typeof value === 'string') {
+        return parseGpsCoordinate(value) !== null;
+      }
+      
+      return false;
+      
+    default:
+      return false;
+  }
+}
+
+/**
+ * Toggle a column on/off and update cell validation states
+ * This is the main function that would be called when a user toggles a column
+ * 
+ * [NEW] Core function of the Column architecture
+ * [INTENTION: Will replace existing toggle functionality in TransformManager.svelte]
+ */
+export function toggleColumn<T extends Column>(column: T, isToggled: boolean): T {
+  column.isToggled = isToggled;
+  return updateCellValidationStates(column);
+}
+
+/**
+ * Change a column's type and update cell validation states
+ * This is called when a user manually changes a column's type
+ * 
+ * [NEW] Core function of the Column architecture
+ * [INTENTION: Will replace type selection functionality in TransformManager.svelte]
+ */
+export function changeColumnType<T extends Column>(
+  column: T, 
+  newType: 'string' | 'number' | 'date' | 'gps'
+): T {
+  // Record the type coercion
+  column.typeCoercion = {
+    isCoerced: true,
+    originalType: column.type,
+    coercedTo: newType,
+    timestamp: Date.now()
+  };
+  
+  // Update the column type
+  column.type = newType as any; // Type assertion needed due to generic constraints
+  
+  // Update cell validation states based on new type
+  return updateCellValidationStates(column);
+}
+
+/**
  * Create a column and populate it with values
+ * 
+ * [NEW] Core function of the Column architecture
  */
 export function createColumnWithValues(
   name: string, 
@@ -70,6 +241,7 @@ export function createColumnWithValues(
         numberColumn.values.push(null);
       } else {
         const num = Number(value);
+        // Store as actual number, not string
         numberColumn.values.push(isNaN(num) ? null : num);
       }
     });
@@ -81,9 +253,11 @@ export function createColumnWithValues(
       } else {
         try {
           const date = new Date(value);
-          dateColumn.values.push(date.toISOString());
+          // Store in ISO format for consistency
+          dateColumn.values.push(isNaN(date.getTime()) ? null : date.toISOString());
         } catch (e) {
-          dateColumn.values.push(String(value));
+          // If we can't parse as date, store as null
+          dateColumn.values.push(null);
         }
       }
     });
@@ -94,8 +268,19 @@ export function createColumnWithValues(
         gpsColumn.values.push(null);
       } else {
         try {
-          // Handle different GPS formats
-          if (typeof value === 'string' && value.includes(',')) {
+          // Handle GPS coordinate object
+          if (typeof value === 'object' && value !== null && 
+              'latitude' in value && 'longitude' in value) {
+            const coord: GpsCoordinate = {
+              latitude: Number(Number(value.latitude).toFixed(7)),
+              longitude: Number(Number(value.longitude).toFixed(7)),
+              format: 'DD',
+              precision: 7
+            };
+            gpsColumn.values.push(coord);
+          }
+          // Handle string format "lat,lon"
+          else if (typeof value === 'string' && value.includes(',')) {
             const [latStr, lonStr] = value.split(',');
             const lat = Number(latStr.trim());
             const lon = Number(lonStr.trim());
@@ -139,6 +324,9 @@ export function createColumnWithValues(
 
 /**
  * Convert legacy format to Column-based format
+ * 
+ * [BRIDGE] Temporary function to convert between formats during migration
+ * [INTENTION: Will be removed once Transform stage directly produces Column format]
  */
 export function convertLegacyToColumnBased(legacy: LegacyValidatedTransformData): ColumnBasedTransformData {
   const columns: Column[] = [];
@@ -155,6 +343,32 @@ export function convertLegacyToColumnBased(legacy: LegacyValidatedTransformData)
     
     // Create and add the column
     const column = createColumnWithValues(name, type, values);
+    
+    // Set isToggled to true by default
+    column.isToggled = true;
+    
+    // Set isFormatted based on type
+    // For GPS columns, we want to ensure they're properly formatted
+    if (type === 'gps') {
+      const gpsColumn = column as GpsColumn;
+      gpsColumn.format = {
+        gpsFormat: 'DD',
+        precision: 7
+      };
+      gpsColumn.isFormatted = true;
+    } else if (type === 'number') {
+      const numberColumn = column as NumberColumn;
+      numberColumn.format = {
+        precision: 2 // Use 2 decimal places for regular numbers
+      };
+      numberColumn.isFormatted = true;
+    } else {
+      column.isFormatted = false; // For string and date columns, mark as not formatted
+    }
+    
+    // Update cell validation states
+    updateCellValidationStates(column);
+    
     columns.push(column);
   });
   
@@ -163,6 +377,9 @@ export function convertLegacyToColumnBased(legacy: LegacyValidatedTransformData)
 
 /**
  * Convert Column-based format to legacy format
+ * 
+ * [BRIDGE] Temporary function to convert between formats during migration
+ * [INTENTION: Will be removed once TransPlant stage directly consumes Column format]
  */
 export function convertColumnBasedToLegacy(columnBased: ColumnBasedTransformData): LegacyValidatedTransformData {
   const records: Array<{ [key: string]: string | number | null }> = [];
@@ -170,7 +387,10 @@ export function convertColumnBasedToLegacy(columnBased: ColumnBasedTransformData
   
   // Get all column names and types
   columnBased.columns.forEach(column => {
-    columnTypes[column.name] = column.type;
+    // Only include toggled columns in the output
+    if (column.isToggled) {
+      columnTypes[column.name] = column.type;
+    }
   });
   
   // Determine the number of records
@@ -188,12 +408,23 @@ export function convertColumnBasedToLegacy(columnBased: ColumnBasedTransformData
     
     // Add values from each column
     columnBased.columns.forEach(column => {
+      // Only include toggled columns in the output
+      if (!column.isToggled) return;
+      
       if (column.type === 'string') {
         const values = (column as StringColumn).values;
         record[column.name] = i < values.length ? values[i] : null;
       } else if (column.type === 'number') {
         const values = (column as NumberColumn).values;
-        record[column.name] = i < values.length ? values[i] : null;
+        // Ensure proper number formatting with precision
+        if (i < values.length && values[i] !== null) {
+          const numCol = column as NumberColumn;
+          const precision = numCol.format?.precision || 2;
+          // Round to specified precision to avoid floating point issues
+          record[column.name] = Number(values[i]!.toFixed(precision));
+        } else {
+          record[column.name] = null;
+        }
       } else if (column.type === 'date') {
         const values = (column as DateColumn).values;
         record[column.name] = i < values.length ? values[i] : null;
@@ -201,9 +432,15 @@ export function convertColumnBasedToLegacy(columnBased: ColumnBasedTransformData
         const values = (column as GpsColumn).values;
         const gpsValue = i < values.length ? values[i] : null;
         
-        // Format GPS coordinates as strings for legacy format
+        // Format GPS coordinates with proper precision for legacy format
         if (gpsValue) {
-          record[column.name] = `${gpsValue.latitude},${gpsValue.longitude}`;
+          // Ensure 7 decimal places for GPS coordinates
+          const lat = Number(gpsValue.latitude.toFixed(7));
+          const lon = Number(gpsValue.longitude.toFixed(7));
+          
+          // For GPS columns, we want to preserve the numeric type
+          // This is critical for the GPS precision issue
+          record[column.name] = `${lat},${lon}`;
         } else {
           record[column.name] = null;
         }
@@ -218,6 +455,9 @@ export function convertColumnBasedToLegacy(columnBased: ColumnBasedTransformData
 
 /**
  * Detect the type of a column based on its values
+ * 
+ * [NEW] Core function of the Column architecture
+ * [INTENTION: Will replace existing type detection in TransformManager.svelte]
  */
 export function detectColumnType(values: any[]): 'string' | 'number' | 'date' | 'gps' {
   // Filter out null/undefined values
@@ -268,6 +508,8 @@ export function detectColumnType(values: any[]): 'string' | 'number' | 'date' | 
 
 /**
  * Extract a specific column from a set of records
+ * 
+ * [NEW] Utility function for the Column architecture
  */
 export function extractColumnFromRecords(
   records: Array<{ [key: string]: any }>, 
@@ -278,6 +520,9 @@ export function extractColumnFromRecords(
 
 /**
  * Create columns from records and column types
+ * 
+ * [NEW] Core function of the Column architecture
+ * [INTENTION: Will be used to convert imported data to Column format]
  */
 export function createColumnsFromRecords(
   records: Array<{ [key: string]: any }>,

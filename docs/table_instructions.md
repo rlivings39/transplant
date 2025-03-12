@@ -48,6 +48,22 @@ interface Column {
     max?: number;
     pattern?: string;
   };
+  
+  // Type coercion tracking
+  typeCoercion?: {
+    isCoerced: boolean;            // Whether the column type was manually changed
+    originalType: string;          // The original detected type
+    coercedTo: string;            // The type it was coerced to
+  };
+  
+  // Cell-level validation state
+  cellValidation?: Array<{        // Validation state for individual cells
+    rowIndex: number;             // Row index in the column
+    isValid: boolean;             // Whether the cell is valid for the column type
+    isGreyedOut: boolean;         // Whether the cell is greyed out (invalid and ignored)
+    failedSelectDetection: boolean; // Whether type detection failed for this cell
+    originalValue: any;           // The original value before processing
+  }>;
 }
 
 // Type-specific column interfaces
@@ -72,6 +88,52 @@ type GpsCoordinate = {
 - **Consistent Formatting**: Format information is preserved throughout the application
 - **Clearer Code**: Relationships between column properties are explicit
 - **Easier Maintenance**: Changes to column handling can be made in one place
+
+### Cell Validation and Type Coercion
+
+The Column architecture includes sophisticated handling of cell-level validation and type coercion:
+
+#### Cell Validation State
+
+Individual cells within a column can have different validation states:
+
+1. **Failed Type Detection**
+   - When a cell's value doesn't match the column's detected type
+   - Example: A column of numbers with one cell containing "NA"
+   - These cells are marked with `failedSelectDetection: true`
+
+2. **Greyed Out Cells**
+   - Cells are greyed out when they fail type detection OR the column is toggled off (or both)
+   - These cells are visually greyed out in the UI and ignored during the TransPlant process
+   - This is a core state property that determines whether a cell's data is used in processing
+
+3. **Validation Flow**
+   - When a column is initially detected as a certain type (e.g., "number"):
+     - Cells that don't match this type are marked `failedSelectDetection: true` and `isGreyedOut: true`
+   - If the user toggles off a column:
+     - All cells in that column will be greyed out regardless of their validation status
+   - If the user changes the column type (e.g., to "string"):
+     - Previously invalid cells may become valid
+     - Their state changes to `failedSelectDetection: false` and `isGreyedOut: false`
+
+#### Type Coercion
+
+The Column architecture tracks when users manually change a column's type:
+
+1. **Type Coercion Tracking**
+   - `isCoerced: boolean` - Indicates the user changed the type
+   - `originalType: string` - The type originally detected
+   - `coercedTo: string` - The type the user selected
+
+2. **Use Cases**
+   - Date/Number Ambiguity: Years between 1850-2040 might be detected as dates but the user may want them as numbers
+   - Special Values: Columns with mixed types that should be treated as strings
+   - Formatting Control: Preventing automatic formatting of certain data
+
+3. **Implementation**
+   - When a user changes a column's type, the `typeCoercion` object is populated
+   - This affects how validation and formatting are applied
+   - All cells are re-evaluated against the new type
 
 ### File Structure
 

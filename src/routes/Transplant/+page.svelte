@@ -4,6 +4,8 @@
 	import TransplantDbTargetTable from '$lib/transplantComponents/transplantDbTargetTable.svelte';
 	import { schemaService } from '$lib/services/schemaService';
 	import { transformedDataService } from '$lib/stores/transformStore';
+	import type { Column, ColumnBasedTransformData } from '$lib/types/columnTypes';
+	import { convertLegacyToColumnBased } from '$lib/utils/columnUtils';
 
 	// Debug flag to control logging
 	const DEBUG = false;
@@ -25,7 +27,7 @@
 	};
 
 	// State for drag-and-drop coordination
-	let draggedColumn = $state<{ header: string; columnType: string } | null>(null);
+	let draggedColumn = $state<{ header: string; columnType: string; column?: Column } | null>(null);
 
 	// Add state for schema loading
 	let isSchemaLoading = $state(true);
@@ -34,11 +36,14 @@
 
 	// Add state for tracking mapped columns
 	let mappedColumns = $state<string[]>([]);
+	
+	// Add state for Column-based data
+	let columnBasedData = $state<ColumnBasedTransformData | null>(null);
 
 	// Handle drag start from the data table
 	function handleDragStart(event: CustomEvent) {
-		const { header, columnType } = event.detail;
-		draggedColumn = { header, columnType };
+		const { header, columnType, column } = event.detail;
+		draggedColumn = { header, columnType, column };
 	}
 
 	// Handle drag end
@@ -66,6 +71,26 @@
 		// Check if we have transform data
 		const transformData = transformedDataService.get() || transformedDataService.getData();
 		hasTransformData = !!transformData;
+		
+		// If we have transform data, check if it's already in Column-based format
+		if (transformData) {
+			if ('columns' in transformData) {
+				// It's already in Column-based format
+				columnBasedData = transformData as ColumnBasedTransformData;
+				logger.debug('Data is already in Column-based format');
+			} else if ('records' in transformData && 'columnTypes' in transformData) {
+				// It's in legacy format, convert it
+				try {
+					columnBasedData = convertLegacyToColumnBased({
+						records: transformData.records,
+						columnTypes: transformData.columnTypes
+					});
+					logger.debug('Successfully converted legacy data to Column-based format');
+				} catch (error) {
+					logger.error('Error converting to Column-based format:', error);
+				}
+			}
+		}
 
 		try {
 			// Initialize schema service
