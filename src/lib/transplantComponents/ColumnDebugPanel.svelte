@@ -365,6 +365,9 @@
 {/if}
 
 <style>
+    body, html, h1, h2, h3, h4, h5, h6, p, span, div, th, td, select, label, input, button, .section-header h5, .property-null, .more-values {
+    color: var(--color-white) !important;
+}
     .column-debug-panel {
         border: 1px solid #ccc;
         border-radius: 4px;
@@ -397,7 +400,7 @@
     .no-selection {
         padding: 20px;
         text-align: center;
-        color: #666;
+        color: var(--color-white);
     }
     
     .property-section {
@@ -529,6 +532,6 @@
     .no-columns {
         padding: 20px;
         text-align: center;
-        color: #666;
+        color: var(--color-white);
     }
 </style>

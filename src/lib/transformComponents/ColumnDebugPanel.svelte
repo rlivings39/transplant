@@ -215,6 +215,7 @@
                         <span class="toggle-icon">{expandedSections.typeCoercion ? '▼' : '►'}</span>
                         <h5>Type Coercion</h5>
                     </button>
+                    <h5 style="color: white !important;">Test Heading</h5>
                     
                     {#if expandedSections.typeCoercion}
                         <div class="property-list">
@@ -261,7 +262,7 @@
         padding: 10px;
         margin-top: 20px;
         overflow-y: auto;
-        background-color: #f9f9f9;
+        background-color: var(--color-light-grey);
     }
     
     .hidden {
@@ -276,6 +277,7 @@
     
     .column-selector {
         margin-bottom: 15px;
+        background-color: var(--color-light-grey);
     }
     
     select {
@@ -287,7 +289,7 @@
     .no-selection {
         padding: 20px;
         text-align: center;
-        color: #666;
+        color: #ddd;
     }
     
     .property-section {
@@ -301,8 +303,9 @@
         width: 100%;
         text-align: left;
         padding: 8px;
-        background-color: #eee;
+        background-color:var(--color-light-grey);
         border: none;
+        color: var(--color-white);
         cursor: pointer;
         display: flex;
         align-items: center;
@@ -311,6 +314,7 @@
     .section-header h5 {
         margin: 0;
         font-size: 1em;
+        color: #666;
     }
     
     .toggle-icon {
@@ -320,7 +324,7 @@
     
     .property-list {
         padding: 10px;
-        background-color: white;
+        background-color: var(--color-light-grey);
     }
     
     .property-item {
@@ -384,7 +388,7 @@
     }
     
     th {
-        background-color: #f2f2f2;
+        background-color: var(--color-light-grey);
     }
     
     .string-value {

@@ -6,16 +6,16 @@
 
 :root {
 	--pico-font-family: 'Roboto Mono', Consolas, Monaco, 'Courier New', monospace;
+	--pico-background-color: var(--color-black) !important;
 	--color-purple: #8028de;
 	--color-light-grey: #343434;
-	--color-grey: #212121;
+	// --color-grey: #212121;
 	--color-black: #121212;
-	--color-white: #e0e0e0 --input-max-width: 28rem;
+	--color-white: #e0e0e0;
 	--column-width: 7rem;
 	--button-max-width: 28rem;
-	// --bright-border: 1px solid #e0e0e0;
 	--button-background: transparent;
-	--button-color: white;
+	--button-color: var(--color-grey);
 	--button-border: solid 0.04rem #343434 --button-padding: 0.75rem 2rem;
 	--button-margin: 0.75rem 2rem;
 	--button-radius: 0.25rem;
@@ -23,7 +23,12 @@
 	--button-transition: all 0.3s ease;
 	--header-background: #2f1e4b;
 }
-
+body, html {
+    background-color: var(--color-black) !important;
+}
+.container, table, th, td, select {
+    background-color: var(--color-black) !important;
+}
 nav a {
 	text-decoration-color: var(--color-purple);
 	&:hover {

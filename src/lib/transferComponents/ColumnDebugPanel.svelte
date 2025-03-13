@@ -432,7 +432,7 @@
     .debug-panel {
         font-family: monospace;
         background-color: #1e1e1e;
-        color: #d4d4d4;
+        color: var(--color-grey);
         border: 1px solid #333;
         border-radius: 4px;
         margin-top: 1rem;
@@ -451,7 +451,7 @@
     .panel-header h3 {
         margin: 0;
         font-size: 1rem;
-        color: #e6e6e6;
+        color: var(--color-grey);
     }
     
     .panel-content {
@@ -461,7 +461,7 @@
     
     .column-selector select {
         background-color: #3c3c3c;
-        color: #d4d4d4;
+        color: var(--color-grey);
         border: 1px solid #555;
         padding: 0.25rem 0.5rem;
         border-radius: 3px;
@@ -482,7 +482,7 @@
     
     .columns-overview th {
         background-color: #252526;
-        color: #e6e6e6;
+        color: var(--color-grey);
     }
     
     .column-row {
@@ -557,7 +557,7 @@
     .section-header h5 {
         margin: 0;
         font-size: 0.9rem;
-        color: #e6e6e6;
+        color: var(--color-grey);
     }
     
     .toggle-icon {
@@ -639,7 +639,7 @@
     
     .values-list th {
         background-color: #252526;
-        color: #e6e6e6;
+        color: var(--color-grey);
     }
     
     .value-cell {
