@@ -1,7 +1,6 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
 	import { transformedDataService } from '$lib/stores/transformStore';
-	import type { TransformedData } from '$lib/types/transform';
 	import { createEventDispatcher } from 'svelte';
 	import { setupColumnDrag, addDragDropStyles } from '$lib/utils/dragColumnUtils';
 	import { convertLegacyToColumnBased } from '$lib/utils/columnUtils';
@@ -46,6 +45,27 @@
 	function formatColumnType(type: string): string {
 		if (!type) return 'Unknown';
 		return type.charAt(0).toUpperCase() + type.slice(1);
+	}
+
+	// Extract the actual column name from the prefixed name
+	function getCleanColumnName(fullName: string): string {
+		// Common prefixes to remove
+		const prefixes = ['TextNumberDateGPSLatitudeLongitude', 'TextNumberDateGPS'];
+
+		// Try to remove each prefix
+		for (const prefix of prefixes) {
+			if (fullName.startsWith(prefix)) {
+				// Return the part after the prefix, with the first character lowercase
+				const nameWithoutPrefix = fullName.substring(prefix.length);
+				// If the name is now empty, return the original name
+				if (!nameWithoutPrefix) return fullName;
+				// Otherwise, ensure the first character is lowercase for consistency
+				return nameWithoutPrefix.charAt(0).toLowerCase() + nameWithoutPrefix.slice(1);
+			}
+		}
+
+		// If no prefix found, return the original name
+		return fullName;
 	}
 
 	// Format cell value based on column
@@ -194,7 +214,7 @@
 								>
 									{formatColumnType(column.type)}
 								</span>
-								<span class="header-text">{column.name}</span>
+								<span class="header-text">{getCleanColumnName(column.name)}</span>
 							</div>
 						</th>
 					{/each}

@@ -541,28 +541,6 @@
 	</div>
 {/if}
 
-<!-- Simple Debug State Panel -->
-<div class="debug-state-panel">
-	<h4>Current Mapping State (Debug View)</h4>
-	<div class="state-section">
-		<h5>Mappings</h5>
-		<pre>{JSON.stringify(mappings, null, 2)}</pre>
-	</div>
-	<div class="state-section">
-		<h5>Column Field Map</h5>
-		<pre>{JSON.stringify(columnFieldMap, null, 2)}</pre>
-	</div>
-	<div class="state-section">
-		<h5>Preview Data (First 2 rows per table)</h5>
-		<pre>{JSON.stringify(
-				Object.fromEntries(
-					Object.entries(tableData).map(([table, rows]) => [table, rows.slice(0, 2)])
-				),
-				null,
-				2
-			)}</pre>
-	</div>
-</div>
 
 <style>
 	.debug-state-panel {

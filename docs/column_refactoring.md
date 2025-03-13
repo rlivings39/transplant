@@ -76,8 +76,8 @@ The following files will need to be modified to fully implement the Column archi
    - [ ] Add conversion between formats during transition (bridge)
 
 2. **transplant/+page.svelte** [MODERATE CHANGES]
-   - [ ] Replace data handling to use Column objects
-   - [ ] Add conversion from legacy format during transition (bridge)
+   - [x] Replace data handling to use Column objects
+   - [x] Add conversion from legacy format during transition (bridge)
 
 3. **api/schema/+server.ts** [MINOR CHANGES]
    - [ ] Update schema handling to work with Column objects
@@ -93,8 +93,8 @@ The following files will need to be modified to fully implement the Column archi
    - [x] Define Column interfaces in columnTypes.ts
    - [x] Implement Column models in columnModel.ts
    - [x] Add core utility functions in columnUtils.ts
-   - [ ] Complete bridge functions in columnUtils.ts
-   - [ ] Add conversion in Transform/TransPlant handoff
+   - [x] Complete bridge functions in columnUtils.ts
+   - [x] Add conversion in Transform/TransPlant handoff
    - [ ] Test with real data to ensure compatibility
 
 2. **Phase 2: Transform Component Updates**

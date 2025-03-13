@@ -262,46 +262,86 @@ export function validateAndFormat(
 	isValid: boolean;
 	formattedValue: string;
 } {
+	console.log(`[GPS-DEBUG] 🌍 validateAndFormat called for ${header} with value: "${value}" (${typeof value})`);
+	
 	if (!value?.trim()) {
+		console.log(`[GPS-DEBUG] ⚠️ Empty value for ${header}, returning as-is`);
 		return { type: null, isValid: true, formattedValue: value };
 	}
 
 	// For GPS coordinate pairs, try the new converter first
 	if (value.includes(',')) {
+		console.log(`[GPS-DEBUG] 🔍 Value contains comma, trying coordinate pair conversion`);
 		const converted = convertCoordinatePair(value);
 		if (converted) {
+			console.log(`[GPS-DEBUG] ✅ Coordinate pair conversion successful: ${converted}`);
 			const gpsCoord = parseGpsCoordinate(converted);
 			if (gpsCoord) {
+				const formatted = formatGpsCoordinate(gpsCoord);
+				console.log(`[GPS-DEBUG] 🌐 GPS coordinate parsed: ${JSON.stringify(gpsCoord)}`);
+				console.log(`[GPS-DEBUG] 📝 Formatted as: "${formatted}" (${typeof formatted})`);
+				
+				// Check if the formatted value is a number or string
+				const numericValue = Number(formatted);
+				console.log(`[GPS-DEBUG] 🔢 Numeric conversion: ${numericValue} (${typeof numericValue}, isNaN: ${isNaN(numericValue)})`);
+				
 				return {
 					type: 'gps',
 					isValid: true,
-					formattedValue: formatGpsCoordinate(gpsCoord)
+					// Ensure we return a numeric string that can be converted to number
+					formattedValue: isNaN(numericValue) ? formatted : numericValue.toString()
 				};
+			} else {
+				console.log(`[GPS-DEBUG] ❌ Failed to parse GPS coordinate from converted value`);
 			}
+		} else {
+			console.log(`[GPS-DEBUG] ❌ Coordinate pair conversion failed`);
 		}
 	}
 
 	// For single coordinates, use existing DMS conversion
 	let formattedValue = value;
 	if (isDMSFormat(value)) {
+		console.log(`[GPS-DEBUG] 🔍 DMS format detected, converting to decimal`);
 		const decimal = convertDMSToDecimal(value);
 		if (decimal !== null) {
 			formattedValue = decimal.toString();
+			console.log(`[GPS-DEBUG] ✅ DMS conversion successful: ${formattedValue}`);
+		} else {
+			console.log(`[GPS-DEBUG] ❌ DMS conversion failed`);
 		}
 	}
 
 	// Check if it's latitude or longitude
 	const type = detectCoordinateType(header, [formattedValue]);
 	if (type) {
+		console.log(`[GPS-DEBUG] 🧭 Detected coordinate type: ${type}`);
 		const isValid =
 			type === 'latitude' ? isValidLatitude(formattedValue) : isValidLongitude(formattedValue);
+		
+		console.log(`[GPS-DEBUG] ${isValid ? '✅' : '❌'} Validation ${isValid ? 'passed' : 'failed'} for ${type}`);
+		
+		// Ensure the formattedValue is a clean numeric string
+		let finalValue = formattedValue;
+		if (isValid) {
+			const numValue = Number(formattedValue);
+			if (!isNaN(numValue)) {
+				// Round to 7 decimal places for consistency
+				finalValue = numValue.toFixed(7);
+				console.log(`[GPS-DEBUG] 🔢 Formatted to 7 decimal places: ${finalValue}`);
+			}
+		}
+		
 		return {
 			type,
 			isValid,
-			formattedValue: isValid ? formattedValue : value
+			formattedValue: isValid ? finalValue : value
 		};
+	} else {
+		console.log(`[GPS-DEBUG] ❓ Could not detect coordinate type from header: ${header}`);
 	}
 
+	console.log(`[GPS-DEBUG] ➡️ Returning original value: ${value}`);
 	return { type: null, isValid: true, formattedValue: value };
 }
 

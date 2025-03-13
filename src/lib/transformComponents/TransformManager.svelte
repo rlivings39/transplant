@@ -9,6 +9,8 @@
 	import { goto } from '$app/navigation';
 	import { transformedDataService } from '$lib/stores/transformStore';
 	import { createEventDispatcher } from 'svelte';
+	import type { Column, StringColumn, NumberColumn, DateColumn, GpsColumn } from '$lib/types/columnTypes';
+	import ColumnDebugPanel from './ColumnDebugPanel.svelte';
 
 	// Create event dispatcher
 	const dispatch = createEventDispatcher<{
@@ -34,6 +36,9 @@
 	let canTransform = $state(false);
 	// Add a flag to track if we're currently processing data
 	let isProcessing = $state(false);
+	// Column debug panel state
+	let columnsForDebug = $state<Column[]>([]);
+	let showDebugPanel = $state(false);
 
 	interface TransformedData {
 		records: Array<Record<string, any>>;
@@ -45,6 +50,75 @@
 	$effect(() => {
 		canTransform = data.length > 0 && Object.keys(invalidCells).length === 0;
 	});
+
+	// Convert current data to Column format for debugging
+	function convertToColumnFormat(): Column[] {
+		const columns: Column[] = [];
+		
+		// Get all column headers
+		if (data.length === 0) return columns;
+		const headers = Object.keys(data[0]);
+		
+		// Create a column object for each header
+		for (const header of headers) {
+			const type = columnTypes[header] || 'string';
+			const isToggled = toggledColumns[header] !== false; // Default to true if not specified
+			
+			// Extract values for this column
+			const values = data.map(row => {
+				const value = row[header];
+				// Convert values based on type
+				if (type === 'number') {
+					return value === null || value === '' ? null : Number(value);
+				} else if (type === 'date') {
+					return value === null || value === '' ? null : value;
+				} else if (type === 'gps') {
+					// For GPS coordinates, ensure they're stored as numbers with proper precision
+					if (value === null || value === '') return null;
+					const numValue = Number(value);
+					return isNaN(numValue) ? value : Number(numValue.toFixed(7));
+				} else {
+					return value === null ? null : String(value);
+				}
+			});
+			
+			// Create cell validation state
+			const cellValidation = data.map((row, index) => {
+				const isValid = !invalidCells[header]?.has(index);
+				return {
+					rowIndex: index,
+					isValid,
+					failedSelectDetection: !isValid,
+					isGreyedOut: !isValid || !isToggled,
+					originalValue: row[header]
+				};
+			});
+			
+			// Create the base column object
+			const baseColumn: any = {
+				name: header,
+				type,
+				isToggled,
+				isFormatted: true,
+				values,
+				cellValidation
+			};
+			
+			// Add type-specific properties
+			if (type === 'number') {
+				baseColumn.precision = 2;
+			} else if (type === 'date') {
+				baseColumn.dateFormat = 'YYYY-MM-DD';
+			} else if (type === 'gps') {
+				baseColumn.gpsFormat = 'decimal';
+				baseColumn.precision = 7;
+			}
+			
+			columns.push(baseColumn as Column);
+		}
+		
+		return columns;
+	}
 
 	// Type detection pipeline in priority order
 	const typeDetectors = [
@@ -597,5 +671,24 @@
 		<div class="no-data-message">
 			<p></p>
 		</div>
+	{/if}
+
+	<!-- Toggle Debug Panel Button -->
+	{#if data.length > 0}
+		<div class="debug-panel-toggle">
+			<button on:click={() => {
+				showDebugPanel = !showDebugPanel;
+				if (showDebugPanel) {
+					columnsForDebug = convertToColumnFormat();
+				}
+			}}>
+				{showDebugPanel ? 'Hide' : 'Show'} Column Debug Panel
+			</button>
+		</div>
+
+		<!-- Column Debug Panel -->
+		{#if showDebugPanel}
+			<ColumnDebugPanel columns={columnsForDebug} />
+		{/if}
 	{/if}
 </div>

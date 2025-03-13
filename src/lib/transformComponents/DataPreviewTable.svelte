@@ -11,11 +11,20 @@
 	}>();
 
 	const { rows, columnTypes, invalidCells, toggledColumns } = $props<{
-		rows: Record<string, string>[];
+		rows: Record<string, any>[];
 		columnTypes: Record<string, string>;
 		invalidCells: Record<string, Set<number>>;
 		toggledColumns: Record<string, boolean>;
 	}>();
+	
+	// Log the incoming rows data for debugging
+	$effect(() => {
+		console.log('[DataPreviewTable] Received rows type:', typeof rows);
+		console.log('[DataPreviewTable] Received rows isArray:', Array.isArray(rows));
+		if (Array.isArray(rows) && rows.length > 0) {
+			console.log('[DataPreviewTable] First row sample:', rows[0]);
+		}
+	});
 
 	// let toggledColumns = $state<Record<string, boolean>>({});
 
@@ -23,11 +32,23 @@
 		dispatch('columnToggle', { columnHeader, isActive });
 	}
 
-	let columnHeaders = $derived(rows.length > 0 ? Object.keys(rows[0]) : []);
-	let previewRows = $derived(rows.slice(0, 5000)); // Process 1000 rows - better balance of performance and functionality
+	// Ensure rows is always an array
+	let safeRows = $derived(Array.isArray(rows) ? rows : []);
+
+	// Log warning if rows is not an array
+	$effect(() => {
+		if (!Array.isArray(rows)) {
+			console.warn('[DataPreviewTable] rows is not an array:', rows);
+		}
+	});
+
+	let columnHeaders = $derived(safeRows.length > 0 ? Object.keys(safeRows[0]) : []);
+	let previewRows = $derived(safeRows.length > 0 ? safeRows.slice(0, 5000) : []); // Process 5000 rows - better balance of performance and functionality
 
 	function isGreyedOut(columnHeader: string, rowIndex: number): boolean {
-		return toggledColumns[columnHeader] || invalidCells[columnHeader]?.has(rowIndex);
+		// Column should be greyed out if it's toggled off or has validation errors
+		// toggledColumns[columnHeader] is true when column is toggled OFF
+		return !!toggledColumns[columnHeader] || invalidCells[columnHeader]?.has(rowIndex);
 	}
 </script>
 

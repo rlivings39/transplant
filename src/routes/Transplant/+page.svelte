@@ -2,13 +2,19 @@
 	import { onMount } from 'svelte';
 	import TransplantDataTable from '$lib/transplantComponents/transplantDataTable.svelte';
 	import TransplantDbTargetTable from '$lib/transplantComponents/transplantDbTargetTable.svelte';
+	import ColumnDebugPanel from '$lib/transplantComponents/ColumnDebugPanel.svelte';
 	import { schemaService } from '$lib/services/schemaService';
 	import { transformedDataService } from '$lib/stores/transformStore';
-	import type { Column, ColumnBasedTransformData } from '$lib/types/columnTypes';
+	import type {
+		Column,
+		ColumnBasedTransformData,
+		GpsColumn,
+		NumberColumn
+	} from '$lib/types/columnTypes';
 	import { convertLegacyToColumnBased } from '$lib/utils/columnUtils';
 
 	// Debug flag to control logging
-	const DEBUG = false;
+	const DEBUG = true;
 
 	// Logger utility for consistent and controlled logging
 	const logger = {
@@ -36,9 +42,15 @@
 
 	// Add state for tracking mapped columns
 	let mappedColumns = $state<string[]>([]);
-	
+
 	// Add state for Column-based data
 	let columnBasedData = $state<ColumnBasedTransformData | null>(null);
+
+	// Add state for debug panel
+	let showDebugPanel = $state(true);
+
+	// Add state for columns to display in debug panel
+	let columnsForDebug = $state<Column[]>([]);
 
 	// Handle drag start from the data table
 	function handleDragStart(event: CustomEvent) {
@@ -66,18 +78,85 @@
 		}
 	}
 
+	// Process columns to ensure proper data types
+	function processColumns(columns: Column[]): Column[] {
+		return columns.map((column) => {
+			// Create a copy of the column to avoid modifying the original
+			const processedColumn = { ...column };
+
+			// Process GPS columns
+			if (column.type === 'gps') {
+				const gpsColumn = processedColumn as GpsColumn;
+
+				// Ensure values are properly formatted as numbers with 7 decimal places
+				gpsColumn.values = gpsColumn.values.map((value) => {
+					if (value && typeof value === 'object' && 'latitude' in value && 'longitude' in value) {
+						// Convert string coordinates to numbers and round to 7 decimal places
+						const lat =
+							typeof value.latitude === 'string' ? parseFloat(value.latitude) : value.latitude;
+						const lon =
+							typeof value.longitude === 'string' ? parseFloat(value.longitude) : value.longitude;
+
+						return {
+							latitude: Number(lat.toFixed(7)),
+							longitude: Number(lon.toFixed(7))
+						};
+					}
+					return value;
+				});
+
+				// Set format precision if not already set
+				if (!gpsColumn.format) {
+					gpsColumn.format = { precision: 7 };
+				} else if (!gpsColumn.format.precision) {
+					gpsColumn.format.precision = 7;
+				}
+			}
+
+			// Process number columns
+			if (column.type === 'number') {
+				const numberColumn = processedColumn as NumberColumn;
+
+				// Ensure values are properly formatted as numbers
+				numberColumn.values = numberColumn.values.map((value) => {
+					if (typeof value === 'string') {
+						return parseFloat(value);
+					}
+					return value;
+				});
+
+				// Set format precision if not already set
+				if (!numberColumn.format) {
+					numberColumn.format = { precision: 2 };
+				} else if (!numberColumn.format.precision) {
+					numberColumn.format.precision = 2;
+				}
+			}
+
+			return processedColumn;
+		});
+	}
+
 	// Initialize schema service on component mount
 	onMount(async () => {
 		// Check if we have transform data
 		const transformData = transformedDataService.get() || transformedDataService.getData();
 		hasTransformData = !!transformData;
-		
+
 		// If we have transform data, check if it's already in Column-based format
 		if (transformData) {
 			if ('columns' in transformData) {
 				// It's already in Column-based format
 				columnBasedData = transformData as ColumnBasedTransformData;
+
+				// Process columns to ensure proper data types
+				columnBasedData.columns = processColumns(columnBasedData.columns);
+
+				// Set columns for debug panel
+				columnsForDebug = columnBasedData.columns;
+
 				logger.debug('Data is already in Column-based format');
+				logger.debug('Processed columns:', columnsForDebug);
 			} else if ('records' in transformData && 'columnTypes' in transformData) {
 				// It's in legacy format, convert it
 				try {
@@ -85,9 +164,20 @@
 						records: transformData.records,
 						columnTypes: transformData.columnTypes
 					});
+
+					// Process columns to ensure proper data types
+					columnBasedData.columns = processColumns(columnBasedData.columns);
+
+					// Set columns for debug panel
+					columnsForDebug = columnBasedData.columns;
+
 					logger.debug('Successfully converted legacy data to Column-based format');
+					logger.debug('Processed columns:', columnsForDebug);
 				} catch (error) {
-					logger.error('Error converting to Column-based format:', error);
+					logger.error(
+						'Error converting to Column-based format:',
+						error instanceof Error ? error.message : String(error)
+					);
 				}
 			}
 		}
@@ -156,10 +246,12 @@
 		{/if}
 	{/if}
 </div>
-<div class="persistent-state-container">
-	<h3>Persistent Visible State</h3>
-	<pre id="persistent-state-display">{JSON.stringify(mappedColumns, null, 2)}</pre>
-</div>
+
+
+<!-- Column Debug Panel -->
+
+	<ColumnDebugPanel columns={columnsForDebug} />
+
 
 <style>
 	.persistent-state-container {
@@ -199,6 +291,27 @@
 		display: flex;
 		justify-content: space-between;
 		align-items: center;
+	}
+
+	.debug-panel-toggle {
+		display: flex;
+		justify-content: flex-end;
+		gap: 0.5rem;
+		margin-top: 1rem;
+	}
+
+	.debug-button {
+		background-color: #673ab7;
+		color: white;
+		border: none;
+		border-radius: 4px;
+		padding: 0.5rem 1rem;
+		cursor: pointer;
+		font-weight: 500;
+	}
+
+	.debug-button:hover {
+		background-color: #5e35b1;
 	}
 
 	h2 {
