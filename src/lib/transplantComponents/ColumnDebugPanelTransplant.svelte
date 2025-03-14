@@ -13,7 +13,7 @@
 		values: false,
 		format: false,
 		dbMapping: false,
-		typeCoercion: false
+		selectTypeCoercion: false
 	};
 
 	// Toggle a section's expanded state
@@ -264,30 +264,36 @@
 					{/if}
 
 					<!-- Type Coercion -->
-					{#if selectedColumn.typeCoercion}
+					{#if selectedColumn.selectTypeCoercion}
 						<div class="property-section">
 							<button
 								type="button"
 								class="section-header"
-								onclick={() => toggleSection('typeCoercion')}
+								onclick={() => toggleSection('selectTypeCoercion')}
 							>
-								<span class="toggle-icon">{expandedSections.typeCoercion ? '▼' : '►'}</span>
+								<span class="toggle-icon">{expandedSections.selectTypeCoercion ? '▼' : '►'}</span>
 								<h5>Type Coercion</h5>
 							</button>
 
-							{#if expandedSections.typeCoercion}
+							{#if expandedSections.selectTypeCoercion}
 								<div class="property-list">
 									<div class="property-item">
 										<span class="property-name">Original Type:</span>
-										<span class="property-value">{selectedColumn.typeCoercion.originalType}</span>
+										<span class="property-value"
+											>{selectedColumn.selectTypeCoercion.originalType}</span
+										>
 									</div>
 									<div class="property-item">
 										<span class="property-name">Target Type:</span>
-										<span class="property-value">{selectedColumn.typeCoercion.targetType}</span>
+										<span class="property-value"
+											>{selectedColumn.selectTypeCoercion.targetType}</span
+										>
 									</div>
 									<div class="property-item">
 										<span class="property-name">Success Rate:</span>
-										<span class="property-value">{selectedColumn.typeCoercion.successRate}%</span>
+										<span class="property-value"
+											>{selectedColumn.selectTypeCoercion.successRate}%</span
+										>
 									</div>
 								</div>
 							{/if}

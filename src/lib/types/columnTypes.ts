@@ -1,8 +1,9 @@
-import { Species } from './schema';
+// import { Species } from './schema';
 import { organizations } from './../server/db/schema';
+import type { Column } from './Column';
 /**
  * Column-based architecture for TransPlant
- * 
+ *
  * This file defines the core Column interfaces that bind together:
  * 1. Column name/header
  * 2. Column type
@@ -23,115 +24,97 @@ import { organizations } from './../server/db/schema';
 
 // Known table names in our system
 export enum TableName {
-  Planting = 'planting',
-  Land = 'land',
-  Crop = 'crop',
-  Organization = 'organizations',
-  Polygon = 'polygon',
-  Species = 'species'
+	Planting = 'planting',
+	Land = 'land',
+	Crop = 'crop',
+	Organization = 'organizations',
+	Polygon = 'polygon',
+	Species = 'species'
 }
 
 /**
  * Column interfaces
  */
 
+
+export interface StringColumn extends Column {
+  type: 'string';
+  // Add string-specific properties
+}
+
+export interface NumberColumn extends Column {
+  type: 'number';
+  // Add number-specific properties
+}
+
 // Cell validation state - tracks validation status for individual cells in a column
 // [NEW] Core interface of the Column architecture
 export interface CellValidationState {
-  rowIndex: number;                // Row index in the column
-  isValid: boolean;                // Whether the cell value is valid for the column type
-  failedSelectDetection: boolean;  // Whether type detection failed for this cell
-  // Cell is greyed out if either failedSelectDetection is TRUE OR isToggled is FALSE (or both)
-  isGreyedOut: boolean;           // Whether the cell is greyed out (invalid and ignored)
-  originalValue: any;              // The original value before any processing
+	rowIndex: number; // Row index in the column
+	isValid: boolean; // Whether the cell value is valid for the column type
+	failedSelectDetection: boolean; // Whether type detection failed for this cell
+	// Cell is greyed out if either failedSelectDetection is TRUE OR isToggled is FALSE (or both)
+	isGreyedOut: boolean; // Whether the cell is greyed out (invalid and ignored)
+	originalValue: any; // The original value before any processing
 }
 
 // Type coercion information
 // [NEW] Core interface of the Column architecture
-export interface TypeCoercion {
-  isCoerced: boolean;              // Whether the column type was manually changed by the user
-  originalType: string;            // The original detected type before coercion
-  coercedTo: string;              // The type it was coerced to
-  timestamp: number;               // When the coercion happened
+export interface selectTypeCoercion {
+	isCoerced: boolean; // Whether the column type was manually changed by the user
+	originalType: string; // The original detected type before coercion
+	coercedTo: string; // The type it was coerced to
+	timestamp: number; // When the coercion happened
 }
 
-// Base column type with shared properties
-// [NEW] Core interface of the Column architecture
-// [INTENTION: Will replace existing column handling throughout the application]
-export interface BaseColumn {
-  name: string;                    // The header/importedColumnName
-  isToggled: boolean;              // Whether this column is toggled on/off
-  isMapped?: boolean;              // Whether this field is mapped to a DB column
-  mappedTo?: string;               // DB column this is mapped to (format: "table.column")
-  isFormatted: boolean;            // Whether the data has been formatted
-  isMerged?: boolean;              // Whether this column is created by merging other columns
-  mergedFrom?: string[];           // If merged, the source columns that were merged
-  isGpsSource?: boolean;           // Whether this column is a source for the universal GPS column
-  
-  // Type coercion tracking
-  typeCoercion?: TypeCoercion;     // Information about type coercion if applicable
-  
-  // Cell-level validation state
-  cellValidation?: CellValidationState[]; // Validation state for individual cells
-  
-  // Database mapping properties (only relevant if isMapped is true)
-  dbMapping?: {
-    table: string;                 // Target database table
-    column: string;                // Target database column
-    isRequired: boolean;           // Whether the target column is required
-    isNaturalKey?: boolean;        // Whether this maps to a natural key
-    naturalKeyFor?: string;        // If natural key, the primary key it corresponds to
-    isInsertPlanted?: boolean;     // Whether this is a column from Land/Crop inserted into Planting for convenience
-  };
-}
 
 // String column
 // [NEW] Core interface of the Column architecture
 export interface StringColumn extends BaseColumn {
-  type: 'string';
-  values: (string | null)[];
-  validation?: {
-    pattern?: string;
-    minLength?: number;
-    maxLength?: number;
-  };
+	type: 'string';
+	values: (string | null)[];
+	validation?: {
+		pattern?: string;
+		minLength?: number;
+		maxLength?: number;
+	};
 }
 
 // Number column
 // [NEW] Core interface of the Column architecture
 // [INTENTION: Will solve numeric precision issues, especially for GPS coordinates]
 export interface NumberColumn extends BaseColumn {
-  type: 'number';
-  values: (number | null)[];
-  format?: {
-    precision?: number;
-    useThousandsSeparator?: boolean;
-  };
-  validation?: {
-    min?: number;
-    max?: number;
-  };
-  // For coordinate columns (latitude/longitude)
-  coordinateType?: CoordinateType;  // Whether this is a latitude or longitude column
-  coordinatePrecision?: number;     // Precision for coordinate values (typically 7)
+	type: 'number';
+	values: (number | null)[];
+	format?: {
+		precision?: number;
+		useThousandsSeparator?: boolean;
+	};
+	validation?: {
+		min?: number;
+		max?: number;
+	};
+	// For coordinate columns (latitude/longitude)
+	coordinateType?: CoordinateType; // Whether this is a latitude or longitude column
+	coordinatePrecision?: number; // Precision for coordinate values (typically 7)
 }
 
 // Date column
 // [NEW] Core interface of the Column architecture
 export interface DateColumn extends BaseColumn {
-  type: 'date';
-  values: (string | null)[];  // ISO format dates
-  format?: {
-    dateFormat?: string;      // e.g., 'YYYY-MM-DD'
-  };
+	type: 'date';
+	values: (string | null)[]; // ISO format dates
+	format?: {
+		dateFormat?: string; // e.g., 'YYYY-MM-DD'
+	};
 }
 
 // GPS coordinate type
 export type GpsCoordinate = {
-  latitude: number;
-  longitude: number;
-  format?: 'DMS' | 'DD';
-  precision?: number;
+	latitude: number;
+	longitude: number;
+	format?: 'DMS' | 'DD';
+	precision?: number;
 };
 
 // Coordinate component type (for lat/lon columns)
@@ -140,11 +123,11 @@ export type CoordinateType = 'latitude' | 'longitude';
 // GPS column merge configuration
 // [NEW] Core interface of the Column architecture
 export interface GpsMergeConfig {
-  latitudeColumn: string;   // Name of the column containing latitude values
-  longitudeColumn: string;  // Name of the column containing longitude values
-  targetColumn: string;     // Name of the merged GPS column to create
-  format?: 'DMS' | 'DD';    // Format to use for the merged column
-  precision?: number;       // Precision to use for coordinates
+	latitudeColumn: string; // Name of the column containing latitude values
+	longitudeColumn: string; // Name of the column containing longitude values
+	targetColumn: string; // Name of the merged GPS column to create
+	format?: 'DMS' | 'DD'; // Format to use for the merged column
+	precision?: number; // Precision to use for coordinates
 }
 
 // GPS selection strategy
@@ -154,44 +137,46 @@ export type GpsSelectionStrategy = 'priority' | 'first-available' | 'fallback-if
 // [NEW] Core interface of the Column architecture
 // [INTENTION: Will implement the GPS selection logic documented in gps_docs.md]
 export interface GpsSourceConfig {
-  sourceColumns: string[];         // Names of columns that can provide GPS data
-  latLonPairs?: Array<{           // Pairs of latitude/longitude columns
-    latColumn: string;            // Latitude column name
-    lonColumn: string;            // Longitude column name
-    priority?: number;            // Priority of this pair (lower is higher priority)
-  }>;
-  gpsColumns?: string[];          // Direct GPS columns to consider
-  selectionStrategy: GpsSelectionStrategy; // How to select the GPS data
-  targetColumn: string;           // Name of the universal GPS column to create
-  format?: 'DMS' | 'DD';          // Format to use for the output
-  precision?: number;             // Precision to use for coordinates
-  fallbackToToggledOff?: boolean; // Whether to use toggled-off columns as fallback
+	sourceColumns: string[]; // Names of columns that can provide GPS data
+	latLonPairs?: Array<{
+		// Pairs of latitude/longitude columns
+		latColumn: string; // Latitude column name
+		lonColumn: string; // Longitude column name
+		priority?: number; // Priority of this pair (lower is higher priority)
+	}>;
+	gpsColumns?: string[]; // Direct GPS columns to consider
+	selectionStrategy: GpsSelectionStrategy; // How to select the GPS data
+	targetColumn: string; // Name of the universal GPS column to create
+	format?: 'DMS' | 'DD'; // Format to use for the output
+	precision?: number; // Precision to use for coordinates
+	fallbackToToggledOff?: boolean; // Whether to use toggled-off columns as fallback
 }
 
 // GPS column
 // [NEW] Core interface of the Column architecture
 // [INTENTION: Will solve GPS precision issues by storing coordinates as numbers with 7 decimal places]
 export interface GpsColumn extends BaseColumn {
-  type: 'gps';
-  values: (GpsCoordinate | null)[];
-  format?: {
-    gpsFormat?: 'DMS' | 'DD';
-    precision?: number;
-  };
-  // Additional properties for merged GPS columns
-  mergeConfig?: GpsMergeConfig;  // Configuration for merging lat/lon columns
-  isMergeColumn?: boolean;       // Whether this is a column that merges lat/lon values
-  // For universal GPS column that selects the best GPS from multiple sources
-  isUniversalGps?: boolean;      // Whether this is the universal GPS column
-  sourceConfig?: GpsSourceConfig; // Configuration for selecting the best GPS
-  // For standalone GPS columns that need to parse DMS or DD
-  parseFromString?: boolean;     // Whether this column needs to parse GPS from string
-  // Source tracking - which column/cell provided each GPS value
-  sourceTracking?: Array<{       // Tracks where each GPS value came from
-    rowIndex: number;            // Row index
-    sourceColumn: string;         // Source column name
-    sourceType: 'lat-lon-pair' | 'gps-column' | 'fallback'; // Type of source
-  }>;
+	type: 'gps';
+	values: (GpsCoordinate | null)[];
+	format?: {
+		gpsFormat?: 'DMS' | 'DD';
+		precision?: number;
+	};
+	// Additional properties for merged GPS columns
+	mergeConfig?: GpsMergeConfig; // Configuration for merging lat/lon columns
+	isMergeColumn?: boolean; // Whether this is a column that merges lat/lon values
+	// For universal GPS column that selects the best GPS from multiple sources
+	isUniversalGps?: boolean; // Whether this is the universal GPS column
+	sourceConfig?: GpsSourceConfig; // Configuration for selecting the best GPS
+	// For standalone GPS columns that need to parse DMS or DD
+	parseFromString?: boolean; // Whether this column needs to parse GPS from string
+	// Source tracking - which column/cell provided each GPS value
+	sourceTracking?: Array<{
+		// Tracks where each GPS value came from
+		rowIndex: number; // Row index
+		sourceColumn: string; // Source column name
+		sourceType: 'lat-lon-pair' | 'gps-column' | 'fallback'; // Type of source
+	}>;
 }
 
 // Union type for all column types
@@ -200,50 +185,47 @@ export type Column = StringColumn | NumberColumn | DateColumn | GpsColumn;
 
 // Map of column names to their types
 export type ColumnTypeMap = {
-  [key: string]: 'string' | 'number' | 'date' | 'gps';
+	[key: string]: 'string' | 'number' | 'date' | 'gps';
 };
 
 // Interface for validated transform data using the Column approach
 // [NEW] Core interface of the Column architecture
 // [INTENTION: Will replace the legacy ValidatedTransformData interface]
 export interface ColumnBasedTransformData {
-  columns: Column[];
+	columns: Column[];
 }
-
 /**
  * Database schema interfaces
  */
-
 // Single database column definition
 export interface DbColumn {
-  name: string;                    // Column name in the database
-  table: string;                   // Table name in the database
-  type: 'string' | 'number' | 'date' | 'gps' | 'boolean' | 'json' | 'array'; // Database column type
-  isRequired: boolean;             // Whether the column is required (NOT NULL)
-  isPrimaryKey?: boolean;          // Whether the column is a primary key
-  isNaturalKey?: boolean;          // Whether this is a natural key (human-readable unique identifier)
-  naturalKeyFor?: string;          // If natural key, the primary key it corresponds to (e.g., land_name → land_id)
-  isForeignKey?: boolean;          // Whether the column is a foreign key
-  referencesTable?: string;        // If foreign key, the referenced table
-  referencesColumn?: string;       // If foreign key, the referenced column
-  defaultValue?: any;              // Default value for the column
-  isInsertPlanted?: boolean;       // Whether this column is inserted into the planting table for user convenience
+	name: string; // Column name in the database
+	table: string; // Table name in the database
+	type: 'string' | 'number' | 'date' | 'gps' | 'boolean' | 'json' | 'array'; // Database column type
+	isRequired: boolean; // Whether the column is required (NOT NULL)
+	isPrimaryKey?: boolean; // Whether the column is a primary key
+	isNaturalKey?: boolean; // Whether this is a natural key (human-readable unique identifier)
+	naturalKeyFor?: string; // If natural key, the primary key it corresponds to (e.g., land_name → land_id)
+	isForeignKey?: boolean; // Whether the column is a foreign key
+	referencesTable?: string; // If foreign key, the referenced table
+	referencesColumn?: string; // If foreign key, the referenced column
+	defaultValue?: any; // Default value for the column
+	isInsertPlanted?: boolean; // Whether this column is inserted into the planting table for user convenience
 }
 
 // Single table definition
 export interface DbTable {
-  name: string;                    // Table name
-  columns: DbColumn[];             // Columns in the table
-  displayName?: string;            // Human-readable name for the table
-  naturalKeys?: string[];          // List of column names that serve as natural keys for this table
-  primaryKey?: string;             // The primary key column name
+	name: string; // Table name
+	columns: DbColumn[]; // Columns in the table
+	displayName?: string; // Human-readable name for the table
+	naturalKeys?: string[]; // List of column names that serve as natural keys for this table
+	primaryKey?: string; // The primary key column name
 }
 
 // Complete database schema definition containing all tables
 export interface DbSchema {
-  tables: DbTable[];               // All tables in the schema (Planting, Land, Crop, etc.)
+	tables: DbTable[]; // All tables in the schema (Planting, Land, Crop, etc.)
 }
-
 
 // Legacy interface for backward compatibility
 // [DELETE] Will be removed once migration to Column architecture is complete

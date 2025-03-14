@@ -21,8 +21,6 @@ export interface ValidatedTransformData {
 export interface Column {
   /** The column name/header from the imported data */
   name: string;
-  
-  /** The data type of the column */
   type: 'string' | 'number' | 'date' | 'gps';
   
   /** The actual data values for this column */

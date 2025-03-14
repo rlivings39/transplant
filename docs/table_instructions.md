@@ -31,53 +31,56 @@ We are implementing a Column-based architecture where each column is treated as 
 ```typescript
 // Core Column interface
 interface Column {
-  name: string;                    // The header/importedColumnName
-  type: 'string' | 'number' | 'date' | 'gps'; // Base data type
-  values: (string | number | null)[]; // The actual data for this column
-  isToggled: boolean;              // Whether this column is toggled on/off
-  isRequired?: boolean;            // Whether this field is required
-  isMapped?: boolean;              // Whether this field is mapped
-  mappedTo?: string;               // What it's mapped to
-  format?: {                       // Formatting information
-    precision?: number;            // For numbers/GPS
-    dateFormat?: string;           // For dates
-    gpsFormat?: 'DMS' | 'DD';      // For GPS coordinates
-  };
-  validation?: {                   // Validation rules
-    min?: number;
-    max?: number;
-    pattern?: string;
-  };
-  
-  // Type coercion tracking
-  typeCoercion?: {
-    isCoerced: boolean;            // Whether the column type was manually changed
-    originalType: string;          // The original detected type
-    coercedTo: string;            // The type it was coerced to
-  };
-  
-  // Cell-level validation state
-  cellValidation?: Array<{        // Validation state for individual cells
-    rowIndex: number;             // Row index in the column
-    isValid: boolean;             // Whether the cell is valid for the column type
-    isGreyedOut: boolean;         // Whether the cell is greyed out (invalid and ignored)
-    failedSelectDetection: boolean; // Whether type detection failed for this cell
-    originalValue: any;           // The original value before processing
-  }>;
+	name: string; // The header/importedColumnName
+	type: 'string' | 'number' | 'date' | 'gps'; // Base data type
+	values: (string | number | null)[]; // The actual data for this column
+	isToggled: boolean; // Whether this column is toggled on/off
+	isRequired?: boolean; // Whether this field is required
+	isMapped?: boolean; // Whether this field is mapped
+	mappedTo?: string; // What it's mapped to
+	format?: {
+		// Formatting information
+		precision?: number; // For numbers/GPS
+		dateFormat?: string; // For dates
+		gpsFormat?: 'DMS' | 'DD'; // For GPS coordinates
+	};
+	validation?: {
+		// Validation rules
+		min?: number;
+		max?: number;
+		pattern?: string;
+	};
+
+	// Type coercion tracking
+	selectTypeCoercion?: {
+		isCoerced: boolean; // Whether the column type was manually changed
+		originalType: string; // The original detected type
+		coercedTo: string; // The type it was coerced to
+	};
+
+	// Cell-level validation state
+	cellValidation?: Array<{
+		// Validation state for individual cells
+		rowIndex: number; // Row index in the column
+		isValid: boolean; // Whether the cell is valid for the column type
+		isGreyedOut: boolean; // Whether the cell is greyed out (invalid and ignored)
+		failedSelectDetection: boolean; // Whether type detection failed for this cell
+		originalValue: any; // The original value before processing
+	}>;
 }
 
 // Type-specific column interfaces
 interface GpsColumn extends BaseColumn {
-  type: 'gps';
-  values: (GpsCoordinate | null)[];
+	type: 'gps';
+	values: (GpsCoordinate | null)[];
 }
 
 // Example GpsCoordinate type
 type GpsCoordinate = {
-  latitude: number;
-  longitude: number;
-  format?: 'DMS' | 'DD';
-  precision?: number;
+	latitude: number;
+	longitude: number;
+	format?: 'DMS' | 'DD';
+	precision?: number;
 };
 ```
 
@@ -98,11 +101,13 @@ The Column architecture includes sophisticated handling of cell-level validation
 Individual cells within a column can have different validation states:
 
 1. **Failed Type Detection**
+
    - When a cell's value doesn't match the column's detected type
    - Example: A column of numbers with one cell containing "NA"
    - These cells are marked with `failedSelectDetection: true`
 
 2. **Greyed Out Cells**
+
    - Cells are greyed out when they fail type detection OR the column is toggled off (or both)
    - These cells are visually greyed out in the UI and ignored during the TransPlant process
    - This is a core state property that determines whether a cell's data is used in processing
@@ -121,17 +126,19 @@ Individual cells within a column can have different validation states:
 The Column architecture tracks when users manually change a column's type:
 
 1. **Type Coercion Tracking**
+
    - `isCoerced: boolean` - Indicates the user changed the type
    - `originalType: string` - The type originally detected
    - `coercedTo: string` - The type the user selected
 
 2. **Use Cases**
+
    - Date/Number Ambiguity: Years between 1850-2040 might be detected as dates but the user may want them as numbers
    - Special Values: Columns with mixed types that should be treated as strings
    - Formatting Control: Preventing automatic formatting of certain data
 
 3. **Implementation**
-   - When a user changes a column's type, the `typeCoercion` object is populated
+   - When a user changes a column's type, the `selectTypeCoercion` object is populated
    - This affects how validation and formatting are applied
    - All cells are re-evaluated against the new type
 

@@ -13,17 +13,49 @@
  */
 
 import type { 
-  BaseColumn, 
+  // BaseColumn, 
   StringColumn, 
   NumberColumn, 
   DateColumn, 
   GpsColumn, 
-  GpsCoordinate 
+  GpsCoordinate, 
+  selectTypeCoercion,
+  CellValidationState
 } from './columnTypes';
+
+
+// I moved this from columnTypes.ts unlike other interfaces because, well, it's the main one so I want to know how it aligns with the class below
+// [NEW] Core interface of the Column architecture
+// [INTENTION: Will replace existing column handling throughout the application]
+export interface BaseColumn {
+	name: string; // The header/importedColumnName
+	isToggled: boolean; // Whether this column is toggled on/off
+	isMapped?: boolean; // Whether this field is mapped to a DB column
+	mappedTo?: string; // DB column this is mapped to (format: "table.column")
+	isFormatted: boolean; // Whether the data has been formatted
+	isMerged?: boolean; // Whether this column is created by merging other columns
+	mergedFrom?: string[]; // If merged, the source columns that were merged
+	isGpsSource?: boolean; // Whether this column is a source for the universal GPS column
+
+	// Type coercion tracking
+	selectTypeCoercion?: selectTypeCoercion; // Information about type coercion if applicable
+
+	// Cell-level validation state
+	cellValidation?: CellValidationState[]; // Validation state for individual cells
+
+	// Database mapping properties (only relevant if isMapped is true)
+	dbMapping?: {
+		table: string; // Target database table
+		column: string; // Target database column
+		isRequired: boolean; // Whether the target column is required
+		isNaturalKey?: boolean; // Whether this maps to a natural key
+		naturalKeyFor?: string; // If natural key, the primary key it corresponds to
+		isInsertPlanted?: boolean; // Whether this is a column from Land/Crop inserted into Planting for convenience
+	};
+}
 
 /**
  * Base column model with shared implementation
- * 
  * [NEW] Core class of the Column architecture
  * [INTENTION: Will replace existing column handling in TransformManager.svelte]
  */

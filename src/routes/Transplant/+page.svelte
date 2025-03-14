@@ -2,7 +2,7 @@
 	import { onMount } from 'svelte';
 	import TransplantDataTable from '$lib/transplantComponents/transplantDataTable.svelte';
 	import TransplantDbTargetTable from '$lib/transplantComponents/transplantDbTargetTable.svelte';
-	import ColumnDebugPanel from '$lib/transplantComponents/ColumnDebugPanel.svelte';
+	import ColumnDebugPanel from '$lib/transplantComponents/ColumnDebugPanelTransplant.svelte';
 	import { schemaService } from '$lib/services/schemaService';
 	import { transformedDataService } from '$lib/stores/transformStore';
 	import type {

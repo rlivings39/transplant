@@ -9,7 +9,7 @@
 	import { transformedDataService } from '$lib/stores/transformStore';
 	import { createEventDispatcher } from 'svelte';
 	import type { Column, StringColumn, NumberColumn, DateColumn, GpsColumn, GpsCoordinate, CellValidationState } from '$lib/types/columnTypes';
-	import ColumnDebugPanel from './ColumnDebugPanel.svelte';
+	import ColumnDebugPanel from './ColumnDebugPanelTransform.svelte';
 
 	// Create event dispatcher
 	const dispatch = createEventDispatcher<{
