@@ -247,11 +247,3 @@ export interface DbSchema {
 
 // Legacy interface for backward compatibility
 // [DELETE] Will be removed once migration to Column architecture is complete
-export interface LegacyValidatedTransformData {
-  records: Array<{
-    [key: string]: string | number | null;
-  }>;
-  columnTypes: {
-    [key: string]: 'string' | 'number' | 'date' | 'gps';
-  };
-}

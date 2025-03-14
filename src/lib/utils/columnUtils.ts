@@ -23,7 +23,6 @@ import type {
   DateColumn, 
   GpsColumn,
   ColumnTypeMap,
-  LegacyValidatedTransformData,
   ColumnBasedTransformData,
   GpsCoordinate,
   CellValidationState,
@@ -400,84 +399,6 @@ export function convertLegacyToColumnBased(legacy: LegacyValidatedTransformData)
   
   console.log('[ColumnUtils] Conversion complete. Created', columns.length, 'columns');
   return { columns };
-}
-
-/**
- * Convert Column-based format to legacy format
- * 
- * [BRIDGE] Temporary function to convert between formats during migration
- * [INTENTION: Will be removed once TransPlant stage directly consumes Column format]
- */
-export function convertColumnBasedToLegacy(columnBased: ColumnBasedTransformData): LegacyValidatedTransformData {
-  const records: Array<{ [key: string]: string | number | null }> = [];
-  const columnTypes: { [key: string]: 'string' | 'number' | 'date' | 'gps' } = {};
-  
-  // Get all column names and types
-  columnBased.columns.forEach(column => {
-    // Only include toggled columns in the output
-    if (column.isToggled) {
-      columnTypes[column.name] = column.type;
-    }
-  });
-  
-  // Determine the number of records
-  const recordCount = Math.max(...columnBased.columns.map(col => {
-    if (col.type === 'string') return (col as StringColumn).values.length;
-    if (col.type === 'number') return (col as NumberColumn).values.length;
-    if (col.type === 'date') return (col as DateColumn).values.length;
-    if (col.type === 'gps') return (col as GpsColumn).values.length;
-    return 0;
-  }));
-  
-  // Create records
-  for (let i = 0; i < recordCount; i++) {
-    const record: { [key: string]: string | number | null } = {};
-    
-    // Add values from each column
-    columnBased.columns.forEach(column => {
-      // Only include toggled columns in the output
-      if (!column.isToggled) return;
-      
-      if (column.type === 'string') {
-        const values = (column as StringColumn).values;
-        record[column.name] = i < values.length ? values[i] : null;
-      } else if (column.type === 'number') {
-        const values = (column as NumberColumn).values;
-        // Ensure proper number formatting with precision
-        if (i < values.length && values[i] !== null) {
-          const numCol = column as NumberColumn;
-          const precision = numCol.format?.precision || 2;
-          // Round to specified precision to avoid floating point issues
-          record[column.name] = Number(values[i]!.toFixed(precision));
-        } else {
-          record[column.name] = null;
-        }
-      } else if (column.type === 'date') {
-        const values = (column as DateColumn).values;
-        record[column.name] = i < values.length ? values[i] : null;
-      } else if (column.type === 'gps') {
-        const values = (column as GpsColumn).values;
-        const gpsValue = i < values.length ? values[i] : null;
-        
-        // Format GPS coordinates with proper precision for legacy format
-        if (gpsValue) {
-          // Ensure 7 decimal places for GPS coordinates
-          const lat = Number(gpsValue.latitude.toFixed(7));
-          const lon = Number(gpsValue.longitude.toFixed(7));
-          
-          // For GPS columns, we want to preserve the numeric type
-          // This is critical for the GPS precision issue
-          record[column.name] = `${lat},${lon}`;
-        } else {
-          record[column.name] = null;
-        }
-      }
-    });
-    
-    records.push(record);
-  }
-  
-  return { records, columnTypes };
 }
 
 /**

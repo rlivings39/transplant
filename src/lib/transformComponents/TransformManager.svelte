@@ -6,10 +6,9 @@
 	import CSVImporter from './CSVImporter.svelte';
 	import DataPreviewTable from './DataPreviewTable.svelte';
 	import type { CsvPreviewEvent } from '$lib/types/transformTypes';
-	import { goto } from '$app/navigation';
 	import { transformedDataService } from '$lib/stores/transformStore';
 	import { createEventDispatcher } from 'svelte';
-	import type { Column, StringColumn, NumberColumn, DateColumn, GpsColumn } from '$lib/types/columnTypes';
+	import type { Column, StringColumn, NumberColumn, DateColumn, GpsColumn, GpsCoordinate, CellValidationState } from '$lib/types/columnTypes';
 	import ColumnDebugPanel from './ColumnDebugPanel.svelte';
 
 	// Create event dispatcher
@@ -44,6 +43,7 @@
 		records: Array<Record<string, any>>;
 		columnTypes: Record<string, string>;
 		toggledColumns?: Record<string, boolean>;
+		columns?: Column[];
 	}
 
 	// Update canTransform whenever data or invalidCells changes
@@ -59,31 +59,178 @@
 		if (data.length === 0) return columns;
 		const headers = Object.keys(data[0]);
 		
+		// Check for potential GPS coordinate pairs (lat/lon)
+		const lowerCaseHeaders = headers.map(h => h.toLowerCase());
+		const hasLatitude = lowerCaseHeaders.some(h => h.includes('lat'));
+		const hasLongitude = lowerCaseHeaders.some(h => h.includes('lon'));
+		const potentialGpsPair = hasLatitude && hasLongitude;
+		
 		// Create a column object for each header
 		for (const header of headers) {
+			const lowerHeader = header.toLowerCase();
+			// Auto-detect GPS columns if not already set
+			if (potentialGpsPair && (lowerHeader.includes('lat') || lowerHeader.includes('lon')) && !columnTypes[header]) {
+				columnTypes[header] = 'gps';
+			}
+			
 			const type = columnTypes[header] || 'string';
 			const isToggled = toggledColumns[header] !== false; // Default to true if not specified
 			
 			// Extract values for this column
-			const values = data.map(row => {
-				const value = row[header];
-				// Convert values based on type
-				if (type === 'number') {
-					return value === null || value === '' ? null : Number(value);
-				} else if (type === 'date') {
-					return value === null || value === '' ? null : value;
-				} else if (type === 'gps') {
-					// For GPS coordinates, ensure they're stored as numbers with proper precision
-					if (value === null || value === '') return null;
-					const numValue = Number(value);
-					return isNaN(numValue) ? value : Number(numValue.toFixed(7));
-				} else {
-					return value === null ? null : String(value);
-				}
-			});
+			let values;
 			
-			// Create cell validation state
-			const cellValidation = data.map((row, index) => {
+			if (type === 'string') {
+				// String column
+				values = data.map(row => {
+					const value = row[header];
+					return value === null || value === undefined ? null : String(value);
+				});
+				
+				// Create the string column
+				const stringColumn: StringColumn = {
+					name: header,
+					type: 'string',
+					isToggled,
+					isFormatted: true,
+					values,
+					cellValidation: createCellValidation(header, isToggled)
+				};
+				
+				columns.push(stringColumn);
+				
+			} else if (type === 'number') {
+				// Number column
+				values = data.map(row => {
+					const value = row[header];
+					if (value === null || value === undefined || value === '') return null;
+					const numValue = Number(value);
+					return isNaN(numValue) ? null : numValue;
+				});
+				
+				// Create the number column with format initialized
+				const numberColumn: NumberColumn = {
+					name: header,
+					type: 'number',
+					isToggled,
+					isFormatted: true,
+					values,
+					cellValidation: createCellValidation(header, isToggled),
+					format: { precision: 2 }
+				};
+				
+				// Check if this is a coordinate column
+				if (lowerHeader.includes('lat')) {
+					numberColumn.coordinateType = 'latitude';
+					numberColumn.coordinatePrecision = 7;
+					// Format is guaranteed to exist since we initialized it above
+					numberColumn.format!.precision = 7;
+				} else if (lowerHeader.includes('lon')) {
+					numberColumn.coordinateType = 'longitude';
+					numberColumn.coordinatePrecision = 7;
+					// Format is guaranteed to exist since we initialized it above
+					numberColumn.format!.precision = 7;
+				}
+				
+				columns.push(numberColumn);
+				
+			} else if (type === 'date') {
+				// Date column
+				values = data.map(row => {
+					const value = row[header];
+					return value === null || value === undefined || value === '' ? null : String(value);
+				});
+				
+				// Create the date column
+				const dateColumn: DateColumn = {
+					name: header,
+					type: 'date',
+					isToggled,
+					isFormatted: true,
+					values,
+					cellValidation: createCellValidation(header, isToggled),
+					format: { dateFormat: 'YYYY-MM-DD' }
+				};
+				
+				columns.push(dateColumn);
+				
+			} else if (type === 'gps') {
+				// GPS column
+				if (lowerHeader.includes('lat') || lowerHeader.includes('lon')) {
+					// This is a lat/lon component, handle it as a number
+					values = data.map(row => {
+						const value = row[header];
+						if (value === null || value === undefined || value === '') return null;
+						const numValue = Number(value);
+						return isNaN(numValue) ? null : numValue;
+					});
+					
+					// Create the number column for lat/lon
+					const numberColumn: NumberColumn = {
+						name: header,
+						type: 'number',
+						isToggled,
+						isFormatted: true,
+						values,
+						cellValidation: createCellValidation(header, isToggled),
+						format: { precision: 7 },
+						coordinateType: lowerHeader.includes('lat') ? 'latitude' : 'longitude',
+						coordinatePrecision: 7
+					};
+					
+					columns.push(numberColumn);
+				} else {
+					// Full GPS column with lat/lon pairs
+					values = data.map(row => {
+						const value = row[header];
+						if (value === null || value === undefined || value === '') return null;
+						
+						// Check if it's already a GPS object
+						if (typeof value === 'object' && value !== null && 
+						    'latitude' in value && 'longitude' in value) {
+							// Type assertion to help TypeScript understand this is a GpsCoordinate
+							const gpsValue = value as { latitude: number | string, longitude: number | string };
+							return {
+								latitude: Number(Number(gpsValue.latitude).toFixed(7)),
+								longitude: Number(Number(gpsValue.longitude).toFixed(7))
+							};
+						}
+						
+						// Check if it's a string with comma-separated coordinates
+						if (typeof value === 'string' && value.includes(',')) {
+							const [lat, lon] = value.split(',').map(v => Number(v.trim()));
+							if (!isNaN(lat) && !isNaN(lon)) {
+								return {
+									latitude: Number(lat.toFixed(7)),
+									longitude: Number(lon.toFixed(7))
+								};
+							}
+						}
+						
+						return null; // Invalid GPS format
+					});
+					
+					// Create the GPS column
+					const gpsColumn: GpsColumn = {
+						name: header,
+						type: 'gps',
+						isToggled,
+						isFormatted: true,
+						values,
+						cellValidation: createCellValidation(header, isToggled),
+						format: {
+							gpsFormat: 'DD',
+							precision: 7
+						}
+					};
+					
+					columns.push(gpsColumn);
+				}
+			}
+		}
+		
+		// Create a helper function for cell validation
+		function createCellValidation(header: string, isToggled: boolean): CellValidationState[] {
+			return data.map((row, index) => {
 				const isValid = !invalidCells[header]?.has(index);
 				return {
 					rowIndex: index,
@@ -93,28 +240,6 @@
 					originalValue: row[header]
 				};
 			});
-			
-			// Create the base column object
-			const baseColumn: any = {
-				name: header,
-				type,
-				isToggled,
-				isFormatted: true,
-				values,
-				cellValidation
-			};
-			
-			// Add type-specific properties
-			if (type === 'number') {
-				baseColumn.precision = 2;
-			} else if (type === 'date') {
-				baseColumn.dateFormat = 'YYYY-MM-DD';
-			} else if (type === 'gps') {
-				baseColumn.gpsFormat = 'decimal';
-				baseColumn.precision = 7;
-			}
-			
-			columns.push(baseColumn as Column);
 		}
 		
 		return columns;
@@ -258,11 +383,15 @@
 		invalidCells = newInvalidCells;
 		transformedData = newTransformedData;
 
+		// Create Column objects for the transformed data
+		const columns = convertToColumnFormat();
+
 		// Dispatch the transformed data event with the current state
 		dispatch('dataTransformed', {
 			records: transformedData,
 			columnTypes: columnTypes,
-			toggledColumns: toggledColumns
+			toggledColumns: toggledColumns,
+			columns: columns // Include the Column objects
 		});
 
 		// Reset processing flag
@@ -375,44 +504,121 @@
 				// Get column types from our existing types or infer from content
 				const domColumnTypes: ColumnTypeMap = {};
 
-				// Debug the column names
-				console.log('DOM debug: Column names being processed:', headers);
+				// Extract the actual column types from the DOM
+				console.log('COLUMN TYPES: Processing headers from DOM:', headers);
 
-				// First, let's log the existing column types for reference
-				console.log('DOM debug: Existing column types:', columnTypes);
-
-				headers.forEach((header) => {
-					// Use existing column type if available
-					if (columnTypes[header]) {
-						domColumnTypes[header] = columnTypes[header];
-					}
-					// Otherwise infer from header name
-					else {
-						// Special case for the first GPS column
-						if (header === 'GPS') {
-							domColumnTypes[header] = 'gps';
-						}
-						// Special case for GPS DD column
-						else if (header.includes('GPS DD')) {
-							domColumnTypes[header] = 'gps';
-						}
-						// Special case for GPS DMS column
-						else if (header.includes('GPS DMS')) {
-							domColumnTypes[header] = 'gps';
-						}
-						// Special case for GPS UTM column
-						else if (header.includes('GPS UTM')) {
-							domColumnTypes[header] = 'gps';
-						}
-						// Special case for other columns - use string as default
-						else {
-							domColumnTypes[header] = 'string';
-						}
+				// Look for type indicators in the DOM
+				const typeSelectors = table.querySelectorAll('.type-selector');
+				const typeMap: Record<string, string> = {};
+				
+				// First try to extract types from the type-selector elements in the DOM
+				Array.from(typeSelectors).forEach((selector) => {
+					const headerElement = selector.closest('th');
+					const header = headerElement?.textContent?.trim() || '';
+					const selectedElement = selector.querySelector('.selected');
+					const selectedType = selectedElement?.getAttribute('data-type') || '';
+					
+					if (header && selectedType) {
+						typeMap[header] = selectedType;
+						console.log(`COLUMN TYPES: Found type selector for ${header}: ${selectedType}`);
+					} else {
+						console.warn(`COLUMN TYPES: Missing type information for header: ${header}, selected element:`, selectedElement);
 					}
 				});
 
-				// Log the final column types
-				console.log('DOM debug: Final column types:', domColumnTypes);
+				// Check if all type selectors have the same type (which would be suspicious)
+				const typeValues = Object.values(typeMap);
+				const uniqueTypes = new Set(typeValues);
+				
+				if (uniqueTypes.size === 1 && typeValues.length > 1) {
+					console.error(
+						`COLUMN TYPES: WARNING - All ${typeValues.length} columns have the same type: ${typeValues[0]}. ` +
+						`This is likely an error. Will attempt to infer types from header names instead.`
+					);
+					
+					// If all columns have the same type and it's suspicious, clear the typeMap
+					// and we'll rely on header name inference instead
+					Object.keys(typeMap).forEach(key => {
+						delete typeMap[key];
+					});
+				}
+				
+				// Now process each header
+				headers.forEach((header) => {
+					// First check if we found a type in the DOM
+					if (typeMap[header]) {
+						// Validate the type is one of our supported types
+						const validType = ['string', 'number', 'date', 'gps'].includes(typeMap[header]) 
+							? typeMap[header] as 'string' | 'number' | 'date' | 'gps'
+							: 'string' as 'string';
+						
+						domColumnTypes[header] = validType;
+						console.log(`COLUMN TYPES: Using DOM type for ${header}: ${domColumnTypes[header]}`);
+					}
+					// Then check if we have a type in our columnTypes state
+					else if (columnTypes[header]) {
+						// Validate the type is one of our supported types
+						const validType = ['string', 'number', 'date', 'gps'].includes(columnTypes[header]) 
+							? columnTypes[header] as 'string' | 'number' | 'date' | 'gps'
+							: 'string' as 'string';
+							
+						domColumnTypes[header] = validType;
+						console.log(`COLUMN TYPES: Using stored type for ${header}: ${domColumnTypes[header]}`);
+					}
+					// Otherwise infer from header name
+					else {
+						const lowerHeader = header.toLowerCase();
+						// Check for GPS indicators first (most specific)
+						if (header === 'GPS' || 
+						    lowerHeader.includes('gps') || 
+						    lowerHeader === 'lat' || 
+						    lowerHeader === 'lon' ||
+						    lowerHeader === 'latitude' || 
+						    lowerHeader === 'longitude') {
+							// All GPS-related types should be 'gps' to match the ColumnType type
+							domColumnTypes[header] = 'gps' as 'gps';
+							console.log(`COLUMN TYPES: Set GPS type for ${header} (includes lat/lon)`);
+						}
+						// Check for date indicators in header name
+						else if (lowerHeader.includes('date') || 
+						         lowerHeader.includes('time') || 
+						         lowerHeader === 'when' || 
+						         lowerHeader.includes('year')) {
+							domColumnTypes[header] = 'date' as 'date';
+							console.log(`COLUMN TYPES: Inferred date type for ${header}`);
+						}
+						// Check for number indicators
+						else if (lowerHeader.includes('count') || 
+						         lowerHeader.includes('number') || 
+						         lowerHeader.includes('amount') || 
+						         lowerHeader.includes('/ha')) {
+							domColumnTypes[header] = 'number' as 'number';
+							console.log(`COLUMN TYPES: Inferred number type for ${header}`);
+						}
+						// Default to string for everything else
+						else {
+							domColumnTypes[header] = 'string' as 'string';
+							console.log(`COLUMN TYPES: Defaulting to string type for ${header}`);
+						}
+					}
+				});
+				
+				// Verify we don't have all the same type (which would be suspicious)
+				const finalTypeValues = Object.values(domColumnTypes);
+				const finalUniqueTypes = new Set(finalTypeValues);
+				
+				if (finalUniqueTypes.size === 1 && finalTypeValues.length > 1) {
+					console.warn(
+						`COLUMN TYPES: After inference, all ${finalTypeValues.length} columns still have the same type: ${finalTypeValues[0]}. ` +
+						`This might be correct if all columns are truly the same type, but is unusual.`
+					);
+				}
+				
+				// Add additional debug logging to help diagnose issues
+				console.log('COLUMN TYPES: DOM column types before export:', JSON.stringify(domColumnTypes, null, 2));
+
+				// Log the final column types with a distinct prefix for easy filtering
+				console.log('COLUMN TYPES: Final types for export:', domColumnTypes);
 
 				// Get all visible rows
 				const bodyRows = table.querySelectorAll('tbody tr');
@@ -424,7 +630,7 @@
 				console.log(`DOM debug: Found ${bodyRows.length} rows in the table`);
 
 				// Extract data from each row
-				const records = [];
+				const records: Array<Record<string, string | number | null>> = [];
 				bodyRows.forEach((row) => {
 					// Skip hidden rows
 					if (row.classList.contains('hidden') || window.getComputedStyle(row).display === 'none') {
@@ -541,7 +747,11 @@
 									}
 								} else if (typeof value === 'number') {
 									// Already a number, just ensure precision
-									filteredRow[header] = Number(value.toFixed(7));
+									// Use type assertion to ensure TypeScript knows value is a number
+									const numValue = value as number;
+									filteredRow[header] = Number(numValue.toFixed(7));
+								} else if (value === null || value === undefined) {
+									filteredRow[header] = null;
 								} else {
 									filteredRow[header] = value;
 								}
@@ -624,34 +834,36 @@
 			columnTypes: domData.columnTypes
 		};
 
-		console.log('Exported data from DOM:', Object.keys(domData.columnTypes).length, 'columns');
+		console.log('COLUMN TYPES: Exporting data with', Object.keys(domData.columnTypes).length, 'columns');
+		console.log('COLUMN TYPES: Export column types:', domData.columnTypes);
 		
 		// Log a sample record for debugging
-		console.log('Sample DOM record:', domData.records.length > 0 ? domData.records[0] : 'No records');
+		if (domData.records.length > 0) {
+			console.log('COLUMN TYPES: Sample record keys:', Object.keys(domData.records[0]));
+		}
 
-		// Log the ACTUAL column data that we have in Transform before sending to TransPlant
-		console.log('[TRANSFORM DEBUG] Actual Column Data Before Export:', {
-			columns: columnsForDebug,
-			sampleColumn: columnsForDebug[0] || null
-		});
-
-		// Create a column-based data structure to send to TransPlant
-		// This follows the Column-based design pattern where each column is a cohesive entity
-		const columnBasedData = {
-			columns: columnsForDebug,
-			// Include the legacy format data for backward compatibility
-			records: exportData.records,
-			columnTypes: exportData.columnTypes
-		};
-
-		// Log what we're actually sending to TransPlant
-		console.log('[TRANSFORM DEBUG] Sending Column-Based Data to TransPlant:', columnBasedData);
-		console.log('[TRANSFORM DEBUG] Sample Column Structure:', columnsForDebug[0]);
-
-		// Store the column-based data in the service for TransPlant to access
-		transformedDataService.set(columnBasedData);
+		// Add additional validation before storing in the service
+		// This ensures we're not accidentally setting all types to the same value
+		const typeValues = Object.values(exportData.columnTypes);
+		const uniqueTypes = new Set(typeValues);
 		
-		return columnBasedData;
+		if (uniqueTypes.size === 1 && typeValues.length > 1) {
+			// If all columns have the same type and there's more than one column, this is suspicious
+			console.error(
+				`COLUMN TYPES: WARNING - All ${typeValues.length} columns have the same type: ${typeValues[0]}. ` +
+				`This is likely an error. Check the type extraction logic.`
+			);
+		}
+		
+		// Log the final export data with types for debugging
+		console.log('COLUMN TYPES: Final export data:', {
+			recordCount: exportData.records.length,
+			columnTypes: exportData.columnTypes
+		});
+		
+		// Store in the service for TransPlant to access
+		transformedDataService.set(exportData);
+		return exportData;
 	}
 
 	// Set up event listener for export-to-transplant event
@@ -696,7 +908,7 @@
 	<!-- Toggle Debug Panel Button -->
 	{#if data.length > 0}
 		<div class="debug-panel-toggle">
-			<button on:click={() => {
+			<button onclick={() => {
 				showDebugPanel = !showDebugPanel;
 				if (showDebugPanel) {
 					columnsForDebug = convertToColumnFormat();
