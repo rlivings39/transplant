@@ -148,8 +148,9 @@
 					columnTypes: rawData.columnTypes
 				});
 				
-				// Get the columns and filter out any that aren't toggled
-				columns = columnBasedData.columns.filter(col => col.isToggled);
+				// Get all columns without filtering by isToggled status
+				columns = columnBasedData.columns;
+				console.log('[TransplantDataTable] Showing all columns:', columns.length);
 				
 				// Update headers based on column names
 				headers = columns.map(col => col.name);

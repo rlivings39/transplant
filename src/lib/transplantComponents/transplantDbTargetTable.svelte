@@ -99,8 +99,6 @@
 			const unsubscribeSchemaData = schemaService.schemaData.subscribe((data) => {
 				if (data) {
 					schemaData = data;
-					console.log('Schema data loaded:', JSON.stringify(data, null, 2));
-					console.log('Tables with required fields:');
 					Object.entries(data).forEach(([table, tableData]) => {
 						if (tableData.requiredFields && tableData.requiredFields.length > 0) {
 							console.log(`Table ${table} has required fields:`, tableData.requiredFields);

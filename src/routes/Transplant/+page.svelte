@@ -139,9 +139,17 @@
 
 	// Initialize schema service on component mount
 	onMount(async () => {
-		// Check if we have transform data
-		const transformData = transformedDataService.get() || transformedDataService.getData();
+		// Check if we have transform data - simplify to just use get()
+		const transformData = transformedDataService.get();
 		hasTransformData = !!transformData;
+		console.log('[TransPlant Debug] Has transform data:', hasTransformData);
+		
+		// Log the raw transformed data directly to console for debugging
+		console.log('[TransPlant Debug] Raw Transform Data:', transformData);
+		
+		// Also log the raw data from the store for comparison
+		const storeData = transformedDataService.get();
+		console.log('[TransPlant Debug] Raw Store Data:', storeData);
 
 		// If we have transform data, check if it's already in Column-based format
 		if (transformData) {
@@ -157,12 +165,50 @@
 
 				logger.debug('Data is already in Column-based format');
 				logger.debug('Processed columns:', columnsForDebug);
+			} else if ('columns' in transformData && 'records' in transformData && 'columnTypes' in transformData) {
+				// It has both column-based and legacy format data
+				console.log('[TransPlant Debug] Found both column-based and legacy data:', {
+					columnsCount: transformData.columns?.length || 0,
+					recordsCount: transformData.records?.length || 0,
+					columnTypeCount: Object.keys(transformData.columnTypes || {}).length
+				});
+
+				// Directly use the column-based data without conversion
+				columnBasedData = {
+					columns: transformData.columns
+				};
+
+				// Process columns to ensure proper data types
+				columnBasedData.columns = processColumns(columnBasedData.columns);
+
+				// Set columns for debug panel
+				columnsForDebug = columnBasedData.columns;
+
+				// Log the column-based data we're using
+				console.log('[TransPlant Debug] Using Column-Based Data Directly:', {
+					columnsCount: columnBasedData.columns?.length || 0,
+					sampleColumn: columnBasedData.columns?.[0] || null
+				});
 			} else if ('records' in transformData && 'columnTypes' in transformData) {
-				// It's in legacy format, convert it
+				// It's in legacy format only, convert it
+				// Log detailed information about the legacy data before conversion
+				console.log('[TransPlant Debug] Legacy Data Structure Only:', {
+					recordsCount: transformData.records?.length || 0,
+					columnTypeCount: Object.keys(transformData.columnTypes || {}).length,
+					columnTypes: transformData.columnTypes,
+					sampleRecord: transformData.records?.[0] || null
+				});
+				
 				try {
 					columnBasedData = convertLegacyToColumnBased({
 						records: transformData.records,
 						columnTypes: transformData.columnTypes
+					});
+
+					// Log the raw column-based data after conversion
+					console.log('[TransPlant Debug] Raw Column-Based Data After Conversion:', {
+						columnsCount: columnBasedData.columns?.length || 0,
+						sampleColumn: columnBasedData.columns?.[0] || null
 					});
 
 					// Process columns to ensure proper data types
@@ -170,6 +216,13 @@
 
 					// Set columns for debug panel
 					columnsForDebug = columnBasedData.columns;
+
+					// Log the processed column data
+					console.log('[TransPlant Debug] Processed Column Data:', {
+						columnsCount: columnsForDebug?.length || 0,
+						columnTypes: columnsForDebug?.map(col => ({ name: col.name, type: col.type })) || [],
+						sampleColumn: columnsForDebug?.[0] || null
+					});
 
 					logger.debug('Successfully converted legacy data to Column-based format');
 					logger.debug('Processed columns:', columnsForDebug);
@@ -202,6 +255,8 @@
 </script>
 
 <div class="actions">
+	
+	
 	<p class="description">
 		Drag'n'drop columns to database tables below. Just try! We can fix it later 😎️
 	</p>

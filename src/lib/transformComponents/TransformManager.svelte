@@ -629,9 +629,29 @@
 		// Log a sample record for debugging
 		console.log('Sample DOM record:', domData.records.length > 0 ? domData.records[0] : 'No records');
 
-		// Store in the service for TransPlant to access
-		transformedDataService.set(exportData);
-		return exportData;
+		// Log the ACTUAL column data that we have in Transform before sending to TransPlant
+		console.log('[TRANSFORM DEBUG] Actual Column Data Before Export:', {
+			columns: columnsForDebug,
+			sampleColumn: columnsForDebug[0] || null
+		});
+
+		// Create a column-based data structure to send to TransPlant
+		// This follows the Column-based design pattern where each column is a cohesive entity
+		const columnBasedData = {
+			columns: columnsForDebug,
+			// Include the legacy format data for backward compatibility
+			records: exportData.records,
+			columnTypes: exportData.columnTypes
+		};
+
+		// Log what we're actually sending to TransPlant
+		console.log('[TRANSFORM DEBUG] Sending Column-Based Data to TransPlant:', columnBasedData);
+		console.log('[TRANSFORM DEBUG] Sample Column Structure:', columnsForDebug[0]);
+
+		// Store the column-based data in the service for TransPlant to access
+		transformedDataService.set(columnBasedData);
+		
+		return columnBasedData;
 	}
 
 	// Set up event listener for export-to-transplant event
