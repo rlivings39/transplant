@@ -77,7 +77,7 @@
 		<div class="column-details">
 			<!-- Basic Properties -->
 			<div class="property-section">
-				<button type="button" class="section-header" on:click={() => toggleSection('basic')}>
+				<button type="button" class="section-header" onclick={() => toggleSection('basic')}>
 					<span class="toggle-icon">{expandedSections.basic ? '▼' : '►'}</span>
 					<h5>Basic Properties</h5>
 				</button>
@@ -134,7 +134,7 @@
 
 			<!-- Values -->
 			<div class="property-section">
-				<button type="button" class="section-header" on:click={() => toggleSection('values')}>
+				<button type="button" class="section-header" onclick={() => toggleSection('values')}>
 					<span class="toggle-icon">{expandedSections.values ? '▼' : '►'}</span>
 					<h5>Values ({selectedColumn.values.length})</h5>
 				</button>
@@ -183,7 +183,7 @@
 			<!-- Format -->
 			{#if selectedColumn.type === 'number' || selectedColumn.type === 'date' || selectedColumn.type === 'gps'}
 				<div class="property-section">
-					<button type="button" class="section-header" on:click={() => toggleSection('format')}>
+					<button type="button" class="section-header" onclick={() => toggleSection('format')}>
 						<span class="toggle-icon">{expandedSections.format ? '▼' : '►'}</span>
 						<h5>Format</h5>
 					</button>
@@ -231,7 +231,7 @@
 					<button
 						type="button"
 						class="section-header"
-						on:click={() => toggleSection('selectTypeCoercion')}
+						onclick={() => toggleSection('selectTypeCoercion')}
 					>
 						<span class="toggle-icon">{expandedSections.selectTypeCoercion ? '▼' : '►'}</span>
 						<h5>Type Coercion</h5>

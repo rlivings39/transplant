@@ -3,8 +3,14 @@
 	import { transformedDataService } from '$lib/stores/transformStore';
 	import { createEventDispatcher } from 'svelte';
 	import { setupColumnDrag, addDragDropStyles } from '$lib/utils/dragColumnUtils';
-	import { convertLegacyToColumnBased } from '$lib/utils/columnUtils';
-	import type { Column, ColumnBasedTransformData, GpsColumn, NumberColumn, DateColumn, StringColumn } from '$lib/types/columnTypes';
+	import { createColumn } from '$lib/utils/columnUtils';
+	import type {
+		Column,
+		GpsColumn,
+		NumberColumn,
+		DateColumn,
+		StringColumn
+	} from '$lib/types/columnTypes';
 
 	// Debug flag to control logging
 	const DEBUG = true;
@@ -33,9 +39,8 @@
 	let headers: string[] = [];
 	let draggedHeader: string | null = null;
 	let dragOverHeader: string | null = null;
-	
+
 	// Column architecture state
-	let columnBasedData: ColumnBasedTransformData | null = null;
 	let columns: Column[] = [];
 
 	// Event dispatcher
@@ -77,7 +82,12 @@
 		switch (column.type) {
 			case 'gps':
 				const gpsColumn = column as GpsColumn;
-				if (typeof value === 'object' && value !== null && 'latitude' in value && 'longitude' in value) {
+				if (
+					typeof value === 'object' &&
+					value !== null &&
+					'latitude' in value &&
+					'longitude' in value
+				) {
 					const lat = Number(value.latitude);
 					const lon = Number(value.longitude);
 					if (!isNaN(lat) && !isNaN(lon)) {
@@ -87,7 +97,7 @@
 					}
 				}
 				return String(value);
-			
+
 			case 'number':
 				const numberColumn = column as NumberColumn;
 				if (typeof value === 'number') {
@@ -96,17 +106,17 @@
 					return Number(value.toFixed(precision)).toString();
 				}
 				return String(value);
-			
+
 			case 'date':
 				const dateColumn = column as DateColumn;
 				if (value instanceof Date && !isNaN(value.getTime())) {
 					return value.toISOString().split('T')[0];
 				}
 				return String(value);
-			
+
 			case 'string':
 				return String(value);
-			
+
 			default:
 				return String(value);
 		}
@@ -114,13 +124,13 @@
 
 	// Helper function to get column by name
 	function getColumnByName(name: string): Column | undefined {
-		return columns.find(col => col.name === name);
+		return columns.find((col) => col.name === name);
 	}
-	
+
 	// Helper function to get column type
 	function getColumnType(header: string): string {
 		const column = getColumnByName(header);
-		return column ? column.type : (columnTypes[header] || 'string');
+		return column ? column.type : columnTypes[header] || 'string';
 	}
 
 	// Load data on component mount
@@ -140,43 +150,22 @@
 			// Store the legacy data for reference
 			records = rawData.records;
 			columnTypes = rawData.columnTypes;
-			
-			// Convert legacy data to Column-based format
-			try {
-				columnBasedData = convertLegacyToColumnBased({
-					records: rawData.records,
-					columnTypes: rawData.columnTypes
-				});
-				
-				// Get all columns without filtering by isToggled status
-				columns = columnBasedData.columns;
-				console.log('[TransplantDataTable] Showing all columns:', columns.length);
-				
-				// Update headers based on column names
-				headers = columns.map(col => col.name);
-				
-				logger.debug('Data successfully converted to Column-based format');
-				logger.debug('Column-based data:', columnBasedData);
-			} catch (error) {
-				logger.error('Error converting to Column-based format:', error);
-				
-				// Fallback to legacy data if conversion fails
-				headers = Object.keys(records[0]);
-				logger.debug('Falling back to legacy data format');
-			}
 
-			// Log data summary information
-			if (DEBUG) {
-				logger.debug('===== TRANSPLANT DATA VERIFICATION =====');
-				logger.debug(`Total Records: ${records.length}`);
-				logger.debug(`Records Displayed: ${Math.min(4, records.length)}`);
-				logger.debug(`Total Columns: ${columns.length}`);
-				logger.debug('Columns:', columns);
-				logger.debug('=======================================');
-			} else {
-				// Minimal logging when not in debug mode
-				logger.info(`Loaded ${records.length} records with ${columns.length} columns`);
-			}
+			// Create columns directly using createColumn
+			columns = Object.keys(rawData.columnTypes).map((name) => {
+				const type = rawData.columnTypes[name];
+				const values = rawData.records.map((record) => record[name]);
+				const column = createColumn(name, type, values);
+
+				// Set column properties
+				column.isToggled = false; // Default to unselected
+				column.isFormatted = type === 'gps' || type === 'number'; // Auto-format GPS and numbers
+
+				return column;
+			});
+
+			headers = columns.map((col) => col.name);
+			logger.debug('Created columns:', columns);
 		} else {
 			logger.error('No data found. Please go to transform page first.');
 		}
@@ -209,10 +198,7 @@
 							style={mappedColumns.includes(column.name) ? 'opacity: 0.5;' : ''}
 						>
 							<div class="header-controls">
-								<span
-									class="type-pseudo-select"
-									data-type={formatColumnType(column.type)}
-								>
+								<span class="type-pseudo-select" data-type={formatColumnType(column.type)}>
 									{formatColumnType(column.type)}
 								</span>
 								<span class="header-text">{getCleanColumnName(column.name)}</span>
@@ -231,7 +217,9 @@
 									setupColumnDrag(e, column.name, column.type, records, formatColumnType)}
 								ondragend={() => (draggedHeader = null)}
 								style={mappedColumns.includes(column.name) ? 'color: var(--color-light-grey)' : ''}
-								class={column.cellValidation && column.cellValidation[rowIndex]?.isValid === false ? 'invalid-cell' : ''}
+								class={column.cellValidation && column.cellValidation[rowIndex]?.isValid === false
+									? 'invalid-cell'
+									: ''}
 							>
 								{formatCellValue(column, rowIndex)}
 							</td>
@@ -259,7 +247,7 @@
 	[draggable='true']:active {
 		cursor: grabbing;
 	}
-	
+
 	/* Style for invalid cells */
 	.invalid-cell {
 		background-color: rgba(255, 0, 0, 0.1);

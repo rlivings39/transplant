@@ -1,6 +1,7 @@
 // import { Species } from './schema';
 import { organizations } from './../server/db/schema';
 import type { Column } from './Column';
+import type { BaseColumn } from './Column';
 /**
  * Column-based architecture for TransPlant
  *
@@ -21,7 +22,6 @@ import type { Column } from './Column';
  * [INTENTION: X] - Future implementation plans
  */
 
-
 // Known table names in our system
 export enum TableName {
 	Planting = 'planting',
@@ -36,15 +36,14 @@ export enum TableName {
  * Column interfaces
  */
 
-
 export interface StringColumn extends Column {
-  type: 'string';
-  // Add string-specific properties
+	type: 'string';
+	// Add string-specific properties
 }
 
 export interface NumberColumn extends Column {
-  type: 'number';
-  // Add number-specific properties
+	type: 'number';
+	// Add number-specific properties
 }
 
 // Cell validation state - tracks validation status for individual cells in a column
@@ -66,7 +65,6 @@ export interface selectTypeCoercion {
 	coercedTo: string; // The type it was coerced to
 	timestamp: number; // When the coercion happened
 }
-
 
 // String column
 // [NEW] Core interface of the Column architecture
@@ -178,10 +176,6 @@ export interface GpsColumn extends BaseColumn {
 		sourceType: 'lat-lon-pair' | 'gps-column' | 'fallback'; // Type of source
 	}>;
 }
-
-// Union type for all column types
-// [NEW] Core type of the Column architecture
-export type Column = StringColumn | NumberColumn | DateColumn | GpsColumn;
 
 // Map of column names to their types
 export type ColumnTypeMap = {

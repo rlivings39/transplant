@@ -80,7 +80,7 @@
 	<div class="transform-header">
 		<h1>Transform Data</h1>
 		{#if csvDataLoaded}
-			<button on:click={sendToTransplant}> Send to TransPlant </button>
+			<button onclick={sendToTransplant}> Send to TransPlant </button>
 		{/if}
 	</div>
 	<TransformManager
