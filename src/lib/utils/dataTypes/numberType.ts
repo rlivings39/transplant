@@ -11,11 +11,11 @@ function removeCommas(value: string): string {
 	return value?.trim() ? value.replace(/,/g, '') : value;
 }
 
-export function validate(value: string): boolean {
-	if (!value?.trim()) return true;
-	const cleanValue = removeCommas(value);
-	const numberRegex = /^-?\d*\.?\d+$/;
-	return numberRegex.test(cleanValue.trim());
+export function numberValidate(value: string): boolean {
+    if (!value?.trim()) return true;
+    const cleanValue = removeCommas(value);
+    const numberRegex = /^-?\d*\.?\d+$/;
+    return numberRegex.test(cleanValue.trim());
 }
 
 export function format(value: string): string {
@@ -42,7 +42,7 @@ export function detectType(header: string, samples: string[]): NumberType | null
 	}
 
 	const allValid = samples.every((sample) => {
-		return validate(sample);
+		return numberValidate(sample);
 	});
 
 	if (allValid) {
@@ -57,7 +57,7 @@ export function validateAndFormat(header: string, value: string): ValidationResu
 		return { type: null, isValid: true, formattedValue: value };
 	}
 
-	const isValid = validate(value);
+	const isValid = numberValidate(value);
 	return {
 		type: isValid ? 'number' : null,
 		isValid,

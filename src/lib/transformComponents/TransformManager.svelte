@@ -114,8 +114,8 @@
 				values = data.map((row) => {
 					const value = row[header];
 					if (value === null || value === undefined || value === '') return null;
-					const numValue = Number(value);
-					return isNaN(numValue) ? null : numValue;
+					const strValue = String(value);
+					return numberType.numberValidate(strValue) ? Number(strValue) : null;
 				});
 
 				// Create the number column with format initialized
