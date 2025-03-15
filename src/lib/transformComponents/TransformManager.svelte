@@ -4,7 +4,6 @@
 	import * as gpsType from '$lib/utils/dataTypes/gpsType';
 	import { nonBlankValidSampleCount } from '$lib/utils/dataTypes/validationSampleCount';
 	import CSVImporter from './CSVImporter.svelte';
-	import transformDataTable from './transformDataTable.svelte';
 	import type { CsvPreviewEvent } from '$lib/types/transformTypes';
 	import { transformedDataService } from '$lib/stores/transformStore';
 	import { createEventDispatcher } from 'svelte';
@@ -70,21 +69,21 @@
 
 		// Check for potential GPS coordinate pairs (lat/lon)
 		const lowerCaseHeaders = headers.map((h) => h.toLowerCase());
-		const hasLatitude = lowerCaseHeaders.some((h) => h.includes('lat'));
-		const hasLongitude = lowerCaseHeaders.some((h) => h.includes('lon'));
-		const potentialGpsPair = hasLatitude && hasLongitude;
+		// const hasLatitude = lowerCaseHeaders.some((h) => h.includes('lat'));
+		// const hasLongitude = lowerCaseHeaders.some((h) => h.includes('lon'));
+		// const potentialGpsPair = hasLatitude && hasLongitude;
 
 		// Create a column object for each header
 		for (const header of headers) {
 			const lowerHeader = header.toLowerCase();
 			// Auto-detect GPS columns if not already set
-			if (
-				potentialGpsPair &&
-				(lowerHeader.includes('lat') || lowerHeader.includes('lon')) &&
-				!columnTypes[header]
-			) {
-				columnTypes[header] = 'gps';
-			}
+			// if (
+			// 	potentialGpsPair &&
+			// 	(lowerHeader.includes('lat') || lowerHeader.includes('lon')) &&
+			// 	!columnTypes[header]
+			// ) {
+			// 	columnTypes[header] = 'gps';
+			// }
 
 			const type = columnTypes[header] || 'string';
 			const isToggled = toggledColumns[header] !== false; // Default to true if not specified
