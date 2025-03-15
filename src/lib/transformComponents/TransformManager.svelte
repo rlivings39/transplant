@@ -839,11 +839,11 @@
 				columnTypes: filteredColumnTypes
 			};
 
-			console.log(
-				'Exported data from transformed data:',
-				Object.keys(filteredColumnTypes).length,
-				'columns'
-			);
+			// console.log(
+			// 	'Exported data from transformed data:',
+			// 	Object.keys(filteredColumnTypes).length,
+			// 	'columns'
+			// );
 
 			// Log a sample record for debugging
 			console.log('Sample record:', filteredRecords.length > 0 ? filteredRecords[0] : 'No records');

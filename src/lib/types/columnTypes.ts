@@ -1,6 +1,6 @@
 // import { Species } from './schema';
 import { organizations } from './../server/db/schema';
-import type { Column, BaseColumn } from './columnModel';
+import type { Column, ColumnDef } from './columnModel';
 /**
  * Column-based architecture for TransPlant
  *
@@ -62,7 +62,7 @@ export interface selectTypeCoercion {
 
 // String column
 // [NEW] Core interface of the Column architecture
-export interface StringColumn extends BaseColumn {
+export interface StringColumn extends ColumnDef {
 	type: 'string';
 	values: (string | null)[];
 	validation?: {
@@ -75,7 +75,7 @@ export interface StringColumn extends BaseColumn {
 // Number column
 // [NEW] Core interface of the Column architecture
 // [INTENTION: Will solve numeric precision issues, especially for GPS coordinates]
-export interface NumberColumn extends BaseColumn {
+export interface NumberColumn extends ColumnDef {
 	type: 'number';
 	values: (number | null)[];
 	format?: {
@@ -93,7 +93,7 @@ export interface NumberColumn extends BaseColumn {
 
 // Date column
 // [NEW] Core interface of the Column architecture
-export interface DateColumn extends BaseColumn {
+export interface DateColumn extends ColumnDef {
 	type: 'date';
 	values: (string | null)[]; // ISO format dates
 	format?: {
@@ -147,7 +147,7 @@ export interface GpsSourceConfig {
 // GPS column
 // [NEW] Core interface of the Column architecture
 // [INTENTION: Will solve GPS precision issues by storing coordinates as numbers with 7 decimal places]
-export interface GpsColumn extends BaseColumn {
+export interface GpsColumn extends ColumnDef {
 	type: 'gps';
 	values: (GpsCoordinate | null)[];
 	format?: {

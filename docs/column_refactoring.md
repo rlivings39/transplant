@@ -3,6 +3,7 @@
 ## Current Progress (March 12, 2025)
 
 We're implementing a Column-based architecture to solve several issues in the TransPlant application:
+
 - Type inconsistency between Transform and TransPlant stages
 - GPS coordinate precision problems
 - Repeated validation code
@@ -11,17 +12,20 @@ We're implementing a Column-based architecture to solve several issues in the Tr
 ### Completed Steps
 
 1. ✓ **Core Type Definitions**
-   - [x] Defined `BaseColumn` interface with shared properties
+
+   - [x] Defined `ColumnDef` interface with shared properties
    - [x] Created type-specific interfaces (`StringColumn`, `NumberColumn`, `DateColumn`, `GpsColumn`)
    - [x] Added support for cell-level validation state
    - [x] Added type coercion tracking
 
 2. ✓ **GPS Column Enhancements**
+
    - [x] Added support for GPS coordinate merging
    - [x] Implemented universal GPS column selection logic
    - [x] Created configuration for lat/lon pair handling
 
 3. ✓ **Cell Validation System**
+
    - [x] Implemented cell-level validation state tracking
    - [x] Added logic for determining when cells are greyed out
    - [x] Created utility functions for updating validation states
@@ -45,12 +49,14 @@ The following files will need to be modified to fully implement the Column archi
 ### Transform Components
 
 1. **TransformManager.svelte** [MAJOR CHANGES]
+
    - [ ] Replace current column type handling with Column objects
    - [ ] Replace type detection with `detectColumnType` from columnUtils
    - [ ] Replace toggle functionality with `toggleColumn` from columnUtils
    - [ ] Replace `getValidatedData` to return Column-based format
 
 2. **DataPreviewTable.svelte** [MODERATE CHANGES]
+
    - [ ] Replace column type props with Column objects
    - [ ] Replace cell rendering based on Column validation state
 
@@ -61,6 +67,7 @@ The following files will need to be modified to fully implement the Column archi
 ### TransPlant Components
 
 1. **transplantDataTable.svelte** [MAJOR CHANGES]
+
    - [ ] Replace current data handling with Column objects
    - [ ] Replace GPS handling with GpsColumn functionality
    - [ ] Add conversion from legacy format during transition (bridge)
@@ -72,10 +79,12 @@ The following files will need to be modified to fully implement the Column archi
 ### Routes
 
 1. **transform/+page.svelte** [MINOR CHANGES]
+
    - [ ] Replace ValidatedTransformData interface with ColumnBasedTransformData
    - [ ] Add conversion between formats during transition (bridge)
 
 2. **transplant/+page.svelte** [MODERATE CHANGES]
+
    - [x] Replace data handling to use Column objects
    - [x] Add conversion from legacy format during transition (bridge)
 
@@ -90,6 +99,7 @@ The following files will need to be modified to fully implement the Column archi
 ## Migration Strategy
 
 1. **Phase 1: Bridge Implementation**
+
    - [x] Define Column interfaces in columnTypes.ts
    - [x] Implement Column models in columnModel.ts
    - [x] Add core utility functions in columnUtils.ts
@@ -98,11 +108,13 @@ The following files will need to be modified to fully implement the Column archi
    - [ ] Test with real data to ensure compatibility
 
 2. **Phase 2: Transform Component Updates**
+
    - [ ] Update TransformManager.svelte to use Column objects internally
    - [ ] Continue using bridge functions for output
    - [ ] Update DataPreviewTable.svelte to work with Column objects
 
 3. **Phase 3: TransPlant Component Updates**
+
    - [ ] Update transplantDataTable.svelte to accept Column objects
    - [ ] Continue supporting legacy format via bridge functions
 
@@ -113,15 +125,18 @@ The following files will need to be modified to fully implement the Column archi
 
 ## Next Steps
 
-1. **Bridge Functions** ⬅️ *Current Focus*
+1. **Bridge Functions** ⬅️ _Current Focus_
+
    - [ ] Complete the conversion between legacy and Column-based formats
    - [ ] Test with real data from the Transform stage
 
 2. **Transform/TransPlant Handoff**
+
    - [ ] Update the handoff to use the Column-based structure
    - [ ] Ensure proper type preservation
 
 3. **UI Integration**
+
    - [ ] Update UI components to work with the Column architecture
    - [ ] Implement column toggling and type selection
 
@@ -146,22 +161,22 @@ To maintain clarity during the refactoring process, we'll use the following anno
 ```typescript
 // [DELETE] Old function for legacy format
 function processGpsCoordinates(coords: string): string {
-  // ...
+	// ...
 }
 
 // [BRIDGE] Converts between legacy and Column formats
 function convertLegacyToColumnBased(data: LegacyData): ColumnData {
-  // ...
+	// ...
 }
 
 // [NEW] Part of the new Column architecture
 function updateCellValidationStates(column: Column): Column {
-  // ...
+	// ...
 }
 
 // [REPLACE: toggleColumn] Will be replaced by toggleColumn in columnUtils.ts
 function toggleColumnVisibility(columnName: string, visible: boolean): void {
-  // ...
+	// ...
 }
 
 // [INTENTION: Create utility for GPS precision handling with 7 decimal places]
@@ -170,6 +185,7 @@ function toggleColumnVisibility(columnName: string, visible: boolean): void {
 ## Implementation Plan
 
 This refactoring follows the plan to:
+
 1. Start implementing the Column architecture directly
 2. Focus on the Transform/TransPlant handoff
 3. Create a clear migration path

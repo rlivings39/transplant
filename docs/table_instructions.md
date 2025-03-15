@@ -70,7 +70,7 @@ interface Column {
 }
 
 // Type-specific column interfaces
-interface GpsColumn extends BaseColumn {
+interface GpsColumn extends ColumnDef {
 	type: 'gps';
 	values: (GpsCoordinate | null)[];
 }

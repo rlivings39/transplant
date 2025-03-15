@@ -13,7 +13,7 @@
  */
 
 import type {
-	// BaseColumn,
+	// ColumnDef,
 	StringColumn,
 	NumberColumn,
 	DateColumn,
@@ -26,7 +26,7 @@ import type {
 // I moved this from columnTypes.ts unlike other interfaces because, well, it's the main one so I want to know how it aligns with the class below
 // [NEW] Core interface of the Column architecture
 // [INTENTION: Will replace existing column handling throughout the application]
-export interface BaseColumn {
+export interface ColumnDef {
 	headerName: string; // The header/importedColumnName
 	isToggled: boolean; // Whether this column is toggled on/off
 	isMapped?: boolean; // Whether this field is mapped to a DB column
@@ -53,7 +53,7 @@ export interface BaseColumn {
 	};
 }
 
-export interface Column extends BaseColumn {
+export interface Column extends ColumnDef {
 	/** The column name/header from the imported data */
 	headerName: string;
 	type: 'string' | 'number' | 'date' | 'gps';
@@ -68,7 +68,7 @@ export interface Column extends BaseColumn {
  * [NEW] Core class of the Column architecture
  * [INTENTION: Will replace existing column handling in TransformManager.svelte]
  */
-export class BaseColumnModel implements BaseColumn {
+export class BaseColumnModel implements ColumnDef {
 	headerName: string;
 	isToggled: boolean;
 	isMapped?: boolean;
