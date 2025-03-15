@@ -16,13 +16,13 @@
 		invalidCells: Record<string, Set<number>>;
 		toggledColumns: Record<string, boolean>;
 	}>();
-	
+
 	// Log the incoming rows data for debugging
 	$effect(() => {
-		console.log('[DataPreviewTable] Received rows type:', typeof rows);
-		console.log('[DataPreviewTable] Received rows isArray:', Array.isArray(rows));
+		console.log('[transformDataTable] Received rows type:', typeof rows);
+		console.log('[transformDataTable] Received rows isArray:', Array.isArray(rows));
 		if (Array.isArray(rows) && rows.length > 0) {
-			console.log('[DataPreviewTable] First row sample:', rows[0]);
+			console.log('[transformDataTable] First row sample:', rows[0]);
 		}
 	});
 
@@ -38,7 +38,7 @@
 	// Log warning if rows is not an array
 	$effect(() => {
 		if (!Array.isArray(rows)) {
-			console.warn('[DataPreviewTable] rows is not an array:', rows);
+			console.warn('[transformDataTable] rows is not an array:', rows);
 		}
 	});
 

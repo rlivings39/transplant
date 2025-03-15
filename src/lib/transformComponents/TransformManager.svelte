@@ -4,7 +4,7 @@
 	import * as gpsType from '$lib/utils/dataTypes/gpsType';
 	import { nonBlankValidSampleCount } from '$lib/utils/dataTypes/validationSampleCount';
 	import CSVImporter from './CSVImporter.svelte';
-	import DataPreviewTable from './DataPreviewTable.svelte';
+	import transformDataTable from './transformDataTable.svelte';
 	import type { CsvPreviewEvent } from '$lib/types/transformTypes';
 	import { transformedDataService } from '$lib/stores/transformStore';
 	import { createEventDispatcher } from 'svelte';
@@ -18,6 +18,7 @@
 	} from '$lib/types/columnTypes';
 	import type { Column } from '$lib/types/columnModel';
 	import ColumnDebugPanel from './ColumnDebugPanelTransform.svelte';
+	import TransformDataTable from './transformDataTable.svelte';
 
 	// Create event dispatcher
 	const dispatch = createEventDispatcher<{
@@ -920,13 +921,13 @@
 	<CSVImporter on:dataLoaded={csvDataLoad} />
 
 	{#if data.length}
-		<DataPreviewTable
+		<TransformDataTable
 			rows={transformedData}
 			{invalidCells}
 			{columnTypes}
 			{toggledColumns}
-			on:columnTypeChange={handleTypeChange}
-			on:columnToggle={handleColumnToggle}
+			oncolumnTypeChange={handleTypeChange}
+			oncolumnToggle={handleColumnToggle}
 		/>
 	{:else}
 		<div class="no-data-message">
