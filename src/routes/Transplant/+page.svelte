@@ -11,7 +11,7 @@
 		GpsColumn,
 		NumberColumn
 	} from '$lib/types/columnTypes';
-	import { convertLegacyToColumnBased } from '$lib/utils/columnUtils';
+	// import { convertLegacyToColumnBased } from '$lib/utils/columnUtils';
 
 	// Debug flag to control logging
 	const DEBUG = true;
@@ -200,6 +200,7 @@
 				});
 				
 				try {
+				/* Commented out during transition to new column architecture
 					columnBasedData = convertLegacyToColumnBased({
 						records: transformData.records,
 						columnTypes: transformData.columnTypes
@@ -226,6 +227,7 @@
 
 					logger.debug('Successfully converted legacy data to Column-based format');
 					logger.debug('Processed columns:', columnsForDebug);
+						*/
 				} catch (error) {
 					logger.error(
 						'Error converting to Column-based format:',

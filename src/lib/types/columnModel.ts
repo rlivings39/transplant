@@ -27,7 +27,7 @@ import type {
 // [NEW] Core interface of the Column architecture
 // [INTENTION: Will replace existing column handling throughout the application]
 export interface BaseColumn {
-	name: string; // The header/importedColumnName
+	headerName: string; // The header/importedColumnName
 	isToggled: boolean; // Whether this column is toggled on/off
 	isMapped?: boolean; // Whether this field is mapped to a DB column
 	mappedTo?: string; // DB column this is mapped to (format: "table.column")
@@ -55,7 +55,7 @@ export interface BaseColumn {
 
 export interface Column extends BaseColumn {
 	/** The column name/header from the imported data */
-	name: string;
+	headerName: string;
 	type: 'string' | 'number' | 'date' | 'gps';
 	/** The actual data values for this column */
 	values: Array<string | number | null>;
@@ -69,7 +69,7 @@ export interface Column extends BaseColumn {
  * [INTENTION: Will replace existing column handling in TransformManager.svelte]
  */
 export class BaseColumnModel implements BaseColumn {
-	name: string;
+	headerName: string;
 	isToggled: boolean;
 	isMapped?: boolean;
 	mappedTo?: string;
@@ -80,8 +80,8 @@ export class BaseColumnModel implements BaseColumn {
 		isRequired: boolean;
 	};
 
-	constructor(name: string) {
-		this.name = name;
+	constructor(headerName: string) {
+		this.headerName = headerName;
 		this.isToggled = true;
 		this.isMapped = false;
 		this.isFormatted = false;
@@ -179,8 +179,8 @@ export class DateColumnModel extends BaseColumnModel implements DateColumn {
 		dateFormat?: string;
 	};
 
-	constructor(name: string, dateFormat?: string) {
-		super(name);
+	constructor(headerName: string, dateFormat?: string) {
+		super(headerName);
 		this.format = { dateFormat: dateFormat || 'YYYY-MM-DD' };
 	}
 
