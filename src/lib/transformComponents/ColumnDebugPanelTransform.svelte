@@ -1,5 +1,5 @@
 <script lang="ts">
-	import type { Column } from '$lib/types/columnTypes';
+	import type { Column } from '$lib/types/columnModel';
 
 	// Props
 	export let columns: Column[] = [];

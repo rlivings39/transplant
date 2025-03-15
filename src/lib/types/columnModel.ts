@@ -53,14 +53,12 @@ export interface BaseColumn {
 	};
 }
 
-export interface Column {
+export interface Column extends BaseColumn {
 	/** The column name/header from the imported data */
 	name: string;
 	type: 'string' | 'number' | 'date' | 'gps';
-
 	/** The actual data values for this column */
 	values: Array<string | number | null>;
-
 	/** Optional validation errors by row index */
 	validationErrors?: Set<number>;
 }

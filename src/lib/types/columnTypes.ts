@@ -1,7 +1,6 @@
 // import { Species } from './schema';
 import { organizations } from './../server/db/schema';
-import type { Column } from './Column';
-import type { BaseColumn } from './Column';
+import type { Column, BaseColumn } from './columnModel';
 /**
  * Column-based architecture for TransPlant
  *

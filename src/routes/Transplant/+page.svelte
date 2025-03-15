@@ -5,8 +5,8 @@
 	import ColumnDebugPanel from '$lib/transplantComponents/ColumnDebugPanelTransplant.svelte';
 	import { schemaService } from '$lib/services/schemaService';
 	import { transformedDataService } from '$lib/stores/transformStore';
+	import type { Column } from '$lib/types/columnTypes';
 	import type {
-		Column,
 		ColumnBasedTransformData,
 		GpsColumn,
 		NumberColumn

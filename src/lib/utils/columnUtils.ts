@@ -15,7 +15,7 @@
  * [REPLACE: X] - Will be replaced by function X
  * [INTENTION: X] - Future implementation plans
  */
-import type { Column } from './../types/Column';
+import type { Column } from './../types/columnModel';
 
 import type {
 	StringColumn,
@@ -65,40 +65,40 @@ export function createColumn(name: string, type: 'string' | 'number' | 'date' | 
  *
  * [NEW] Core function of the Column architecture
  */
-export function updateCellValidationStates<T extends Column>(column: T): T {
-	// If no cellValidation exists yet, create it
-	if (!column.cellValidation) {
-		column.cellValidation = [];
-	}
+// export function updateCellValidationStates<T extends Column>(column: T): T {
+// 	// If no cellValidation exists yet, create it
+// 	if (!column.cellValidation) {
+// 		column.cellValidation = [];
+// 	}
 
-	// Process each value in the column
-	column.values.forEach((value, rowIndex) => {
-		// Find existing validation state or create a new one
-		let validationState = column.cellValidation!.find((v) => v.rowIndex === rowIndex);
+// 	// Process each value in the column
+// 	column.values.forEach((value, rowIndex) => {
+// 		// Find existing validation state or create a new one
+// 		let validationState = column.cellValidation!.find((v) => v.rowIndex === rowIndex);
 
-		if (!validationState) {
-			validationState = {
-				rowIndex,
-				isValid: true,
-				failedSelectDetection: false,
-				isGreyedOut: false,
-				originalValue: value
-			};
-			column.cellValidation!.push(validationState);
-		}
+// 		if (!validationState) {
+// 			validationState = {
+// 				rowIndex,
+// 				isValid: true,
+// 				failedSelectDetection: false,
+// 				isGreyedOut: false,
+// 				originalValue: value
+// 			};
+// 			column.cellValidation!.push(validationState);
+// 		}
 
-		// Check if the value is valid for the column type
-		validationState.isValid = validateValueForType(value, column.type, column.selectTypeCoercion);
+// 		// Check if the value is valid for the column type
+// 		validationState.isValid = validateValueForType(value, column.type, column.selectTypeCoercion);
 
-		// Update failedSelectDetection based on validity
-		validationState.failedSelectDetection = !validationState.isValid;
+// 		// Update failedSelectDetection based on validity
+// 		validationState.failedSelectDetection = !validationState.isValid;
 
-		// The key logic: a cell is greyed out if it fails type detection OR the column is toggled off
-		validationState.isGreyedOut = validationState.failedSelectDetection || !column.isToggled;
-	});
+// 		// The key logic: a cell is greyed out if it fails type detection OR the column is toggled off
+// 		validationState.isGreyedOut = validationState.failedSelectDetection || !column.isToggled;
+// 	});
 
-	return column;
-}
+// 	return column;
+// }
 
 /**
  * Validate a single value against a column type
