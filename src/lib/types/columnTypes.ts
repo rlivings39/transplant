@@ -35,11 +35,6 @@ export enum TableName {
  * Column interfaces
  */
 
-export interface StringColumn extends Column {
-	type: 'string';
-	// Add string-specific properties
-}
-
 export interface NumberColumn extends Column {
 	type: 'number';
 	// Add number-specific properties

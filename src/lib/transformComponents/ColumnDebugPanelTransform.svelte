@@ -121,12 +121,6 @@
 									{selectedColumn.mappedTo || 'null'}
 								</span>
 							</div>
-							<div class="property-item">
-								<span class="property-name">originalType:</span>
-								<span class="property-value {getPropertyClass(selectedColumn.originalType)}">
-									{selectedColumn.originalType || 'null'}
-								</span>
-							</div>
 						{/if}
 					</div>
 				{/if}

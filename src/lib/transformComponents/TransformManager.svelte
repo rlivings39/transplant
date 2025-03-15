@@ -16,7 +16,7 @@
 		GpsCoordinate,
 		CellValidationState
 	} from '$lib/types/columnTypes';
-	import type { Column } from '$lib/types/Column';
+	import type { Column } from '$lib/types/columnModel';
 	import ColumnDebugPanel from './ColumnDebugPanelTransform.svelte';
 
 	// Create event dispatcher
