@@ -18,24 +18,6 @@ export interface ValidatedTransformData {
   };
 }
 
-export interface Column {
-  /** The column name/header from the imported data */
-  name: string;
-  type: 'string' | 'number' | 'date' | 'gps';
-  
-  /** The actual data values for this column */
-  values: Array<string | number | null>;
-  
-  /** Whether the values have been formatted according to their type */
-  isFormatted: boolean;
-  
-  /** Whether the column is toggled off (hidden) in the UI */
-  isToggled: boolean;
-  
-  /** Optional validation errors by row index */
-  validationErrors?: Set<number>;
-}
-
 /**
  * Interface for column mapping information
  */
