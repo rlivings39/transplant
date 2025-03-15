@@ -1,11 +1,11 @@
 /**
- * Column model implementation for TransPlant
+ * ColumnRep model implementation for TransPlant
  *
- * This file provides concrete implementations of the Column interfaces
+ * This file provides concrete implementations of the ColumnRep interfaces
  * defined in columnTypes.ts, with methods for working with column data.
  *
  * REFACTORING ANNOTATIONS:
- * [NEW] - Part of the new Column architecture
+ * [NEW] - Part of the new ColumnRep architecture
  * [BRIDGE] - Temporary compatibility functions
  * [DELETE] - Legacy code that will be removed
  * [REPLACE: X] - Will be replaced by function X
@@ -24,7 +24,7 @@ import type {
 } from './columnTypes';
 
 // I moved this from columnTypes.ts unlike other interfaces because, well, it's the main one so I want to know how it aligns with the class below
-// [NEW] Core interface of the Column architecture
+// [NEW] Core interface of the ColumnRep architecture
 // [INTENTION: Will replace existing column handling throughout the application]
 export interface ColumnDef {
 	headerName: string; // The header/importedColumnName
@@ -53,7 +53,7 @@ export interface ColumnDef {
 	};
 }
 
-export interface Column extends ColumnDef {
+export interface ColumnRep extends ColumnDef {
 	/** The column name/header from the imported data */
 	headerName: string;
 	type: 'string' | 'number' | 'date' | 'gps';
@@ -65,7 +65,7 @@ export interface Column extends ColumnDef {
 
 /**
  * Base column model with shared implementation
- * [NEW] Core class of the Column architecture
+ * [NEW] Core class of the ColumnRep architecture
  * [INTENTION: Will replace existing column handling in TransformManager.svelte]
  */
 export class BaseColumnModel implements ColumnDef {
@@ -91,7 +91,7 @@ export class BaseColumnModel implements ColumnDef {
 /**
  * String column implementation
  *
- * [NEW] Core class of the Column architecture
+ * [NEW] Core class of the ColumnRep architecture
  */
 export class StringColumnModel extends BaseColumnModel implements StringColumn {
 	type: 'string' = 'string';
@@ -122,7 +122,7 @@ export class StringColumnModel extends BaseColumnModel implements StringColumn {
 /**
  * Number column implementation
  *
- * [NEW] Core class of the Column architecture
+ * [NEW] Core class of the ColumnRep architecture
  * [INTENTION: Will handle proper numeric precision for GPS coordinates]
  */
 export class NumberColumnModel extends BaseColumnModel implements NumberColumn {
@@ -170,7 +170,7 @@ export class NumberColumnModel extends BaseColumnModel implements NumberColumn {
 /**
  * Date column implementation
  *
- * [NEW] Core class of the Column architecture
+ * [NEW] Core class of the ColumnRep architecture
  */
 export class DateColumnModel extends BaseColumnModel implements DateColumn {
 	type: 'date' = 'date';
@@ -208,7 +208,7 @@ export class DateColumnModel extends BaseColumnModel implements DateColumn {
 /**
  * GPS column implementation
  *
- * [NEW] Core class of the Column architecture
+ * [NEW] Core class of the ColumnRep architecture
  * [INTENTION: Will solve GPS precision issues by storing coordinates as numbers with 7 decimal places]
  */
 export class GpsColumnModel extends BaseColumnModel implements GpsColumn {

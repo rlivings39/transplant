@@ -1,21 +1,21 @@
 /**
- * Utility functions for working with Column objects
+ * Utility functions for working with ColumnRep objects
  *
  * This file provides functions for:
  * 1. Creating columns from raw data
- * 2. Converting between legacy and Column-based formats
+ * 2. Converting between legacy and ColumnRep-based formats
  * 3. Detecting column types
  * 4. Validating column data
  * 5. Managing cell validation states
  *
  * REFACTORING ANNOTATIONS:
- * [NEW] - Part of the new Column architecture
+ * [NEW] - Part of the new ColumnRep architecture
  * [BRIDGE] - Temporary compatibility functions
  * [DELETE] - Legacy code that will be removed
  * [REPLACE: X] - Will be replaced by function X
  * [INTENTION: X] - Future implementation plans
  */
-import type { Column } from './../types/columnModel';
+import type { ColumnRep } from './../types/columnModel';
 
 import type {
 	StringColumn,
@@ -40,9 +40,12 @@ import { parseGpsCoordinate } from './dataTypes/gpsType';
 
 /**
  * Create a column of the appropriate type
- * [NEW] Core function of the Column architecture
+ * [NEW] Core function of the ColumnRep architecture
  */
-export function createColumn(headerName: string, type: 'string' | 'number' | 'date' | 'gps'): Column {
+export function createColumn(
+	headerName: string,
+	type: 'string' | 'number' | 'date' | 'gps'
+): ColumnRep {
 	switch (type) {
 		case 'string':
 			return new StringColumnModel(headerName);
@@ -63,9 +66,9 @@ export function createColumn(headerName: string, type: 'string' | 'number' | 'da
  * 1. Whether a cell passes type validation (failedSelectDetection)
  * 2. Whether the column is toggled on/off (isToggled)
  *
- * [NEW] Core function of the Column architecture
+ * [NEW] Core function of the ColumnRep architecture
  */
-// export function updateCellValidationStates<T extends Column>(column: T): T {
+// export function updateCellValidationStates<T extends ColumnRep>(column: T): T {
 // 	// If no cellValidation exists yet, create it
 // 	if (!column.cellValidation) {
 // 		column.cellValidation = [];
@@ -104,7 +107,7 @@ export function createColumn(headerName: string, type: 'string' | 'number' | 'da
  * Validate a single value against a column type
  * Takes into account any type coercion that may have been applied
  *
- * [NEW] Core validation function for the Column architecture
+ * [NEW] Core validation function for the ColumnRep architecture
  */
 export function validateValueForType(
 	value: any,
@@ -181,10 +184,10 @@ export function validateValueForType(
  * Toggle a column on/off and update cell validation states
  * This is the main function that would be called when a user toggles a column
  *
- * [NEW] Core function of the Column architecture
+ * [NEW] Core function of the ColumnRep architecture
  * [INTENTION: Will replace existing toggle functionality in TransformManager.svelte]
  */
-export function toggleColumn<T extends Column>(column: T, isToggled: boolean): T {
+export function toggleColumn<T extends ColumnRep>(column: T, isToggled: boolean): T {
 	column.isToggled = isToggled;
 	return updateCellValidationStates(column);
 }
@@ -193,10 +196,10 @@ export function toggleColumn<T extends Column>(column: T, isToggled: boolean): T
  * Change a column's type and update cell validation states
  * This is called when a user manually changes a column's type
  *
- * [NEW] Core function of the Column architecture
+ * [NEW] Core function of the ColumnRep architecture
  * [INTENTION: Will replace type selection functionality in TransformManager.svelte]
  */
-export function changeColumnType<T extends Column>(
+export function changeColumnType<T extends ColumnRep>(
 	column: T,
 	newType: 'string' | 'number' | 'date' | 'gps'
 ): T {
@@ -218,13 +221,13 @@ export function changeColumnType<T extends Column>(
 /**
  * Create a column and populate it with values
  *
- * [NEW] Core function of the Column architecture
+ * [NEW] Core function of the ColumnRep architecture
  */
 export function createColumnWithValues(
 	name: string,
 	type: 'string' | 'number' | 'date' | 'gps',
 	values: any[]
-): Column {
+): ColumnRep {
 	const column = createColumn(name, type);
 
 	// Add each value to the column
@@ -328,10 +331,10 @@ export function createColumnWithValues(
 }
 
 /**
- * Convert legacy format to Column-based format
+ * Convert legacy format to ColumnRep-based format
  *
  * [BRIDGE] Temporary function to convert between formats during migration
- * [INTENTION: Will be removed once Transform stage directly produces Column format]
+ * [INTENTION: Will be removed once Transform stage directly produces ColumnRep format]
  */
 // export function convertLegacyToColumnBased(
 // 	legacy: LegacyValidatedTransformData
@@ -344,11 +347,11 @@ export function createColumnWithValues(
 // 		sampleRecord: legacy.records?.[0] || null
 // 	});
 
-// 	const columns: Column[] = [];
+// 	const columns: ColumnRep[] = [];
 
 // 	// Get all unique column names
 // 	const columnNames = Object.keys(legacy.columnTypes);
-// 	console.log('[ColumnUtils] Column names found:', columnNames);
+// 	console.log('[ColumnUtils] ColumnRep names found:', columnNames);
 
 // 	// For each column name, create a column of the appropriate type
 // 	columnNames.forEach((name) => {
@@ -374,7 +377,7 @@ export function createColumnWithValues(
 // 		column.isToggled = false;
 
 // 		// Log the isToggled state for debugging
-// 		console.log(`[ColumnUtils] Column ${name} isToggled set to: ${column.isToggled}`);
+// 		console.log(`[ColumnUtils] ColumnRep ${name} isToggled set to: ${column.isToggled}`);
 
 // 		// Set isFormatted based on type
 // 		// For GPS columns, we want to ensure they're properly formatted
@@ -412,7 +415,7 @@ export function createColumnWithValues(
 /**
  * Detect the type of a column based on its values
  *
- * [NEW] Core function of the Column architecture
+ * [NEW] Core function of the ColumnRep architecture
  * [INTENTION: Will replace existing type detection in TransformManager.svelte]
  */
 export function detectColumnType(values: any[]): 'string' | 'number' | 'date' | 'gps' {
@@ -433,7 +436,7 @@ export function detectColumnType(values: any[]): 'string' | 'number' | 'date' | 
 		return 'number';
 	}
 
-	// Check if values look like GPS coordinates 
+	// Check if values look like GPS coordinates
 	// [DELETE] Legacy GPS detection, should be in @dataTypes
 	const gpsPattern = /^-?\d+(\.\d+)?,\s*-?\d+(\.\d+)?$/;
 	const mightBeGps = nonNullValues.some((v) => {
@@ -466,7 +469,7 @@ export function detectColumnType(values: any[]): 'string' | 'number' | 'date' | 
 /**
  * Extract a specific column from a set of records
  *
- * [NEW] Utility function for the Column architecture
+ * [NEW] Utility function for the ColumnRep architecture
  */
 export function extractColumnFromRecords(
 	records: Array<{ [key: string]: any }>,
@@ -478,14 +481,14 @@ export function extractColumnFromRecords(
 /**
  * Create columns from records and column types
  *
- * [NEW] Core function of the Column architecture
- * [INTENTION: Will be used to convert imported data to Column format]
+ * [NEW] Core function of the ColumnRep architecture
+ * [INTENTION: Will be used to convert imported data to ColumnRep format]
  */
 export function createColumnsFromRecords(
 	records: Array<{ [key: string]: any }>,
 	columnTypes: ColumnTypeMap
-): Column[] {
-	const columns: Column[] = [];
+): ColumnRep[] {
+	const columns: ColumnRep[] = [];
 
 	Object.entries(columnTypes).forEach(([name, type]) => {
 		const values = extractColumnFromRecords(records, name);

@@ -4,13 +4,8 @@
 	import { createEventDispatcher } from 'svelte';
 	import { setupColumnDrag, addDragDropStyles } from '$lib/utils/dragColumnUtils';
 	import { createColumn } from '$lib/utils/columnUtils';
-	import type { Column } from '$lib/types/columnModel';
-	import type {
-		GpsColumn,
-		NumberColumn,
-		DateColumn,
-		StringColumn
-	} from '$lib/types/columnTypes';
+	import type { ColumnRep } from '$lib/types/columnModel';
+	import type { GpsColumn, NumberColumn, DateColumn, StringColumn } from '$lib/types/columnTypes';
 
 	// Debug flag to control logging
 	const DEBUG = true;
@@ -40,8 +35,8 @@
 	let draggedHeader: string | null = null;
 	let dragOverHeader: string | null = null;
 
-	// Column architecture state
-	let columns: Column[] = [];
+	// ColumnRep architecture state
+	let columns: ColumnRep[] = [];
 
 	// Event dispatcher
 	const dispatch = createEventDispatcher();
@@ -74,7 +69,7 @@
 	}
 
 	// Format cell value based on column
-	function formatCellValue(column: Column, rowIndex: number): string {
+	function formatCellValue(column: ColumnRep, rowIndex: number): string {
 		const value = column.values[rowIndex];
 		if (value === null || value === undefined) return '';
 
@@ -123,7 +118,7 @@
 	}
 
 	// Helper function to get column by name
-	function getColumnByName(name: string): Column | undefined {
+	function getColumnByName(name: string): ColumnRep | undefined {
 		return columns.find((col) => col.headerName === name);
 	}
 
@@ -154,7 +149,9 @@
 			// Create columns directly using createColumn
 			columns = Object.keys(rawData.columnTypes).map((headerName) => {
 				const type = rawData.columnTypes[headerName];
-				const values = rawData.records.map((record: { [key: string]: string | number | null }) => record[headerName]);
+				const values = rawData.records.map(
+					(record: { [key: string]: string | number | null }) => record[headerName]
+				);
 				const column = createColumn(headerName, type);
 
 				// Set column properties

@@ -15,7 +15,7 @@
 		GpsCoordinate,
 		CellValidationState
 	} from '$lib/types/columnTypes';
-	import type { Column } from '$lib/types/columnModel';
+	import type { ColumnRep } from '$lib/types/columnModel';
 	import ColumnDebugPanel from './ColumnDebugPanelTransform.svelte';
 	import TransformDataTable from './transformDataTable.svelte';
 
@@ -43,15 +43,15 @@
 	let canTransform = $state(false);
 	// Add a flag to track if we're currently processing data
 	let isProcessing = $state(false);
-	// Column debug panel state
-	let columnsForDebug = $state<Column[]>([]);
+	// ColumnRep debug panel state
+	let columnsForDebug = $state<ColumnRep[]>([]);
 	let showDebugPanel = $state(false);
 
 	interface TransformedData {
 		records: Array<Record<string, any>>;
 		columnTypes: Record<string, string>;
 		toggledColumns?: Record<string, boolean>;
-		columns?: Column[];
+		columns?: ColumnRep[];
 	}
 
 	// Update canTransform whenever data or invalidCells changes
@@ -59,9 +59,9 @@
 		canTransform = data.length > 0 && Object.keys(invalidCells).length === 0;
 	});
 
-	// Convert current data to Column format for debugging
-	function convertToColumnFormat(): Column[] {
-		const columns: Column[] = [];
+	// Convert current data to ColumnRep format for debugging
+	function convertToColumnFormat(): ColumnRep[] {
+		const columns: ColumnRep[] = [];
 
 		// Get all column headers
 		if (data.length === 0) return columns;
@@ -396,7 +396,7 @@
 		invalidCells = newInvalidCells;
 		transformedData = newTransformedData;
 
-		// Create Column objects for the transformed data
+		// Create ColumnRep objects for the transformed data
 		const columns = convertToColumnFormat();
 
 		// Dispatch the transformed data event with the current state
@@ -404,7 +404,7 @@
 			records: transformedData,
 			columnTypes: columnTypes,
 			toggledColumns: toggledColumns,
-			columns: columns // Include the Column objects
+			columns: columns // Include the ColumnRep objects
 		});
 
 		// Reset processing flag
@@ -729,7 +729,7 @@
 
 				// Log a sample for debugging
 				console.log('DOM debug: First record:', records[0]);
-				console.log('DOM debug: Column types:', domColumnTypes);
+				console.log('DOM debug: ColumnRep types:', domColumnTypes);
 
 				return {
 					records,
@@ -945,11 +945,11 @@
 					}
 				}}
 			>
-				{showDebugPanel ? 'Hide' : 'Show'} Column Debug Panel
+				{showDebugPanel ? 'Hide' : 'Show'} ColumnRep Debug Panel
 			</button>
 		</div>
 
-		<!-- Column Debug Panel -->
+		<!-- ColumnRep Debug Panel -->
 		{#if showDebugPanel}
 			<ColumnDebugPanel columns={columnsForDebug} />
 		{/if}

@@ -1,12 +1,12 @@
 // import { Species } from './schema';
 import { organizations } from './../server/db/schema';
-import type { Column, ColumnDef } from './columnModel';
+import type { ColumnRep, ColumnDef } from './columnModel';
 /**
- * Column-based architecture for TransPlant
+ * ColumnRep-based architecture for TransPlant
  *
- * This file defines the core Column interfaces that bind together:
- * 1. Column name/header
- * 2. Column type
+ * This file defines the core ColumnRep interfaces that bind together:
+ * 1. ColumnRep name/header
+ * 2. ColumnRep type
  * 3. Data values
  * 4. Formatting information
  * 5. Validation rules
@@ -14,7 +14,7 @@ import type { Column, ColumnDef } from './columnModel';
  * 7. Database schema mapping
  *
  * REFACTORING ANNOTATIONS:
- * [NEW] - Part of the new Column architecture
+ * [NEW] - Part of the new ColumnRep architecture
  * [BRIDGE] - Temporary compatibility functions
  * [DELETE] - Legacy code that will be removed
  * [REPLACE: X] - Will be replaced by function X
@@ -32,16 +32,16 @@ export enum TableName {
 }
 
 /**
- * Column interfaces
+ * ColumnRep interfaces
  */
 
-export interface NumberColumn extends Column {
+export interface NumberColumn extends ColumnRep {
 	type: 'number';
 	// Add number-specific properties
 }
 
 // Cell validation state - tracks validation status for individual cells in a column
-// [NEW] Core interface of the Column architecture
+// [NEW] Core interface of the ColumnRep architecture
 export interface CellValidationState {
 	rowIndex: number; // Row index in the column
 	isValid: boolean; // Whether the cell value is valid for the column type
@@ -52,7 +52,7 @@ export interface CellValidationState {
 }
 
 // Type coercion information
-// [NEW] Core interface of the Column architecture
+// [NEW] Core interface of the ColumnRep architecture
 export interface selectTypeCoercion {
 	isCoerced: boolean; // Whether the column type was manually changed by the user
 	originalType: string; // The original detected type before coercion
@@ -61,7 +61,7 @@ export interface selectTypeCoercion {
 }
 
 // String column
-// [NEW] Core interface of the Column architecture
+// [NEW] Core interface of the ColumnRep architecture
 export interface StringColumn extends ColumnDef {
 	type: 'string';
 	values: (string | null)[];
@@ -73,7 +73,7 @@ export interface StringColumn extends ColumnDef {
 }
 
 // Number column
-// [NEW] Core interface of the Column architecture
+// [NEW] Core interface of the ColumnRep architecture
 // [INTENTION: Will solve numeric precision issues, especially for GPS coordinates]
 export interface NumberColumn extends ColumnDef {
 	type: 'number';
@@ -92,7 +92,7 @@ export interface NumberColumn extends ColumnDef {
 }
 
 // Date column
-// [NEW] Core interface of the Column architecture
+// [NEW] Core interface of the ColumnRep architecture
 export interface DateColumn extends ColumnDef {
 	type: 'date';
 	values: (string | null)[]; // ISO format dates
@@ -113,7 +113,7 @@ export type GpsCoordinate = {
 export type CoordinateType = 'latitude' | 'longitude';
 
 // GPS column merge configuration
-// [NEW] Core interface of the Column architecture
+// [NEW] Core interface of the ColumnRep architecture
 export interface GpsMergeConfig {
 	latitudeColumn: string; // Name of the column containing latitude values
 	longitudeColumn: string; // Name of the column containing longitude values
@@ -126,7 +126,7 @@ export interface GpsMergeConfig {
 export type GpsSelectionStrategy = 'priority' | 'first-available' | 'fallback-if-toggled-off';
 
 // GPS source configuration
-// [NEW] Core interface of the Column architecture
+// [NEW] Core interface of the ColumnRep architecture
 // [INTENTION: Will implement the GPS selection logic documented in gps_docs.md]
 export interface GpsSourceConfig {
 	sourceColumns: string[]; // Names of columns that can provide GPS data
@@ -145,7 +145,7 @@ export interface GpsSourceConfig {
 }
 
 // GPS column
-// [NEW] Core interface of the Column architecture
+// [NEW] Core interface of the ColumnRep architecture
 // [INTENTION: Will solve GPS precision issues by storing coordinates as numbers with 7 decimal places]
 export interface GpsColumn extends ColumnDef {
 	type: 'gps';
@@ -176,18 +176,18 @@ export type ColumnTypeMap = {
 	[key: string]: 'string' | 'number' | 'date' | 'gps';
 };
 
-// Interface for validated transform data using the Column approach
-// [NEW] Core interface of the Column architecture
+// Interface for validated transform data using the ColumnRep approach
+// [NEW] Core interface of the ColumnRep architecture
 // [INTENTION: Will replace the legacy ValidatedTransformData interface]
 export interface ColumnBasedTransformData {
-	columns: Column[];
+	columns: ColumnRep[];
 }
 /**
  * Database schema interfaces
  */
 // Single database column definition
 export interface DbColumn {
-	name: string; // Column name in the database
+	name: string; // ColumnRep name in the database
 	table: string; // Table name in the database
 	type: 'string' | 'number' | 'date' | 'gps' | 'boolean' | 'json' | 'array'; // Database column type
 	isRequired: boolean; // Whether the column is required (NOT NULL)
@@ -216,4 +216,4 @@ export interface DbSchema {
 }
 
 // Legacy interface for backward compatibility
-// [DELETE] Will be removed once migration to Column architecture is complete
+// [DELETE] Will be removed once migration to ColumnRep architecture is complete

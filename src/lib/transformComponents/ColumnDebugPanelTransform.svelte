@@ -1,13 +1,13 @@
 <script lang="ts">
-	import type { Column } from '$lib/types/columnModel';
+	import type { ColumnRep } from '$lib/types/columnModel';
 
 	// Props
-	export let columns: Column[] = [];
+	export let columns: ColumnRep[] = [];
 	export let isVisible: boolean = true;
 	export let maxHeight: string = '400px';
 
 	// Local state
-	let selectedColumn: Column | null = null;
+	let selectedColumn: ColumnRep | null = null;
 	let expandedSections: Record<string, boolean> = {
 		basic: true,
 		values: false,
@@ -61,10 +61,10 @@
 </script>
 
 <div class="column-debug-panel" class:hidden={!isVisible} style="max-height: {maxHeight}">
-	<h3>Column Debug Panel</h3>
+	<h3>ColumnRep Debug Panel</h3>
 
 	<div class="column-selector">
-		<label for="column-select">Select Column:</label>
+		<label for="column-select">Select ColumnRep:</label>
 		<select id="column-select" bind:value={selectedColumn}>
 			<option value={null}>-- Select a column --</option>
 			{#each columns as column}

@@ -46,7 +46,7 @@
 	let previewRows = $derived(safeRows.length > 0 ? safeRows.slice(0, 5000) : []); // Process 5000 rows - better balance of performance and functionality
 
 	function isGreyedOut(columnHeader: string, rowIndex: number): boolean {
-		// Column should be greyed out if it's toggled off or has validation errors
+		// ColumnRep should be greyed out if it's toggled off or has validation errors
 		// toggledColumns[columnHeader] is true when column is toggled OFF
 		return !!toggledColumns[columnHeader] || invalidCells[columnHeader]?.has(rowIndex);
 	}
