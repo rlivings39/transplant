@@ -333,81 +333,81 @@ export function createColumnWithValues(
  * [BRIDGE] Temporary function to convert between formats during migration
  * [INTENTION: Will be removed once Transform stage directly produces Column format]
  */
-export function convertLegacyToColumnBased(
-	legacy: LegacyValidatedTransformData
-): ColumnBasedTransformData {
-	console.log('[ColumnUtils] Converting legacy format to column-based format');
-	console.log('[ColumnUtils] Legacy data structure:', {
-		recordsCount: legacy.records?.length || 0,
-		columnTypeCount: Object.keys(legacy.columnTypes || {}).length,
-		columnTypes: legacy.columnTypes,
-		sampleRecord: legacy.records?.[0] || null
-	});
+// export function convertLegacyToColumnBased(
+// 	legacy: LegacyValidatedTransformData
+// ): ColumnBasedTransformData {
+// 	console.log('[ColumnUtils] Converting legacy format to column-based format');
+// 	console.log('[ColumnUtils] Legacy data structure:', {
+// 		recordsCount: legacy.records?.length || 0,
+// 		columnTypeCount: Object.keys(legacy.columnTypes || {}).length,
+// 		columnTypes: legacy.columnTypes,
+// 		sampleRecord: legacy.records?.[0] || null
+// 	});
 
-	const columns: Column[] = [];
+// 	const columns: Column[] = [];
 
-	// Get all unique column names
-	const columnNames = Object.keys(legacy.columnTypes);
-	console.log('[ColumnUtils] Column names found:', columnNames);
+// 	// Get all unique column names
+// 	const columnNames = Object.keys(legacy.columnTypes);
+// 	console.log('[ColumnUtils] Column names found:', columnNames);
 
-	// For each column name, create a column of the appropriate type
-	columnNames.forEach((name) => {
-		const type = legacy.columnTypes[name];
-		console.log(`[ColumnUtils] Processing column: ${name}, type: ${type}`);
+// 	// For each column name, create a column of the appropriate type
+// 	columnNames.forEach((name) => {
+// 		const type = legacy.columnTypes[name];
+// 		console.log(`[ColumnUtils] Processing column: ${name}, type: ${type}`);
 
-		// Extract values for this column from all records
-		const values = legacy.records.map((record) => record[name]);
-		console.log(`[ColumnUtils] Extracted ${values.length} values for column ${name}`);
-		console.log(`[ColumnUtils] Sample values for ${name}:`, values.slice(0, 3));
+// 		// Extract values for this column from all records
+// 		const values = legacy.records.map((record) => record[name]);
+// 		console.log(`[ColumnUtils] Extracted ${values.length} values for column ${name}`);
+// 		console.log(`[ColumnUtils] Sample values for ${name}:`, values.slice(0, 3));
 
-		// Create and add the column
-		const column = createColumnWithValues(name, type, values);
-		// Log basic column info without accessing potentially missing properties
-		console.log(`[ColumnUtils] Created column object for ${name}:`, {
-			name: column.name,
-			type: column.type,
-			valuesCount: column.values?.length || 0
-		});
+// 		// Create and add the column
+// 		const column = createColumnWithValues(name, type, values);
+// 		// Log basic column info without accessing potentially missing properties
+// 		console.log(`[ColumnUtils] Created column object for ${name}:`, {
+// 			name: column.name,
+// 			type: column.type,
+// 			valuesCount: column.values?.length || 0
+// 		});
 
-		// Set isToggled to false by default (as per application requirements)
-		// This ensures columns start in an unselected state in TransPlant
-		column.isToggled = false;
+// 		// Set isToggled to false by default (as per application requirements)
+// 		// This ensures columns start in an unselected state in TransPlant
+// 		column.isToggled = false;
 
-		// Log the isToggled state for debugging
-		console.log(`[ColumnUtils] Column ${name} isToggled set to: ${column.isToggled}`);
+// 		// Log the isToggled state for debugging
+// 		console.log(`[ColumnUtils] Column ${name} isToggled set to: ${column.isToggled}`);
 
-		// Set isFormatted based on type
-		// For GPS columns, we want to ensure they're properly formatted
-		if (type === 'gps') {
-			const gpsColumn = column as GpsColumn;
-			gpsColumn.format = {
-				gpsFormat: 'DD',
-				precision: 7
-			};
-			gpsColumn.isFormatted = true;
-			console.log(`[ColumnUtils] Formatted GPS column ${name} with DD format and precision 7`);
-		} else if (type === 'number') {
-			const numberColumn = column as NumberColumn;
-			numberColumn.format = {
-				precision: 2 // Use 2 decimal places for regular numbers
-			};
-			numberColumn.isFormatted = true;
-			console.log(`[ColumnUtils] Formatted Number column ${name} with precision 2`);
-		} else {
-			column.isFormatted = false; // For string and date columns, mark as not formatted
-			console.log(`[ColumnUtils] No formatting applied for ${type} column ${name}`);
-		}
+// 		// Set isFormatted based on type
+// 		// For GPS columns, we want to ensure they're properly formatted
+// 		if (type === 'gps') {
+// 			const gpsColumn = column as GpsColumn;
+// 			gpsColumn.format = {
+// 				gpsFormat: 'DD',
+// 				precision: 7
+// 			};
+// 			gpsColumn.isFormatted = true;
+// 			console.log(`[ColumnUtils] Formatted GPS column ${name} with DD format and precision 7`);
+// 		} else if (type === 'number') {
+// 			const numberColumn = column as NumberColumn;
+// 			numberColumn.format = {
+// 				precision: 2 // Use 2 decimal places for regular numbers
+// 			};
+// 			numberColumn.isFormatted = true;
+// 			console.log(`[ColumnUtils] Formatted Number column ${name} with precision 2`);
+// 		} else {
+// 			column.isFormatted = false; // For string and date columns, mark as not formatted
+// 			console.log(`[ColumnUtils] No formatting applied for ${type} column ${name}`);
+// 		}
 
-		// Update cell validation states
-		updateCellValidationStates(column);
-		console.log(`[ColumnUtils] Updated cell validation states for ${name}`);
+// 		// Update cell validation states
+// 		updateCellValidationStates(column);
+// 		console.log(`[ColumnUtils] Updated cell validation states for ${name}`);
 
-		columns.push(column);
-	});
+// 		columns.push(column);
+// 	});
 
-	console.log('[ColumnUtils] Conversion complete. Created', columns.length, 'columns');
-	return { columns };
-}
+// 	console.log('[ColumnUtils] Conversion complete. Created', columns.length, 'columns');
+// 	return { columns };
+// }
 
 /**
  * Detect the type of a column based on its values
@@ -433,7 +433,8 @@ export function detectColumnType(values: any[]): 'string' | 'number' | 'date' | 
 		return 'number';
 	}
 
-	// Check if values look like GPS coordinates
+	// Check if values look like GPS coordinates 
+	// [DELETE] Legacy GPS detection, should be in @dataTypes
 	const gpsPattern = /^-?\d+(\.\d+)?,\s*-?\d+(\.\d+)?$/;
 	const mightBeGps = nonNullValues.some((v) => {
 		if (typeof v !== 'string') return false;
