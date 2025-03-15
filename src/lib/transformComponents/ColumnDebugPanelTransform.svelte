@@ -68,7 +68,7 @@
 		<select id="column-select" bind:value={selectedColumn}>
 			<option value={null}>-- Select a column --</option>
 			{#each columns as column}
-				<option value={column}>{column.name}</option>
+				<option value={column}>{column.headerName}</option>
 			{/each}
 		</select>
 	</div>
@@ -87,7 +87,7 @@
 						<div class="property-item">
 							<span class="property-name">name:</span>
 							<span class="property-value property-string">
-								"{selectedColumn.name}"
+								"{selectedColumn.headerName}"
 							</span>
 						</div>
 						<div class="property-item">

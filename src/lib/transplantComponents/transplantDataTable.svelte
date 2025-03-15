@@ -4,8 +4,8 @@
 	import { createEventDispatcher } from 'svelte';
 	import { setupColumnDrag, addDragDropStyles } from '$lib/utils/dragColumnUtils';
 	import { createColumn } from '$lib/utils/columnUtils';
+	import type { Column } from '$lib/types/columnModel';
 	import type {
-		Column,
 		GpsColumn,
 		NumberColumn,
 		DateColumn,
@@ -124,7 +124,7 @@
 
 	// Helper function to get column by name
 	function getColumnByName(name: string): Column | undefined {
-		return columns.find((col) => col.name === name);
+		return columns.find((col) => col.headerName === name);
 	}
 
 	// Helper function to get column type
@@ -152,10 +152,10 @@
 			columnTypes = rawData.columnTypes;
 
 			// Create columns directly using createColumn
-			columns = Object.keys(rawData.columnTypes).map((name) => {
-				const type = rawData.columnTypes[name];
-				const values = rawData.records.map((record) => record[name]);
-				const column = createColumn(name, type, values);
+			columns = Object.keys(rawData.columnTypes).map((headerName) => {
+				const type = rawData.columnTypes[headerName];
+				const values = rawData.records.map((record: { [key: string]: string | number | null }) => record[headerName]);
+				const column = createColumn(headerName, type);
 
 				// Set column properties
 				column.isToggled = false; // Default to unselected
@@ -164,7 +164,7 @@
 				return column;
 			});
 
-			headers = columns.map((col) => col.name);
+			headers = columns.map((col) => col.headerName);
 			logger.debug('Created columns:', columns);
 		} else {
 			logger.error('No data found. Please go to transform page first.');
@@ -192,16 +192,16 @@
 						<th
 							draggable="true"
 							ondragstart={(e) =>
-								setupColumnDrag(e, column.name, column.type, records, formatColumnType)}
+								setupColumnDrag(e, column.headerName, column.type, records, formatColumnType)}
 							ondragend={() => (draggedHeader = null)}
-							class={draggedHeader === column.name ? 'dragging' : ''}
-							style={mappedColumns.includes(column.name) ? 'opacity: 0.5;' : ''}
+							class={draggedHeader === column.headerName ? 'dragging' : ''}
+							style={mappedColumns.includes(column.headerName) ? 'opacity: 0.5;' : ''}
 						>
 							<div class="header-controls">
 								<span class="type-pseudo-select" data-type={formatColumnType(column.type)}>
 									{formatColumnType(column.type)}
 								</span>
-								<span class="header-text">{getCleanColumnName(column.name)}</span>
+								<span class="header-text">{getCleanColumnName(column.headerName)}</span>
 							</div>
 						</th>
 					{/each}
@@ -214,9 +214,11 @@
 							<td
 								draggable="true"
 								ondragstart={(e) =>
-									setupColumnDrag(e, column.name, column.type, records, formatColumnType)}
+									setupColumnDrag(e, column.headerName, column.type, records, formatColumnType)}
 								ondragend={() => (draggedHeader = null)}
-								style={mappedColumns.includes(column.name) ? 'color: var(--color-light-grey)' : ''}
+								style={mappedColumns.includes(column.headerName)
+									? 'color: var(--color-light-grey)'
+									: ''}
 								class={column.cellValidation && column.cellValidation[rowIndex]?.isValid === false
 									? 'invalid-cell'
 									: ''}

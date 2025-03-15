@@ -42,20 +42,20 @@ import { parseGpsCoordinate } from './dataTypes/gpsType';
  * Create a column of the appropriate type
  * [NEW] Core function of the Column architecture
  */
-export function createColumn(name: string, type: 'string' | 'number' | 'date' | 'gps'): Column {
-	switch (type) {
-		case 'string':
-			return new StringColumnModel(name);
-		case 'number':
-			return new NumberColumnModel(name);
-		case 'date':
-			return new DateColumnModel(name);
-		case 'gps':
-			return new GpsColumnModel(name);
-		default:
-			return new StringColumnModel(name);
-	}
-}
+// export function createColumn(name: string, type: 'string' | 'number' | 'date' | 'gps'): Column {
+// 	switch (type) {
+// 		case 'string':
+// 			return new StringColumnModel(name);
+// 		case 'number':
+// 			return new NumberColumnModel(name);
+// 		case 'date':
+// 			return new DateColumnModel(name);
+// 		case 'gps':
+// 			return new GpsColumnModel(name);
+// 		default:
+// 			return new StringColumnModel(name);
+// 	}
+// }
 
 /**
  * Update cell validation states for a column
