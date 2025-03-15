@@ -6,7 +6,7 @@
  * Each table includes timestamps, audit fields, and proper relationships.
  */
 
-import { type BaseColumns } from './dbTypes';
+import { type DbColumnsDef } from './dbTypes';
 import { type PgTable } from 'drizzle-orm/pg-core';
 
 import {
@@ -22,7 +22,7 @@ import {
 
 // 👍️🌲️ SHARED COLUMNS
 // Shared columns for audit and tracking
-const baseColumns = {
+const dbColumnsDef = {
 	created_at: timestamp('created_at').defaultNow(),
 	last_edited_at: timestamp('last_edited_at'),
 	edited_by: text('edited_by'),
@@ -30,7 +30,7 @@ const baseColumns = {
 	approved_at: timestamp('approved_at'),
 	approved_by: text('approved_by'),
 	deleted: boolean('deleted')
-	// notes field removed from baseColumns and added specifically to each table
+	// notes field removed from dbColumnsDef and added specifically to each table
 };
 
 // 👍️🌲️ TABLE DEFINITIONS
@@ -47,7 +47,7 @@ export const planting = pgTable('planting', {
 	planted: numeric('planted'),
 	planting_date: timestamp('planting_date'),
 	notes: text('notes'), // Keeping original notes field for planting table
-	...baseColumns
+	...dbColumnsDef
 });
 
 /**
@@ -69,7 +69,7 @@ export const land: PgTable = pgTable('land', {
 	preparation_id: integer('preparation_id').references(() => preparationTypes.preparation_id),
 	project_id: text('project_id').references(() => projects.project_id),
 	land_notes: text('land_notes'), // Renamed from notes to land_notes
-	...baseColumns
+	...dbColumnsDef
 });
 
 /**
@@ -91,7 +91,7 @@ export const crop = pgTable('crop', {
 	seedlot: text('seedlot'),
 	seedzone: text('seedzone'),
 	crop_notes: text('crop_notes'), // Renamed from notes to crop_notes
-	...baseColumns
+	...dbColumnsDef
 });
 
 /**
@@ -107,7 +107,7 @@ export const species = pgTable('species', {
 	type: text('type'),
 	reference: text('reference'),
 	notes: text('notes'), // Keeping original notes field for species table
-	...baseColumns
+	...dbColumnsDef
 });
 
 /**
@@ -127,7 +127,7 @@ export const organizations = pgTable('Organizations', {
 	gps_lat: numeric('gps_lat'),
 	gps_lon: numeric('gps_lon'),
 	notes: text('notes'), // Keeping original notes field for organizations table
-	...baseColumns
+	...dbColumnsDef
 });
 
 /**
@@ -140,7 +140,7 @@ export const polygons: PgTable = pgTable('Polygons', {
 	land_id: text('land_id').references(() => land.land_id),
 	geojson: json('geojson'),
 	poly_notes: text('poly_notes'), // Renamed from notes to poly_notes
-	...baseColumns
+	...dbColumnsDef
 });
 
 /**
@@ -152,7 +152,7 @@ export const preparationTypes = pgTable('PreparationTypes', {
 	name: text('name').notNull(),
 	description: text('description'),
 	notes: text('notes'), // Keeping original notes field for preparationTypes table
-	...baseColumns
+	...dbColumnsDef
 });
 
 /**
@@ -163,7 +163,7 @@ export const projects = pgTable('Projects', {
 	project_id: text('project_id').primaryKey(),
 	project_name: text('project_name'),
 	project_notes: text('project_notes'), // Renamed from notes to project_notes
-	...baseColumns
+	...dbColumnsDef
 });
 
 export const user = pgTable('user', {

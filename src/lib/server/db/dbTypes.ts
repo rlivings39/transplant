@@ -23,7 +23,7 @@ export interface PolygonRow {
 	poly_notes?: string;
 }
 
-export interface BaseColumns {
+export interface DbColumnsDef {
 	created_at?: Date;
 	last_edited_at?: Date;
 	edited_by?: string;
@@ -31,17 +31,17 @@ export interface BaseColumns {
 	approved_at?: Date;
 	approved_by?: string;
 	deleted?: boolean;
-	// notes field removed from BaseColumns and added specifically to each table
+	// notes field removed from DbColumnsDef and added specifically to each table
 }
 
-export interface PreparationTypeRow extends BaseColumns {
+export interface PreparationTypeRow extends DbColumnsDef {
 	preparation_id: number;
 	name: string;
 	description?: string;
 	notes?: string; // Keeping original notes field for preparation types
 }
 
-export interface ProjectRow extends BaseColumns {
+export interface ProjectRow extends DbColumnsDef {
 	project_id: string;
 	project_name: string;
 	project_notes?: string;
