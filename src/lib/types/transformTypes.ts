@@ -19,3 +19,14 @@ export type CsvPreviewEventMap = {
 export type CsvPreviewEvent<K extends keyof CsvPreviewEventMap> = CustomEvent<
 	CsvPreviewEventMap[K]
 >;
+export interface ValidatedTransformData {
+	records: Array<{
+		[key: string]: string | number | null;
+	}>;
+	columnTypes: {
+		[key: string]: 'string' | 'number' | 'date' | 'gps';
+	};
+	toggledColumns: {
+		[key: string]: boolean;
+	};
+}

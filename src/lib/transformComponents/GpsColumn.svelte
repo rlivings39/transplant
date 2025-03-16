@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { parseGpsCoordinate } from '$lib/utils/dataTypes/gpsType';
+	import { parseGpsCoordinate } from '$lib/utils/TfDetectValidFormat/TfGpsType';
 
 	const { row, columnHeaders, columnTypes, toggledColumns, invalidCells, rowIndex } = $props<{
 		row: Record<string, string>;

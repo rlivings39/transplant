@@ -1,9 +1,33 @@
-export type NumberType = 'number';
+import type { ColumnDef } from '$lib/types/columnModel';
+
+
+export interface NumberColumn extends ColumnDef {
+  type: 'number';
+  values: (number | null)[];
+  format?: {
+    precision?: number;
+    useThousandsSeparator?: boolean;
+  };
+  validation?: {
+    min?: number;
+    max?: number;
+  };
+}
+
+export function validateNumber(value: string): boolean {
+  if (!value?.trim()) return true;
+  const numberRegex = /^-?\d*\.?\d+$/;
+  return numberRegex.test(value.trim());
+}
+
+export function formatNumber(value: number, precision: number): string {
+  return value.toFixed(precision);
+}
 
 export interface ValidationResult {
-	type: NumberType | null;
-	isValid: boolean;
-	formattedValue: string;
+  type: 'number' | null;
+  isValid: boolean;
+  formattedValue: string;
 }
 
 // Helper function to remove commas from number strings

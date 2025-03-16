@@ -1,8 +1,8 @@
 <script lang="ts">
-	import * as dateType from '$lib/utils/dataTypes/dateType';
-	import * as numberType from '$lib/utils/dataTypes/numberType';
-	import * as gpsType from '$lib/utils/dataTypes/gpsType';
-	import { nonBlankValidSampleCount } from '$lib/utils/dataTypes/validationSampleCount';
+	import * as dateType from '$lib/utils/TfDetectValidFormat/TfdateType';
+	import * as numberType from '$lib/utils/TfDetectValidFormat/TfNumberType';
+	import * as gpsType from '$lib/utils/TfDetectValidFormat/TfGpsType';
+	import { nonBlankValidSampleCount } from '$lib/utils/TfDetectValidFormat/validationSampleCount';
 	import CSVImporter from './CSVImporter.svelte';
 	import type { CsvPreviewEvent } from '$lib/types/transformTypes';
 	import { transformedDataService } from '$lib/stores/transformStore';

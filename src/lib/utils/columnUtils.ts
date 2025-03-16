@@ -36,7 +36,7 @@ import {
 	GpsColumnModel
 } from '$lib/types/columnModel';
 
-import { parseGpsCoordinate } from './dataTypes/gpsType';
+import { parseGpsCoordinate } from './TfDetectValidFormat/TfGpsType';
 
 /**
  * Create a column of the appropriate type
