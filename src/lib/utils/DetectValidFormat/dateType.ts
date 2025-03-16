@@ -1,4 +1,14 @@
+import type { ColumnDef } from '$lib/types/columnModel';
 export type DateType = 'date';
+
+
+export interface DateColumn extends ColumnDef {
+	type: 'date';
+	values: (string | null)[];
+	format?: {
+	  timezone?: string;
+	};
+  }
 
 export interface ValidationResult {
 	type: DateType | null;
