@@ -114,7 +114,6 @@ function handleDragLeave(event: DragEvent) {
     {:else}
         <div class="loading-indicator">Processing CSV...</div>
     {/if}
-    
     <input
         type="file"
         accept=".csv"
