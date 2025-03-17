@@ -5,6 +5,8 @@
 	import type { ColumnRep } from '$lib/types/columnModel';
 	import Papa from 'papaparse';
 	import { createEventDispatcher } from 'svelte';
+	import { validateDate } from '$lib/utils/DetectValidFormat/dateType';
+	import { validateGps } from '$lib/utils/DetectValidFormat/gpsType';
 
 	let rawData = $state<Record<string, string>[]>([]);
 	let fileInput: HTMLInputElement;
@@ -26,6 +28,8 @@
 						Object.keys(row as object).length ===
 						Object.keys(results.data[0] || ({} as object)).length
 				) as Record<string, string>[];
+				import { validateDate } from '$lib/utils/DetectValidFormat/dateType';
+				import { validateGps } from '$lib/utils/DetectValidFormat/gpsType';
 
 				if (rows.length > 0) {
 					isFileLoaded = true;
@@ -91,13 +95,23 @@
 	}
 
 	function detectColumnType(samples: string[]): string {
-		// Implementation of type detection
-		return 'string'; // Placeholder
+		if (samples.every((s) => validateNumber(s))) return 'number';
+		if (samples.every((s) => validateDate(s))) return 'date';
+		if (samples.every((s) => validateGps(s))) return 'gps';
+		return 'string';
 	}
 
 	function parseValue(value: string, type: string): any {
-		// Implementation of value parsing
-		return value; // Placeholder
+		switch (type) {
+			case 'number':
+				return parseFloat(value);
+			case 'date':
+				return new Date(value).toISOString();
+			case 'gps':
+				return validateGps(value);
+			default:
+				return value;
+		}
 	}
 </script>
 
