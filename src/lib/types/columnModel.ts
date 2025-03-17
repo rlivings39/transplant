@@ -61,6 +61,7 @@ export interface ColumnRep extends ColumnDef {
 	values: Array<string | number | null>;
 	/** Optional validation errors by row index */
 	validationErrors?: Set<number>;
+	component?: any; // Add component property
 }
 
 /**

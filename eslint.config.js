@@ -17,7 +17,7 @@ export default [
 			parser: tsParser,
 			parserOptions: {
 				sourceType: 'module',
-				ecmaVersion: 2020,
+				ecmaVersion: 'latest',
 				extraFileExtensions: ['.svelte']
 			},
 			globals: {
@@ -33,24 +33,30 @@ export default [
 		},
 
 		rules: {
-			// TypeScript rules
+			// 🔥 Enforce Svelte 5 Runes
+			'svelte/require-runes': 'error',  // Forces Svelte 5 runes (`@runes`)
+			'svelte/prefer-runes': 'error',   // Suggests Runes over old Svelte 4 syntax
+			'svelte/no-legacy-reactive-declarations': 'error', // Disallow `$:` reactivity
+			'svelte/no-legacy-reactive-assignments': 'error', // Prevent old `$var = value` syntax
+
+			// ✅ Ensure Valid Svelte Code
+			'svelte/valid-compile': 'error',
+			'svelte/no-unused-svelte-ignore': 'error',
+			'svelte/spaced-html-comment': 'error',
+
+			// 🚀 TypeScript Best Practices
 			'@typescript-eslint/no-explicit-any': 'warn',
 			'@typescript-eslint/no-unused-vars': [
 				'warn',
 				{
 					argsIgnorePattern: '^_',
-					varsIgnorePattern: '^\\$'
+					varsIgnorePattern: '^\\$' // Ignore Svelte store variables
 				}
 			],
-			'no-unused-vars': 'off', // Turn off base rule
+			'no-unused-vars': 'off', // Disable base rule in favor of TypeScript one
 
-			// Svelte rules
-			'svelte/valid-compile': 'error',
-			'svelte/no-unused-svelte-ignore': 'error',
-			'svelte/spaced-html-comment': 'error',
-
-			// General rules
-			'no-console': 'off', // Disabled during development
+			// 🔧 General Best Practices
+			'no-console': 'off', // Keep console logs during development
 			'no-debugger': 'warn'
 		}
 	},
@@ -59,7 +65,7 @@ export default [
 		languageOptions: {
 			parser: svelteParser,
 			parserOptions: {
-				parser: tsParser // Use TypeScript parser for script blocks
+				parser: tsParser // Use TypeScript parser for `<script>` blocks
 			}
 		}
 	},

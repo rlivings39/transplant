@@ -71,7 +71,7 @@ export function detect(samples: string[]): boolean {
 	return nonEmptySamples.every((value) => parseGpsCoordinate(value) !== null);
 }
 
-export function validate(value: string): boolean {
+export function validateGps(value: string): boolean {
 	return parseGpsCoordinate(value) !== null;
 }
 

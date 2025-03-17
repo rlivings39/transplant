@@ -10,6 +10,18 @@ export interface DateColumn extends ColumnDef {
 	};
   }
 
+  export function validateDate(value: string): ValidationResult {
+	const isoDatePattern = /^\d{4}-\d{2}-\d{2}$/;
+	const date = new Date(value);
+	
+	const isValid = isoDatePattern.test(value) || !isNaN(date.getTime());
+	
+	return {
+	  type: 'date',
+	  isValid,
+	  formattedValue: isValid ? new Date(value).toISOString() : value
+	};
+  }
 export interface ValidationResult {
 	type: DateType | null;
 	isValid: boolean;

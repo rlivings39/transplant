@@ -8,6 +8,7 @@
 	import { validateDate } from '$lib/utils/DetectValidFormat/dateType';
 	import { validateGps } from '$lib/utils/DetectValidFormat/gpsType';
 
+
 	let rawData = $state<Record<string, string>[]>([]);
 	let fileInput: HTMLInputElement;
 	let isFileLoaded = $state(false);
@@ -28,8 +29,6 @@
 						Object.keys(row as object).length ===
 						Object.keys(results.data[0] || ({} as object)).length
 				) as Record<string, string>[];
-				import { validateDate } from '$lib/utils/DetectValidFormat/dateType';
-				import { validateGps } from '$lib/utils/DetectValidFormat/gpsType';
 
 				if (rows.length > 0) {
 					isFileLoaded = true;
@@ -102,17 +101,16 @@
 	}
 
 	function parseValue(value: string, type: string): any {
-		switch (type) {
-			case 'number':
-				return parseFloat(value);
-			case 'date':
-				return new Date(value).toISOString();
-			case 'gps':
-				return validateGps(value);
-			default:
-				return value;
-		}
-	}
+  switch (type) {
+    case 'number':
+      return parseFloat(value);
+    case 'date':
+      const date = new Date(value);
+      return isNaN(date.getTime()) ? value : date.toISOString();
+    default:
+      return value;
+  }
+}
 </script>
 
 <div class="import-container">
