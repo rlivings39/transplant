@@ -5,6 +5,23 @@
 	let rawCsvDataState = $state<string[][]>([]);
 	let errorMessage = $state<string | null>(null);
 
+	const { onProcessedData, onError } = $props<{
+		onProcessedData: (csvDataParam: ColumnRep[]) => void;
+		onError: (message: string) => void;
+	}>();
+
+	function CsvToColumnRepFn(CsvDataLocal: string[][]): ColumnRep[] {
+		if (CsvDataLocal.length === 0) return [];
+		const headers = CsvDataLocal[0];
+		return headers.map((header, index) => ({
+			headerName: header,
+			type: 'string',
+			values: CsvDataLocal.slice(1).map((row) => row[index]),
+			isToggled: false,
+			isFormatted: false
+		}));
+	}
+
 	function parseCsvFn(file: File) {
 		Papa.parse(file, {
 			header: false,
@@ -24,24 +41,6 @@
 				onError(errorMessage);
 			}
 		});
-	}
-
-	const { onProcessedData, onError } = $props<{
-		onProcessedData: (csvDataParam: ColumnRep[]) => void;
-		onError: (message: string) => void;
-	}>();
-
-	function CsvToColumnRepFn(csvData: string[][]): ColumnRep[] {
-		if (csvData.length === 0) return [];
-
-		const headers = csvData[0];
-		return headers.map((header, index) => ({
-			headerName: header,
-			type: 'string',
-			values: csvData.slice(1).map((row) => row[index]),
-			isToggled: false,
-			isFormatted: false
-		}));
 	}
 
 	function handleFileSelect(event: Event) {
