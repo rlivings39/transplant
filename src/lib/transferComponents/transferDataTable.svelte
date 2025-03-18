@@ -34,10 +34,10 @@
 				{#each columnRep as column}
 					<th>
 						<div class="header-controls">
-							<ToggleOff
+							<!-- <ToggleOff
 								columnHeader={column.headerName}
 								bind:toggled={toggledColumns[column.headerName]}
-							/>
+							/> -->
 							<select
 								value={columnTypes[column.headerName]}
 								onchange={(e) => handleColumnTypeChange(column.headerName, e.currentTarget.value)}
