@@ -23,9 +23,7 @@ import type {
 	CellValidationState
 } from './columnTypes';
 
-// I moved this from columnTypes.ts unlike other interfaces because, well, it's the main one so I want to know how it aligns with the class below
-// [NEW] Core interface of the ColumnRep architecture
-// [INTENTION: Will replace existing column handling throughout the application]
+
 export interface ColumnDef {
 	headerName: string; // The header/importedColumnName
 	isToggled: boolean; // Whether this column is toggled on/off
@@ -35,13 +33,10 @@ export interface ColumnDef {
 	isMerged?: boolean; // Whether this column is created by merging other columns
 	mergedFrom?: string[]; // If merged, the source columns that were merged
 	isGpsSource?: boolean; // Whether this column is a source for the universal GPS column
-
 	// Type coercion tracking
 	selectTypeCoercion?: selectTypeCoercion; // Information about type coercion if applicable
-
 	// Cell-level validation state
 	cellValidation?: CellValidationState[]; // Validation state for individual cells
-
 	// Database mapping properties (only relevant if isMapped is true)
 	dbMapping?: {
 		table: string; // Target database table

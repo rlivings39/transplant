@@ -1,121 +1,102 @@
 <script lang="ts">
-	/* eslint-env browser */
-	/// <reference types="svelte" />
-	/// <reference lib="dom" />
-	import ToggleOff from './toggleOff.svelte';
-	import GpsColumn from './GpsColumn.svelte';
-	import { createEventDispatcher } from 'svelte';
-	const dispatch = createEventDispatcher<{
-		columnTypeChange: { columnHeader: string; type: string };
-		columnToggle: { columnHeader: string; isActive: boolean };
+	// import ToggleOff from '../transformComponents/toggleOff.svelte';
+	import ToggleOn from '../transformComponents/toggleOn.svelte';
+	import GpsColumn from '../transformComponents/GpsColumn.svelte';
+	import type { ColumnRep } from '$lib/types/columnModel';
+
+	const {
+		columnRep = [],
+		columnTypes = {},
+		invalidCells = {},
+		toggledColumns = {}
+	} = $props<{
+		columnRep?: ColumnRep[];
+		columnTypes?: Record<string, string>;
+		invalidCells?: Record<string, number[]>;
+		toggledColumns?: Record<string, boolean>;
 	}>();
 
-	const { rows, columnTypes, invalidCells, toggledColumns } = $props<{
-		rows: Record<string, any>[];
-		columnTypes: Record<string, string>;
-		invalidCells: Record<string, Set<number>>;
-		toggledColumns: Record<string, boolean>;
-	}>();
-
-	// Log the incoming rows data for debugging
-	$effect(() => {
-		console.log('[transformDataTable] Received rows type:', typeof rows);
-		console.log('[transformDataTable] Received rows isArray:', Array.isArray(rows));
-		if (Array.isArray(rows) && rows.length > 0) {
-			console.log('[transformDataTable] First row sample:', rows[0]);
-		}
-	});
-
-	// let toggledColumns = $state<Record<string, boolean>>({});
-
-	function handleColumnToggle(columnHeader: string, isActive: boolean) {
-		dispatch('columnToggle', { columnHeader, isActive });
+	function handleColumnTypeChange(columnHeader: string, type: string) {
+		columnTypes[columnHeader] = type;
 	}
 
-	// Ensure rows is always an array
-	let safeRows = $derived(Array.isArray(rows) ? rows : []);
-
-	// Log warning if rows is not an array
-	$effect(() => {
-		if (!Array.isArray(rows)) {
-			console.warn('[transformDataTable] rows is not an array:', rows);
-		}
-	});
-
-	let columnHeaders = $derived(safeRows.length > 0 ? Object.keys(safeRows[0]) : []);
-	let previewRows = $derived(safeRows.length > 0 ? safeRows.slice(0, 5000) : []); // Process 5000 rows - better balance of performance and functionality
+	function handleColumnToggle(columnHeader: string, isActive: boolean) {
+		toggledColumns[columnHeader] = isActive;
+	}
 
 	function isGreyedOut(columnHeader: string, rowIndex: number): boolean {
-		// ColumnRep should be greyed out if it's toggled off or has validation errors
-		// toggledColumns[columnHeader] is true when column is toggled OFF
-		return !!toggledColumns[columnHeader] || invalidCells[columnHeader]?.has(rowIndex);
+		return !!toggledColumns[columnHeader] || invalidCells[columnHeader]?.includes(rowIndex);
 	}
 </script>
 
-<div>
-	<div class="header-container">
-		<div class="header-actions"></div>
-	</div>
-	<div class="table-container">
-		<table>
-			<thead>
-				<tr class="header-text">
+<div class="table-container">
+	<table>
+		<thead>
+			<tr class="header-text">
+				<th>
+					<div class="header-name">GPS</div>
+				</th>
+				{#each columnRep as column}
 					<th>
-						<div class="header-name">GPS</div>
+						<div class="header-controls">
+							<!-- <ToggleOff 
+				  columnHeader={column.headerName} 
+				  onToggle={(isActive: boolean) => handleColumnToggle(column.headerName, isActive)}
+				/> -->
+							<ToggleOn
+								columnHeader={column.headerName}
+								onToggle={(isActive: boolean) => handleColumnToggle(column.headerName, isActive)}
+							/>
+							<select
+								value={columnTypes[column.headerName]}
+								onchange={(e) => handleColumnTypeChange(column.headerName, e.currentTarget.value)}
+							>
+								<option value="string">Text</option>
+								<option value="number">Number</option>
+								<option value="date">Date</option>
+								<option value="gps">GPS</option>
+								<option value="latitude">Latitude</option>
+								<option value="longitude">Longitude</option>
+							</select>
+						</div>
+						<div class="header-name">
+							{column.headerName}
+						</div>
 					</th>
-					{#each columnHeaders as columnHeader}
-						<th>
-							<div class="header-controls">
-								<ToggleOff {columnHeader} onToggle={handleColumnToggle} />
-								<select
-									value={columnTypes[columnHeader]}
-									onchange={(e) => {
-										dispatch('columnTypeChange', {
-											columnHeader,
-											type: e.currentTarget.value
-										});
-									}}
-								>
-									<option value="string">Text</option>
-									<option value="number">Number</option>
-									<option value="date">Date</option>
-									<option value="gps">GPS</option>
-									<option value="latitude">Latitude</option>
-									<option value="longitude">Longitude</option>
-									<!-- <option value="delete">Delete</option> -->
-								</select>
-							</div>
-							<div class="header-name">
-								{columnHeader}
-							</div>
-						</th>
-					{/each}
-				</tr>
-			</thead>
-			<tbody>
-				{#each previewRows as row, rowIndex (rowIndex)}
+				{/each}
+			</tr>
+		</thead>
+		<tbody>
+			{#if columnRep && columnRep.length > 0}
+				{#each Array.from({ length: columnRep[0].values.length }, (_, i) => i) as rowIndex}
 					<tr>
 						<GpsColumn
-							{row}
-							{columnHeaders}
+							row={columnRep.reduce(
+								(acc: Record<string, any>, col: ColumnRep) => ({
+									...acc,
+									[col.headerName]: col.values[rowIndex]
+								}),
+								{}
+							)}
+							columnHeaders={columnRep.map((col: ColumnRep) => col.headerName)}
 							{toggledColumns}
 							{columnTypes}
 							{invalidCells}
 							{rowIndex}
 						/>
-						{#each columnHeaders as columnHeader (columnHeader)}
+						{#each columnRep as column}
 							<td
-								class:number-cell={columnTypes[columnHeader] === 'number'}
-								class:coord-cell={columnTypes[columnHeader] === 'latitude' ||
-									columnTypes[columnHeader] === 'longitude'}
-								class:greyed-out={isGreyedOut(columnHeader, rowIndex)}
+								class:number-cell={columnTypes[column.headerName] === 'number'}
+								class:coord-cell={columnTypes[column.headerName] === 'latitude' ||
+									columnTypes[column.headerName] === 'longitude'}
+								class:greyed-out={isGreyedOut(column.headerName, rowIndex)}
 							>
-								{row[columnHeader]}
+								{column.values[rowIndex] ?? ''}
 							</td>
 						{/each}
 					</tr>
 				{/each}
-			</tbody>
-		</table>
-	</div>
+			{/if}
+		</tbody>
+	</table>
 </div>

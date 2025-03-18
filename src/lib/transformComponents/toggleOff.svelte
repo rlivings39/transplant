@@ -1,4 +1,5 @@
 <script lang="ts">
+	
 	const { columnHeader, onToggle } = $props<{
 		columnHeader: string; // Changed from columnId
 		onToggle: (columnHeader: string, isActive: boolean) => void;
