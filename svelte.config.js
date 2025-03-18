@@ -17,5 +17,4 @@ const config = {
 		handler(warning);
 	}
 };
-
 export default config;

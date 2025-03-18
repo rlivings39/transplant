@@ -1,94 +1,67 @@
 <script lang="ts">
-	// import TransformManager from '$lib/transformComponents/TransformManager.svelte';
+	import TransferDataTable from '$lib/transferComponents/transferDataTable.svelte';
+  
+	// Sample data to test the table
+	const columns = [
+	  { headerName: 'Name', values: ['Alice', 'Bob'] },
+	  { headerName: 'Age', values: [30, 25] },
+	  { headerName: 'City', values: ['New York', 'Los Angeles'] }
+	];
+  
+	const data = [
+	  { Name: 'Alice', Age: 30, City: 'New York' },
+	  { Name: 'Bob', Age: 25, City: 'Los Angeles' }
+	];
+  </script>
+  
+  <TransferDataTable {columns} {data} />
+<!-- <script lang="ts">
 	import TransformColumnModel from '$lib/transformComponents/transformColumnModel.svelte';
-	import type { TransformEvent } from '$lib/transformComponents/transformColumnModel.svelte';
-	import { goto } from '$app/navigation';
-	import { transformedDataService } from '$lib/stores/transformStore';
-
-	// Interface for validated transform data
-	interface ValidatedTransformData {
-		records: Array<{
-			[key: string]: string | number | null;
-		}>;
-		columnTypes: {
-			[key: string]: 'string' | 'number' | 'date' | 'gps' | 'latitude' | 'longitude';
-		};
+  
+	// Define the TransformEvent interface
+	interface TransformEvent {
+	  detail: {
+		records: Array<Record<string, string | number | null>>;
+		columnTypes: Record<string, string>;
+	  };
 	}
-
+  
 	// Local state using runes
-	let transformedRecords = $state([]);
-	let columnTypeMap = $state({});
-	let toggledColumnsState = $state({});
-	let csvDataLoaded = $state(false);
-	let dataTransformed = $state(false);
-
-	// Reference to the TransformManager component
+	let transformedRecords = $state<Array<Record<string, string | number | null>>>([]);
+	let columnTypeMap = $state<Record<string, string>>({});
 	let transformManagerComponent = $state<TransformColumnModel | null>(null);
-
+  
 	// Function to receive data from TransformManager component
 	function handleTransformedData(event: TransformEvent) {
-		const { records, columnTypes, toggledColumns } = event.detail;
-
-		// Explicitly type the transformed data
-		const transformedData: Array<Record<string, string | number | null>> = records.map(
-			(record) => ({
-				...record
-				// Any additional transformations
-			})
-		);
-
-		// Update the transformedDataService
-		transformedDataService.set({
-			records: transformedData,
-			columnTypes,
-			toggledColumns
-		});
+	  const { records, columnTypes } = event.detail;
+	  
+	  // Update local state
+	  transformedRecords = records;
+	  columnTypeMap = columnTypes;
+  
+	  // Process records
+	  records.forEach((record: Record<string, string | number | null>) => {
+		// Process each record
+	  });
 	}
+  
 	// Function to handle CSV data loaded event
 	function handleCsvLoaded() {
-		console.log('CSV data loaded event received');
-		csvDataLoaded = true;
+	  console.log('CSV data loaded event received');
+	  if (transformManagerComponent) {
+		transformManagerComponent.initializeColumns();
+	  }
 	}
-
-	// Function to send data to TransPlant
-	function sendToTransplant() {
-		console.log('sendToTransplant called');
-
-		if (!transformManagerComponent) {
-			console.error('TransformManager component not found');
-			alert('Error: Could not access the TransformManager component');
-			return;
-		}
-
-		// Get the transformed data from the component
-		const exportData = transformManagerComponent.exportToTransplant();
-
-		if (!exportData || !exportData.records || exportData.records.length === 0) {
-			console.error('No data available to export');
-			alert('No data available. Please transform data first.');
-			return;
-		}
-
-		console.log('Exporting data to TransPlant:', exportData);
-
-		// Store in the service for TransPlant to access
-		transformedDataService.set(exportData);
-
-		// Navigate to the TransPlant page
-		goto('/transplant');
-	}
-</script>
+  </script>
+  
+  
 
 <div class="transform-container">
-	<div class="transform-header">
-		<h1>Transform Data</h1>
-		{#if csvDataLoaded}
-			<button onclick={sendToTransplant}> Send to TransPlant </button>
-		{/if}
-	</div>
+
 	<TransformColumnModel
 		on:dataTransformed={handleTransformedData}
 		on:csvLoaded={handleCsvLoaded}
 		bind:this={transformManagerComponent}
 	/>
-</div>
+</div> -->
+
