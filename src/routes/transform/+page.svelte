@@ -1,20 +1,26 @@
 <script lang="ts">
 	import TransferDataTable from '$lib/transferComponents/transferDataTable.svelte';
-  
+
 	// Sample data to test the table
 	const columns = [
-	  { headerName: 'Name', values: ['Alice', 'Bob'] },
-	  { headerName: 'Age', values: [30, 25] },
-	  { headerName: 'City', values: ['New York', 'Los Angeles'] }
+		{ headerName: 'Name', values: [1, 2] },
+		{ headerName: 'Age', values: [30, 25] },
+		{ headerName: 'City', values: ['New York', 'Los Angeles'] }
 	];
-  
+
+	const test = columns[1]["headerName"];
+
 	const data = [
-	  { Name: 'Alice', Age: 30, City: 'New York' },
-	  { Name: 'Bob', Age: 25, City: 'Los Angeles' }
+		{ Name: 'Alice', Age: 30, City: 'New York' },
+		{ Name: 'Bob', Age: 25, City: 'Los Angeles' }
 	];
-  </script>
-  
-  <TransferDataTable {columns} {data} />
+	const toggledColumns = { Name: false, Age: false, City: false };
+
+	const invalidCells = { Name: [], Age: [], City: [] };
+</script>
+
+<TransferDataTable columnRep={columns} columnTypes={data} toggledColumns={toggledColumns} {invalidCells} />
+
 <!-- <script lang="ts">
 	import TransformColumnModel from '$lib/transformComponents/transformColumnModel.svelte';
   
@@ -52,16 +58,13 @@
 		transformManagerComponent.initializeColumns();
 	  }
 	}
-  </script>
-  
-  
+  </script> -->
 
-<div class="transform-container">
+<!-- class="transform-container">
 
 	<TransformColumnModel
 		on:dataTransformed={handleTransformedData}
 		on:csvLoaded={handleCsvLoaded}
 		bind:this={transformManagerComponent}
 	/>
-</div> -->
-
+</div>  -->

@@ -1,4 +1,5 @@
 <script lang="ts">
+
 	// State using Svelte 5 runes
 	let rawData = $state<string[][]>([]);
 	let columns = $state<Column[]>([]);

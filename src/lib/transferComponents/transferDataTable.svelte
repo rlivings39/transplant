@@ -44,9 +44,9 @@
 							>
 								<option value="string">Text</option>
 								<option value="number">Number</option>
-								<option value="date">Date</option>
 								<option value="gps">GPS</option>
 								<option value="latitude">Latitude</option>
+								<option value="date">Date</option>
 								<option value="longitude">Longitude</option>
 							</select>
 						</div>

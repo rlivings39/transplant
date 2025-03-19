@@ -24,6 +24,6 @@
 	{#if errorMessage}
 		<div class="error-banner">{errorMessage}</div>
 	{:else if columnRep.length > 0}
-		<TransferDataTable {columnRep} />
+		<TransferDataTable {columnRep} {columnTypes} {toggledColumns} {invalidCells} />
 	{/if}
 </div>
