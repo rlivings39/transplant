@@ -1,3 +1,5 @@
+
+
 <script lang="ts">
     import Papa from 'papaparse';
     import type { ColumnRep } from '$lib/types/columnModel';
@@ -5,7 +7,7 @@
     // Props
     const { onProcessedData, onError } = $props<{
       onProcessedData: (importedData: ColumnRep[]) => void;
-      onError: (message: string) => void;
+      onError: (handleErrorVar: string) => void;
     }>();
   
     // Main Function: Parses and transforms CSV data in one step

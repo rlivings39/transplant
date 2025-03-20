@@ -7,8 +7,8 @@
 	let columnRep = $state<ColumnRep[]>([]);
 	let errorMessage = $state<string | null>(null);
 
-	function handleProcessedData(csvProcessedData: ColumnRep[]) {
-		columnRep = csvProcessedData;
+	function handleProcessedData(assignColumnRepVar: ColumnRep[]) {
+		columnRep = assignColumnRepVar;
 	}
 
 	function handleError(message: string) {
