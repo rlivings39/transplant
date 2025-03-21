@@ -7,19 +7,13 @@
 	let columnRep = $state<ColumnRep[]>([]);
 	let errorMessage = $state<string | null>(null);
 
-	function handleProcessedData(assignColumnRepVar: ColumnRep[]) {
-		columnRep = assignColumnRepVar;
-	}
 
-	function handleError(message: string) {
-		console.error(message);
-	}
 </script>
 
 <div class="transfer-page">
 	<h1>Data Transfer</h1>
 
-	<TransferCSVImporter onProcessedData={handleProcessedData} onError={handleError} />
+	<TransferCSVImporter />
 
 	{#if errorMessage}
 		<div class="error-banner">{errorMessage}</div>
