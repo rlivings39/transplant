@@ -4,13 +4,9 @@
 	import ToggleOff from '.././transformComponents/toggleOff.svelte';
 	import GpsColumn from '.././transformComponents/GpsColumn.svelte';
 
-	const { columnRep, columnTypes, toggledColumns, invalidCells } = $props<{
+	const { columnRep = $bindable() } = $props<{
 		columnRep: ColumnRep[];
-		columnTypes: Record<string, string>;
-		toggledColumns: Record<string, boolean>;
-		invalidCells: Record<string, number[]>;
 	}>();
-
 	function handleColumnTypeChange(columnHeader: string, type: string) {
 		columnTypes[columnHeader] = type;
 	}
@@ -22,6 +18,12 @@
 			invalidCells[columnHeader]?.includes(rowIndex)
 		);
 	}
+	$effect(() => {
+		console.log('columnRep updated:', $state.snapshot(columnRep));
+		console.log('columnTypes:', $state.snapshot(columnTypes));
+		console.log('toggledColumns:', $state.snapshot(toggledColumns));
+		console.log('invalidCells:', $state.snapshot(invalidCells));
+	});
 </script>
 
 <div class="table-container">

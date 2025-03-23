@@ -35,10 +35,6 @@ export enum TableName {
  * ColumnRep interfaces
  */
 
-export interface NumberColumn extends ColumnRep {
-	type: 'number';
-	// Add number-specific properties
-}
 
 // Cell validation state - tracks validation status for individual cells in a column
 // [NEW] Core interface of the ColumnRep architecture
@@ -71,6 +67,7 @@ export interface StringColumn extends ColumnDef {
 		maxLength?: number;
 	};
 }
+
 
 // Number column
 // [NEW] Core interface of the ColumnRep architecture
@@ -105,8 +102,6 @@ export interface DateColumn extends ColumnDef {
 export type GpsCoordinate = {
 	latitude: number;
 	longitude: number;
-	format?: 'DMS' | 'DD';
-	precision?: number;
 };
 
 // Coordinate component type (for lat/lon columns)
