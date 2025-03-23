@@ -1,127 +1,104 @@
+<!-- 
+  Svelte 5 $dispatch documentation reference:
+  https://svelte.dev/docs/svelte/v5-migration-guide#Event-changes-Component-events
+Components should accept callback props - which means you then pass functions as properties to these components
+  -->
 <script lang="ts">
-	import Papa from 'papaparse';
-	import type { ColumnRep } from '$lib/types/columnModel';
+  import Papa from 'papaparse';
 
-	// // Props
-	// const { onProcessedData, onError } = $props<{
-	//   onProcessedData: (importedData: ColumnRep[]) => void;
-	//   onError: (handleErrorVar: string) => void;
-	// }>();
+  const { onprocessed } = $props<{
+    onprocessed?: (event: CustomEvent<any>) => void;
+  }>();
 
-	let columnRep = $state<ColumnRep[]>([]);
+  let file = $state<File | null>(null);
+  let error = $state<string | null>(null);
+  let isLoading = $state(false);
 
-	function handleProcessedData(assignColumnRepVar: ColumnRep[]) {
-		columnRep = assignColumnRepVar;
-	}
-
-	$effect(() => {
-		console.log('columnRep updated:', $state.snapshot(columnRep));
-	});
-
-	function handleError(message: string) {
-		console.error(message);
-	}
-	
-  function processCSVData(rawData: string[][]): ColumnRep[] {
-  const importedData = rawData[0].map((headerName, index) => ({
-    headerName,
-    type: 'string', // Default type
-    values: rawData.slice(1).map((row) => row[index]),
-    isToggled: true,
-    isFormatted: false,
-    validationErrors: new Set<number>()
-  }));
-
-  console.log('Processed columns:', importedData.length);
-  importedData.forEach((col, i) => {
-    console.log(`Column ${i}:`, {
-      header: col.headerName,
-      type: col.type,
-      values: col.values.slice(0, 3), // Show first 3 values
-      isToggled: col.isToggled,
-      isFormatted: col.isFormatted
-    });
-  });
-
-  return importedData;
-}
-
-	// Main Function: Parses and transforms CSV data in one step
-	// function CsvParseAndStructureFn(file: File) {
-	// 	Papa.parse(file, {
-	// 		header: false,
-	// 		skipEmptyLines: true,
-	// 		complete: (results) => {
-	// 			if (results.errors.length > 0) {
-	// 				handleError('Error parsing CSV file');
-	// 				return;
-	// 			}
-	// 			const rawData = results.data as string[][];
-	// 			const importedData =
-	// 				rawData.length === 0
-	// 					? []
-	// 					: rawData[0].map((header, index) => ({
-	// 							headerName: header,
-	// 							type: 'string' as const, // Add 'as const' here
-	// 							values: rawData.slice(1).map((row) => row[index]),
-	// 							isToggled: false,
-	// 							isFormatted: false
-	// 						}));
-	// 			handleProcessedData(importedData); // Send structured data to parent
-	// 		},
-	// 		error: (error) => {
-	// 			handleError('Failed to parse CSV file');
-	// 		}
-	// 	});
-	// }
-
-	// Event Handler: Handles file selection
-	async function handleFileSelect(event: Event) {
-  const file = (event.target as HTMLInputElement).files?.[0];
-  if (!file) return;
-
-  if (file.type !== 'text/csv') {
-    handleError('Please upload a CSV file');
-    return;
-  }
-
-  try {
-    const results = await new Promise<Papa.ParseResult<string[]>>((resolve, reject) => {
-      Papa.parse(file, {
-        header: false,
-        skipEmptyLines: true,
-        complete: resolve,
-        error: reject
-      });
-    });
-
-    if (results.errors.length > 0) {
-      handleError('Error parsing CSV file');
+  async function handleFileSelect(event: Event) {
+    console.log('File select event triggered');
+    const input = event.target as HTMLInputElement;
+    file = input.files?.[0] ?? null;
+    
+    if (!file) {
+      console.log('No file selected');
+      error = 'No file selected';
       return;
     }
 
-    const rawData = results.data as string[][];
-    console.log('CSV Parsing Results:', {
-      fileName: file.name,
-      size: file.size,
-      rows: rawData.length,
-      columns: rawData[0]?.length || 0,
-      sampleData: rawData.slice(0, 3) // Show first 3 rows
-    });
+    console.log('Selected file:', file.name, file.type, file.size + ' bytes');
 
-    const importedData = processCSVData(rawData);
-    handleProcessedData(importedData);
-    console.log('Processed Data:', importedData);
-  } catch (error) {
-    handleError('Failed to parse CSV file');
+    if (file.type !== 'text/csv') {
+      console.log('Invalid file type:', file.type);
+      error = 'Please upload a CSV file';
+      return;
+    }
+
+    try {
+      console.log('Starting CSV parsing');
+      isLoading = true;
+      error = null;
+
+      const results = await new Promise<Papa.ParseResult<string[]>>((resolve, reject) => {
+        Papa.parse(file!, {
+          header: false,
+          skipEmptyLines: true,
+          complete: resolve,
+          error: reject
+        });
+      });
+
+      console.log('CSV parsing completed');
+      
+      if (results.errors.length > 0) {
+        console.error('CSV parsing errors:', results.errors);
+        error = 'Error parsing CSV file';
+        return;
+      }
+
+      console.log('Raw CSV data:', results.data);
+
+      const rawData = results.data;
+      const importedData = rawData.length === 0
+        ? []
+        : rawData[0].map((header, index) => ({
+            headerName: header,
+            type: 'string' as const,
+            values: rawData.slice(1).map(row => row[index]),
+            isToggled: false,
+            isFormatted: false
+          }));
+
+      console.log('Processed data structure:', importedData);
+
+      // 🔥 New event model
+      if (onprocessed) {
+        console.log('Dispatching processed event');
+        onprocessed(new CustomEvent('processed', { detail: importedData }));
+      } else {
+        console.warn('No onprocessed handler provided');
+      }
+      
+    } catch (err) {
+      console.error('CSV parsing failed:', err);
+      error = 'Failed to parse CSV file';
+    } finally {
+      console.log('Processing complete');
+      isLoading = false;
+    }
   }
-}
-
-	function validateImportedData(data: ColumnRep[]): boolean {
-		return data.every((column) => column.headerName && column.values.length > 0);
-	}
 </script>
 
-<div class="csv-importer">
-	<input type="file" accept=".csv" onchange={handleFileSelect} />
-</div>
+<input 
+  type="file" 
+  accept=".csv" 
+  onchange={handleFileSelect} 
+  disabled={isLoading}
+/>
+
+{#if error}
+  <p class="error">{error}</p>
+{/if}
+
+{#if isLoading}
+  <p>Loading...</p>
+{/if}
