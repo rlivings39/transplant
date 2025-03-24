@@ -9,7 +9,7 @@ Components should accept callback props - which means you then pass functions as
 	import { BaseColumnModel } from '$lib/types/columnModel';
 
 	const { onprocessed } = $props<{
-		onprocessed?: (event: CustomEvent<ColumnRep[]>) => void;
+		onprocessed: (data: ColumnRep[]) => void;
 	}>();
 
 	let file = $state<File | null>(null);
@@ -73,11 +73,6 @@ Components should accept callback props - which means you then pass functions as
 					// Add values manually since we're not using StringColumnModel
 					const values = data.map((row) => row[header]);
 
-					// // Populate values using the model's methods
-					// data.forEach((row) => {
-					// 	columnModel.addValue(row[header]);
-					// });
-
 					// Return the column model as a ColumnRep
 					return {
 						...columnModel,
@@ -85,9 +80,11 @@ Components should accept callback props - which means you then pass functions as
 						values
 					};
 				});
-
+				// Before the onprocessed call
+				console.log('Dispatching processed data:', columnData);
+				onprocessed?.(columnData);
 				// Dispatch the transformed data
-				onprocessed?.(new CustomEvent('processed', { detail: columnData }));
+				onprocessed?.(columnData);
 			}
 
 			processCSV(results);

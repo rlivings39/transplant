@@ -65,23 +65,38 @@ export interface ColumnRep extends ColumnDef {
  * [INTENTION: Will replace existing column handling in TransformManager.svelte]
  */
 export class BaseColumnModel implements ColumnDef {
-	headerName: string;
-	isToggled: boolean;
-	isMapped?: boolean;
-	mappedTo?: string;
-	isFormatted: boolean;
-	dbMapping?: {
-		table: string;
-		column: string;
-		isRequired: boolean;
-	};
+    headerName: string;
+    isToggled: boolean;
+    isMapped: boolean;
+    mappedTo?: string;
+    isFormatted: boolean;
+    isMerged?: boolean;
+    mergedFrom?: string[];
+    isGpsSource?: boolean;
+    selectTypeCoercion?: selectTypeCoercion;
+    cellValidation?: CellValidationState[];
+    dbMapping?: {
+        table: string;
+        column: string;
+        isRequired: boolean;
+        isNaturalKey?: boolean;
+        naturalKeyFor?: string;
+        isInsertPlanted?: boolean;
+    };
 
-	constructor(headerName: string) {
-		this.headerName = headerName;
-		this.isToggled = true;
-		this.isMapped = false;
-		this.isFormatted = false;
-	}
+    constructor(headerName: string) {
+        this.headerName = headerName;
+        this.isToggled = true;
+        this.isMapped = false;
+        this.isFormatted = false;
+        this.mappedTo = undefined;
+        this.dbMapping = undefined;
+        this.isMerged = false;
+        this.mergedFrom = undefined;
+        this.isGpsSource = false;
+        this.selectTypeCoercion = undefined;
+        this.cellValidation = undefined;
+    }
 }
 
 /**
