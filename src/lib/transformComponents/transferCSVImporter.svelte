@@ -67,16 +67,22 @@ Components should accept callback props - which means you then pass functions as
 				// Transform data into ColumnRep format
 				const headers = Object.keys(data[0]);
 				const columnData: ColumnRep[] = headers.map((header) => {
-					// Create a base column model with defaults
-					const baseColumn = new BaseColumnModel(header);
-					// Override the default isToggled value (BaseColumnModel sets it to true by default)
-					baseColumn.isToggled = false;
+					// Create a string column model with defaults
+					const columnModel = new BaseColumnModel(header);
 
-					// Return a ColumnRep object by extending the base column
+					// Add values manually since we're not using StringColumnModel
+					const values = data.map((row) => row[header]);
+
+					// // Populate values using the model's methods
+					// data.forEach((row) => {
+					// 	columnModel.addValue(row[header]);
+					// });
+
+					// Return the column model as a ColumnRep
 					return {
-						...baseColumn,
+						...columnModel,
 						type: 'string', // Default type
-						values: data.map((row) => row[header])
+						values
 					};
 				});
 
