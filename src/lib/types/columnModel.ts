@@ -34,6 +34,7 @@ export interface ColumnDef {
 	mergedFrom?: string[]; // If merged, the source columns that were merged
 	isGpsSource?: boolean; // Whether this column is a source for the universal GPS column
 	// Type coercion tracking
+	
 	selectTypeCoercion?: selectTypeCoercion; // Information about type coercion if applicable
 	// Cell-level validation state
 	cellValidation?: CellValidationState[]; // Validation state for individual cells
@@ -65,39 +66,33 @@ export interface ColumnRep extends ColumnDef {
  * [INTENTION: Will replace existing column handling in TransformManager.svelte]
  */
 export class BaseColumnModel implements ColumnDef {
-    headerName: string;
-    isToggled: boolean;
-    isMapped: boolean;
-    mappedTo?: string;
-    isFormatted: boolean;
-    isMerged?: boolean;
-    mergedFrom?: string[];
-    isGpsSource?: boolean;
-    selectTypeCoercion?: selectTypeCoercion;
-    cellValidation?: CellValidationState[];
-    dbMapping?: {
-        table: string;
-        column: string;
-        isRequired: boolean;
-        isNaturalKey?: boolean;
-        naturalKeyFor?: string;
-        isInsertPlanted?: boolean;
-    };
-
-    constructor(headerName: string) {
-        this.headerName = headerName;
-        this.isToggled = true;
-        this.isMapped = false;
-        this.isFormatted = false;
-        this.mappedTo = undefined;
-        this.dbMapping = undefined;
-        this.isMerged = false;
-        this.mergedFrom = undefined;
-        this.isGpsSource = false;
-        this.selectTypeCoercion = undefined;
-        this.cellValidation = undefined;
-    }
-}
+	headerName: string;
+	isToggled: boolean;
+	isMapped: boolean;
+	mappedTo?: string;
+	isFormatted: boolean;
+	isMerged?: boolean;
+	mergedFrom?: string[];
+	isGpsSource?: boolean;
+	type: 'string' | 'number' | 'date' | 'gps' = 'string';
+	selectTypeCoercion?: selectTypeCoercion;
+	cellValidation?: CellValidationState[];
+	dbMapping?: {
+	  table: string;
+	  column: string;
+	  isRequired: boolean;
+	  isNaturalKey?: boolean;
+	  naturalKeyFor?: string;
+	  isInsertPlanted?: boolean;
+	};
+  
+	constructor(headerName: string) {
+	  this.headerName = headerName;
+	  this.isToggled = true;
+	  this.isMapped = false;
+	  this.isFormatted = false;
+	}
+  }
 
 /**
  * String column implementation

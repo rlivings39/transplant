@@ -1,9 +1,17 @@
 <script lang="ts">
 	import type { ColumnRep } from '$lib/types/columnModel';
+	import TypeSelector from '../transferComponents/TypeSelectorComponent.svelte';
 
-	const { importedData } = $props<ColumnRep[] | null>();
+	const { importedData, showTypeSelectors, headers, columnTypes } = $props<ColumnRep[] | null>();
 </script>
 
+{#if showTypeSelectors}
+  <div class="type-selector-row">
+    {#each headers as header}
+      <TypeSelector columnName={header} currentType={columnTypes[header] || 'string'} />
+    {/each}
+  </div>
+{/if}
 <div class="table-container">
 	<table>
 		<thead>
