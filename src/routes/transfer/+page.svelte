@@ -3,13 +3,10 @@
 	import TransferCSVImporter from '$lib/transformComponents/transferCSVImporter.svelte';
 	import type { ColumnRep } from '$lib/types/columnModel';
 
-	let importedData = $state<ColumnRep[] | null>(null);
+	let importedData = $state<ColumnRep[]>([]);
 
 	function handleProcessed(csvImportToPage: ColumnRep[]) {
-		console.log('Received processed event:', csvImportToPage);
-		console.log('Number of columns:', csvImportToPage.length);
-		console.log('First column data:', csvImportToPage[0]);
-		importedData = csvImportToPage;
+		importedData = csvImportToPage || [];
 	}
 </script>
 

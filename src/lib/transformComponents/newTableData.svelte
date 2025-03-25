@@ -1,28 +1,15 @@
 <script lang="ts">
 	import type { ColumnRep } from '$lib/types/columnModel';
-	import TypeSelector from '../transferComponents/TypeSelectorComponent.svelte';
 
-	const { importedData, showTypeSelectors, headers, columnTypes } = $props<ColumnRep[] | null>();
+	export let importedData: ColumnRep[] = [];
 </script>
 
-{#if showTypeSelectors}
-  <div class="type-selector-row">
-    {#each headers as header}
-      <TypeSelector columnName={header} currentType={columnTypes[header] || 'string'} />
-    {/each}
-  </div>
-{/if}
-<div class="table-container">
+{#if importedData.length > 0}
 	<table>
 		<thead>
-			<tr class="header-text">
-				<th>
-					<div class="header-name">GPS</div>
-				</th>
+			<tr>
 				{#each importedData as column}
-					<th>
-						<div class="header-name">{column.headerName}</div>
-					</th>
+					<th>{column.headerName}</th>
 				{/each}
 			</tr>
 		</thead>
@@ -30,12 +17,10 @@
 			{#each importedData[0].values as _, rowIndex}
 				<tr>
 					{#each importedData as column}
-						<td>
-							<div class="row-value">{column.values[rowIndex]}</div>
-						</td>
+						<td>{column.values[rowIndex]}</td>
 					{/each}
 				</tr>
 			{/each}
 		</tbody>
 	</table>
-</div>
+{/if}

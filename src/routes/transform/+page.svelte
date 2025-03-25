@@ -1,4 +1,4 @@
-<script lang="ts">
+<!-- <script lang="ts">
 	import TransferDataTable from '$lib/transferComponents/transferDataTable.svelte';
 	import TransferCsvImporter from '$lib/transformComponents/transferCSVImporter.svelte';
 	import TransformColumnModel from '$lib/transformComponents/transformColumnModel.svelte';
@@ -66,17 +66,16 @@
 <div class="transfer-page">
 	<h1>Data Transfer</h1>
 
-	<TransferCsvImporter onProcessedData={handleProcessedData} onError={handleError} />
-	{#if errorMessage}
+<TransferCsvImporter on:processed={handleProcessedData} on:error={handleError} />bject literal may only specify known properties, and '"onProcessedData"' does not exist in type '$$ComponentProps'.ts(2353)	{#if errorMessage}
 		<div class="error-banner">{errorMessage}</div>
 	{:else if columnRep.length > 0}
-		<TransferDataTable {columnRep} {columnTypes} {toggledColumns} {invalidCells} />
+		<TransferDataTable {columnRep}  />
 	{/if}
 </div>
 
 
 
-<!-- <csvImporter  /> -->
+ <csvImporter  /> -->
 <!-- <TransferDataTable columnRep={columns} columnTypes={data} {toggledColumns} {invalidCells} /> -->
 
 <!-- <div class="transform-container">
@@ -111,4 +110,4 @@
 	const toggledColumns = { Name: false, Age: false, City: false };
 
 	const invalidCells = { Name: [], Age: [], City: [] };
-</script> -->
+</script> --> 
