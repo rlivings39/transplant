@@ -214,6 +214,27 @@ td {
 .table-container::-webkit-scrollbar-track {
 	background-color: var(--color-black);
 }
+/* Type selector styling */
+.type-selector-row {
+	display: flex;
+	min-width: fit-content;
+	overflow-x: auto;
+	
+	.type-selector {
+		flex: 1;
+		min-width: var(--column-width, 7rem); /* Use column width variable */
+		padding: 0.25rem;
+		
+		select {
+			width: 100%;
+			padding: 0.25rem;
+			border-radius: 0.25rem;
+			background-color: var(--color-black);
+			color: var(--color-white);
+			border: 1px solid var(--color-light-grey);
+		}
+	}
+}
 
 /* Media query adjustments for mobile */
 @media (max-width: 768px) {
@@ -251,7 +272,6 @@ select {
 	background-image: url("data:image/svg+xml;charset=UTF-8,%3csvs xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='white' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
 	padding: 0.2rem 1.5rem 0.2rem 0.4rem !important;
 	color: var(--color-white);
-	// gap: 0.25rem;
 	cursor: pointer;
 	&:hover {
 		background-color: var(--color-light-grey);
@@ -269,7 +289,6 @@ select {
 	text-align: left;
 	width: 100%;
 	box-sizing: border-box;
-	// min-width: 4rem;
 	color: var(--color-white);
 	cursor: default;
 	user-select: text !important;
@@ -369,11 +388,7 @@ button,
 		opacity: 0.6 !important;
 		transition: opacity 0.3s ease;
 	}
-	// &::file-selector-button {
-	// 	cursor: pointer;
-	// 	color: var(--color-white);
-	// 	background-color: var(--color-grey);
-	// }
+	
 }
 
 /* Transform Button Styles */
@@ -407,16 +422,6 @@ button,
 	display: block;
 	margin-top: 0.25rem;
 }
-
-// .header-controls {
-// 	display: flex;
-// 	flex-direction: column;
-// 	gap: 0.25rem;
-// }
-
-// .mapped-field {
-// 	border: 1px solid #4caf50;
-// }
 
 .drag-over {
 	background-color: rgba(76, 175, 80, 0.2);
@@ -478,12 +483,6 @@ th span.required-mapped {
 	font-weight: bold;
 }
 
-// th span.required-unmapped {
-// 	position: relative;
-// 	display: block;
-// 	border-left: 1px solid #ff5252;
-// 	padding-left: 5px;
-// }
 
 /* Remove global asterisk styling to avoid conflicts */
 th.required-field span:not([class^='type-']):after {
@@ -508,20 +507,3 @@ th.required-field span:not([class^='type-']):after {
 	}
 }
 
-// thead th {
-// 	position: sticky !important;
-// 	top: 0;
-// 	z-index: 2;
-// 	padding: 0.3rem;
-// }
-
-@media (max-width: 480px) {
-	// table {
-	// 	width: 100%;
-	// 	overflow-x: auto;
-	// 	display: block;
-	// 	margin-left: -1rem;
-	// 	margin-right: -1rem;
-	// 	// width: calc(100% + 2rem);
-	// }
-}
