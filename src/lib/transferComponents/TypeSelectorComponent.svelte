@@ -13,19 +13,43 @@
 
 	// Number detection with debug
 	function isNumber(value: any): boolean {
-    const num = Number(value);
-    const result = !isNaN(num) && value !== '';
-    console.log(`Checking if ${value} is number:`, result);
-    return result;
-  }
-// Detect numbers with debug
-$effect(() => {
-    console.log('Running number detection on columnData');
-    if (columnData.some(isNumber)) {
-      console.log('Number detected in column');
-      detectedType = 'number';
-    }
-  });
+		// Check if value is already a number
+		if (typeof value === 'number') return true;
+
+		// Strict check for string numbers
+		if (typeof value === 'string') {
+			// Remove commas, whitespace, and currency symbols
+			const cleaned = value.replace(/[,\s€$£]/g, '').trim();
+			// Check if it's a valid number string (including scientific notation)
+			return /^-?\d+(\.\d+)?(e-?\d+)?$/.test(cleaned);
+		}
+
+		return false;
+	}
+
+	$effect(() => {
+		// Reset detected type for new column
+		detectedType = 'string';
+		// Get first 3 non-empty values
+		const sampleValues = columnData.filter((val) => val !== null && val !== '').slice(0, 3);
+
+		console.log('Checking sample values:', sampleValues);
+
+		// Count numbers in sample
+		const numberCount = sampleValues.filter(isNumber).length;
+
+		// If majority are numbers, set type
+		if (numberCount >= Math.ceil(sampleValues.length / 2)) {
+			if (detectedType !== 'number') {
+				console.log(`Setting type to 'number' (${numberCount}/${sampleValues.length} numbers)`);
+				detectedType = 'number';
+			}
+		} else {
+			console.log(
+				`Insufficient numbers (${numberCount}/${sampleValues.length}) - keeping as '${detectedType}'`
+			);
+		}
+	});
 </script>
 
 <div class="type-selector">

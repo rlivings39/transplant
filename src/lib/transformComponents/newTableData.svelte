@@ -8,9 +8,7 @@
 
 	// function to get column data
 	function getColumnData(column: ColumnRep): Array<string | number | null> {
-		// Debug: Verify column structure
-		console.log('Getting data for column:', column.headerName, column);
-
+		console.log(`Processing column: ${column.headerName}`);
 		// Return the values array directly since it's already part of ColumnRep
 		return column.values ?? [];
 	}
