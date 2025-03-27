@@ -58,6 +58,9 @@ export interface ColumnRep extends ColumnDef {
 	/** Optional validation errors by row index */
 	validationErrors?: Set<number>;
 	component?: any; // Add component property
+
+	 // Add index signature to allow string indexing 26 Mar 2025
+	 [key: string]: any;
 }
 
 /**
