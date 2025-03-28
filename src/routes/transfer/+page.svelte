@@ -1,6 +1,6 @@
 <script lang="ts">
-	import NewTableData from '$lib/transformComponents/newTableData.svelte';
-	import TransferCSVImporter from '$lib/transformComponents/transferCSVImporter.svelte';
+	import NewTableData from '$lib/transferComponents/newTableData.svelte';
+	import TransferCSVImporter from '$lib/transferComponents/transferCSVImporter.svelte';
 	import type { ColumnRep } from '$lib/types/columnModel';
 
 	let importedData = $state<ColumnRep[]>([]);

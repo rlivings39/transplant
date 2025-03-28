@@ -1,6 +1,6 @@
 <script lang="ts">
 	import type { ColumnRep } from '$lib/types/columnModel';
-	import TypeSelectorComponent from '../transferComponents/TypeSelectorComponent.svelte';
+	import TypeSelectorComponent from './TypeSelectorComponent.svelte';
 
 	// Import column data
 	const { importedData = [] } = $props<{ importedData: ColumnRep[] }>();

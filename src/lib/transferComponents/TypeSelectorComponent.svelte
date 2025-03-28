@@ -1,4 +1,8 @@
 <script lang="ts">
+  import type { ColumnRep } from '$lib/types/columnModel';
+	import { BaseColumnModel } from '$lib/types/columnModel';
+  
+
 	const { columnData = [], currentType = 'string' } = $props<{
 		columnData?: Array<string | number | null>;
 		currentType?: string;
@@ -71,7 +75,7 @@
 		const sampleValues = columnData
 			.filter((val: string | number | null) => val !== null && val !== '')
 			.slice(0, 3);
-		console.log('Checking sample values:', sampleValues);
+		// console.log('Checking sample values:', sampleValues);
 		// Count numbers in sample
 		const numberCount = sampleValues.filter(isNumber).length;
 		const dateCount = sampleValues.filter(isDate).length;
@@ -79,12 +83,12 @@
 		// If majority type
 		if (dateCount >= Math.ceil(sampleValues.length / 2)) {
 			if (detectedType !== 'date') {
-				console.log(`Setting type to 'date' (${dateCount}/${sampleValues.length} dates)`);
+				// console.log(`Setting type to 'date' (${dateCount}/${sampleValues.length} dates)`);
 				detectedType = 'date';
 			}
 		} else if (numberCount >= Math.ceil(sampleValues.length / 2)) {
 			if (detectedType !== 'number') {
-				console.log(`Setting type to 'number' (${numberCount}/${sampleValues.length} numbers)`);
+				// console.log(`Setting type to 'number' (${numberCount}/${sampleValues.length} numbers)`);
 				detectedType = 'number';
 			}
 		} else {
