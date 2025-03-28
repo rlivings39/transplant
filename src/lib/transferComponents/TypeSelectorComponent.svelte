@@ -28,12 +28,11 @@
 		return false;
 	}
 
-
 	// 🌲️🌲️🌲️🌲️🌲️🌲️🌲️DATES🌲️🌲️🌲️🌲️🌲️🌲️🌲️
 	function isDate(value: any): boolean {
 		if (typeof value === 'number') {
 			if (1900 < value && 2040 > value) {
-			return true;
+				return true;
 			} else {
 				return false;
 			}
@@ -67,15 +66,22 @@
 		console.log('Checking sample values:', sampleValues);
 		// Count numbers in sample
 		const numberCount = sampleValues.filter(isNumber).length;
-		// If majority are numbers, set type
-		if (numberCount >= Math.ceil(sampleValues.length / 2)) {
+		const dateCount = sampleValues.filter(isDate).length;
+
+		// If majority type
+		if (dateCount >= Math.ceil(sampleValues.length / 2)) {
+			if (detectedType !== 'date') {
+				console.log(`Setting type to 'date' (${dateCount}/${sampleValues.length} dates)`);
+				detectedType = 'date';
+			}
+		} else if (numberCount >= Math.ceil(sampleValues.length / 2)) {
 			if (detectedType !== 'number') {
 				console.log(`Setting type to 'number' (${numberCount}/${sampleValues.length} numbers)`);
 				detectedType = 'number';
 			}
 		} else {
 			console.log(
-				`Insufficient numbers (${numberCount}/${sampleValues.length}) - keeping as '${detectedType}'`
+				`No majority type - keeping as '${detectedType}' (${numberCount} numbers, ${dateCount} dates)`
 			);
 		}
 	});
