@@ -13,6 +13,29 @@
 		return column.values ?? [];
 	}
 
+	// function typeEvent 
+	// when a user changed a type selector, run detection and formatting for that type on the columnRep
+	export function typeEvent(event: CustomEvent) {
+    const selectedType = event.detail.type;
+	console.log(`Selected type: ${selectedType}`)
+    
+    // Handle type-specific logic
+    switch (selectedType) {
+      case 'number':
+        break;
+      case 'date':
+        break;
+      case 'gps':
+        break;
+      default:
+        break;
+    }
+  }
+   // then run detection and formatting for that type on the columnRep
+
+		// gps check
+// 
+
 	// FORMATTING COLUMNS// Number formatting
 	// 🌲️🌲️🌲️🌲️🌲️🌲️🌲️NUMBERS🌲️🌲️🌲️🌲️🌲️🌲️🌲️
 	// the result of isNumber
@@ -28,6 +51,9 @@
 			maximumFractionDigits: 2
 		}).format(value);
 	}
+
+	// 🌲️🌲️🌲️🌲️🌲️🌲️🌲️GPS🌲️🌲️🌲️🌲️🌲️🌲️🌲️
+	
 </script>
 
 <div class="table-container">

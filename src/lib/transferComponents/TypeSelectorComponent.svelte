@@ -1,19 +1,23 @@
 <script lang="ts">
   import type { ColumnRep } from '$lib/types/columnModel';
 	import { BaseColumnModel } from '$lib/types/columnModel';
-  
+  import typeEvent from '$lib/transferComponents/newTableData.svelte';
+
 
 	const { columnData = [], currentType = 'string' } = $props<{
 		columnData?: Array<string | number | null>;
 		currentType?: string;
 	}>();
 
-	// Debug: Log incoming column data
-	console.log('Received columnData:', columnData);
-
 	const types = ['string', 'number', 'date', 'gps'];
 
 	let detectedType = $state(currentType);
+
+  function handleChange(event: Event) {
+    const newType = (event.target as HTMLSelectElement).value;
+    console.log('Type changed to:', newType);
+    detectedType = newType;
+  }
 
 	// 👍️🌲️👍️🌲️👍️🌲️👍️🌲️👍️🌲️NUMBERS🌲️🌲️🌲️🌲️🌲️🌲️🌲️
 	// Number detection with debug
@@ -104,7 +108,7 @@
 </script>
 
 <div class="type-selector">
-	<select bind:value={detectedType}>
+	<select bind:value={detectedType} onchange={handleChange}>
 		{#each types as type}
 			<option value={type}>{type}</option>
 		{/each}
