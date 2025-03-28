@@ -43,7 +43,7 @@ export default [
 			'svelte/valid-compile': 'error',
 			'svelte/no-unused-svelte-ignore': 'error',
 			'svelte/spaced-html-comment': 'error',
-
+			'curly': 'error',
 			// 🚀 TypeScript Best Practices
 			'@typescript-eslint/no-explicit-any': 'warn',
 			'@typescript-eslint/no-unused-vars': [

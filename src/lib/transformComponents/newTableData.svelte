@@ -12,6 +12,15 @@
 		// Return the values array directly since it's already part of ColumnRep
 		return column.values ?? [];
 	}
+
+	// FORMATTING COLUMNS// Number formatting
+	// 🌲️🌲️🌲️🌲️🌲️🌲️🌲️NUMBERS🌲️🌲️🌲️🌲️🌲️🌲️🌲️
+	// the result of isNumber
+	// referecne rows by "rowIndex"
+
+	// 🌲️🌲️🌲️🌲️🌲️🌲️🌲️DATES🌲️🌲️🌲️🌲️🌲️🌲️🌲️
+
+	function numberFormat(value: number): string {}
 </script>
 
 <div class="table-container">
@@ -35,7 +44,9 @@
 			<tbody>
 				{#each importedData[0].values as _, rowIndex}
 					<tr>
+						<!-- {/* add columnIndex below after as in "column, columnIndex" */}-->
 						{#each importedData as column}
+							<!--{/* ryan says could wrap this in formatting logic.*/} -->
 							<td>{column.values[rowIndex] ?? ''}</td>
 						{/each}
 					</tr>
