@@ -20,7 +20,14 @@
 
 	// 🌲️🌲️🌲️🌲️🌲️🌲️🌲️DATES🌲️🌲️🌲️🌲️🌲️🌲️🌲️
 
-	function numberFormat(value: number): string {}
+	function numberFormat(value: number): string {
+		// Format numbers with commas as thousand separators
+		return new Intl.NumberFormat('en-US', {
+			style: 'decimal',
+			minimumFractionDigits: 0,
+			maximumFractionDigits: 2
+		}).format(value);
+	}
 </script>
 
 <div class="table-container">
@@ -44,14 +51,26 @@
 			<tbody>
 				{#each importedData[0].values as _, rowIndex}
 					<tr>
-						<!-- {/* add columnIndex below after as in "column, columnIndex" */}-->
-						{#each importedData as column}
-							<!--{/* ryan says could wrap this in formatting logic.*/} -->
-							<td>{column.values[rowIndex] ?? ''}</td>
+						{#each importedData as column, columnIndex}
+							<td class={typeof column.values[rowIndex] === 'number' || 
+							            (!isNaN(Number(column.values[rowIndex])) && column.values[rowIndex] !== '') ? 
+							            'number-cell' : ''}>
+								{typeof column.values[rowIndex] === 'number' || 
+								(!isNaN(Number(column.values[rowIndex])) && column.values[rowIndex] !== '') ?
+									numberFormat(Number(column.values[rowIndex])) :
+									column.values[rowIndex] ?? ''
+								}
+							</td>
 						{/each}
 					</tr>
 				{/each}
 			</tbody>
 		</table>
 	{/if}
+	<style>
+		.number-cell {
+			text-align: right;
+			padding-right: 1rem;
+		}
+	</style>
 </div>
