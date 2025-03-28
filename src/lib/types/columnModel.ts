@@ -23,7 +23,6 @@ import type {
 	CellValidationState
 } from './columnTypes';
 
-
 export interface ColumnDef {
 	headerName: string; // The header/importedColumnName
 	isToggled: boolean; // Whether this column is toggled on/off
@@ -34,7 +33,7 @@ export interface ColumnDef {
 	mergedFrom?: string[]; // If merged, the source columns that were merged
 	isGpsSource?: boolean; // Whether this column is a source for the universal GPS column
 	// Type coercion tracking
-	
+
 	selectTypeCoercion?: selectTypeCoercion; // Information about type coercion if applicable
 	// Cell-level validation state
 	cellValidation?: CellValidationState[]; // Validation state for individual cells
@@ -59,8 +58,8 @@ export interface ColumnRep extends ColumnDef {
 	validationErrors?: Set<number>;
 	component?: any; // Add component property
 
-	 // Add index signature to allow string indexing 26 Mar 2025
-	 [key: string]: any;
+	// Add index signature to allow string indexing 26 Mar 2025
+	[key: string]: any;
 }
 
 /**
@@ -81,22 +80,48 @@ export class BaseColumnModel implements ColumnDef {
 	selectTypeCoercion?: selectTypeCoercion;
 	cellValidation?: CellValidationState[];
 	dbMapping?: {
-	  table: string;
-	  column: string;
-	  isRequired: boolean;
-	  isNaturalKey?: boolean;
-	  naturalKeyFor?: string;
-	  isInsertPlanted?: boolean;
+		table: string;
+		column: string;
+		isRequired: boolean;
+		isNaturalKey?: boolean;
+		naturalKeyFor?: string;
+		isInsertPlanted?: boolean;
 	};
-  
-	constructor(headerName: string) {
-	  this.headerName = headerName;
-	  this.isToggled = true;
-	  this.isMapped = false;
-	  this.isFormatted = false;
-	}
-  }
 
+	constructor(headerName: string) {
+		this.headerName = headerName;
+		this.isToggled = true;
+		this.isMapped = false;
+		this.isFormatted = false;
+	}
+	changeType(newType: 'string' | 'number' | 'date' | 'gps', changedBy: 'auto' | 'user' = 'user') {
+		if (this.type !== newType) {
+			this.selectTypeCoercion = {
+				originalType: this.type,
+				coercedType: newType,
+				timestamp: new Date(),
+				changedBy
+			};
+			this.type = newType;
+			this.isFormatted = false;
+		}
+	}
+
+	// Add a method to check if type was coerced
+	get wasTypeCoerced(): boolean {
+		return (
+			!!this.selectTypeCoercion &&
+			this.selectTypeCoercion.originalType !== this.selectTypeCoercion.coercedType
+		);
+	}
+}
+
+interface selectTypeCoercion {
+	originalType: 'string' | 'number' | 'date' | 'gps';
+	coercedType: 'string' | 'number' | 'date' | 'gps';
+	timestamp: Date;
+	changedBy: 'auto' | 'user';
+}
 /**
  * String column implementation
  *

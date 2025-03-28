@@ -45,13 +45,14 @@
 	
 </script>
 
+{#if importedData.length > 0}
 <div class="table-container">
-	{#if importedData.length > 0}
 		<div class="type-selector-row">
 			{#each importedData as column}
 				<TypeSelectorComponent
 					columnData={getColumnData(column)}
 					currentType={columnTypes[column.headerName] || 'string'}
+					on:typechange={typeEvent}
 				/>
 			{/each}
 		</div>
@@ -67,25 +68,18 @@
 				{#each importedData[0].values as _, rowIndex}
 					<tr>
 						{#each importedData as column, columnIndex}
-							<td class={typeof column.values[rowIndex] === 'number' || 
-							            (!isNaN(Number(column.values[rowIndex])) && column.values[rowIndex] !== '') ? 
-							            'number-cell' : ''}>
-								{typeof column.values[rowIndex] === 'number' || 
-								(!isNaN(Number(column.values[rowIndex])) && column.values[rowIndex] !== '') ?
-									numberFormat(Number(column.values[rowIndex])) :
-									column.values[rowIndex] ?? ''
-								}
-							</td>
+						<td>
+							{columnTypes[column.headerName] === 'number' && 
+							typeof column.values[rowIndex] === 'number' ?
+							  numberFormat(column.values[rowIndex] as number) :
+							  column.values[rowIndex] ?? ''
+							}
+						  </td>
 						{/each}
 					</tr>
 				{/each}
 			</tbody>
 		</table>
+	</div>
 	{/if}
-	<style>
-		.number-cell {
-			text-align: right;
-			padding-right: 1rem;
-		}
-	</style>
-</div>
+
