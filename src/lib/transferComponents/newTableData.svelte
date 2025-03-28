@@ -2,39 +2,37 @@
 	import type { ColumnRep } from '$lib/types/columnModel';
 	import TypeSelectorComponent from './TypeSelectorComponent.svelte';
 
-	// Import column data
 	const { importedData = [] } = $props<{ importedData: ColumnRep[] }>();
 	let columnTypes = $state<Record<string, string>>({});
 
-	// function to get column data
+	// Number formatting function
+	function numberFormat(value: number): string {
+		return new Intl.NumberFormat('en-US', {
+			style: 'decimal',
+			minimumFractionDigits: 0,
+			maximumFractionDigits: 2
+		}).format(value);
+	}
+
+	// Get column data
 	function getColumnData(column: ColumnRep): Array<string | number | null> {
 		console.log(`Processing column: ${column.headerName}`);
 		// Return the values array directly since it's already part of ColumnRep
 		return column.values ?? [];
 	}
 
+	// speculation with 28 Mar 2025  9:47 AM
 	// function typeEvent 
 	// when a user changed a type selector, run detection and formatting for that type on the columnRep
-	export function typeEvent(event: CustomEvent) {
-    const selectedType = event.detail.type;
-	console.log(`Selected type: ${selectedType}`)
-    
-    // Handle type-specific logic
-    switch (selectedType) {
-      case 'number':
-        break;
-      case 'date':
-        break;
-      case 'gps':
-        break;
-      default:
-        break;
-    }
-  }
-   // then run detection and formatting for that type on the columnRep
+	// then run detection and formatting for that type on the columnRep
 
-		// gps check
-// 
+	// Handl type changes
+	export function typeEvent(event: CustomEvent) {
+		const selectedType = event.detail.type;
+		console.log(`Selected type: ${selectedType}`);
+		// Update column type in state
+		columnTypes[event.detail.headerName] = selectedType;
+	}	
 
 	// FORMATTING COLUMNS// Number formatting
 	// 🌲️🌲️🌲️🌲️🌲️🌲️🌲️NUMBERS🌲️🌲️🌲️🌲️🌲️🌲️🌲️
@@ -42,15 +40,6 @@
 	// referecne rows by "rowIndex"
 
 	// 🌲️🌲️🌲️🌲️🌲️🌲️🌲️DATES🌲️🌲️🌲️🌲️🌲️🌲️🌲️
-
-	function numberFormat(value: number): string {
-		// Format numbers with commas as thousand separators
-		return new Intl.NumberFormat('en-US', {
-			style: 'decimal',
-			minimumFractionDigits: 0,
-			maximumFractionDigits: 2
-		}).format(value);
-	}
 
 	// 🌲️🌲️🌲️🌲️🌲️🌲️🌲️GPS🌲️🌲️🌲️🌲️🌲️🌲️🌲️
 	
