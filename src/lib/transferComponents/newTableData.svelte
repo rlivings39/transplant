@@ -22,7 +22,7 @@
 	}
 
 	// speculation with 28 Mar 2025  9:47 AM
-	// function typeEvent 
+	// function typeEvent
 	// when a user changed a type selector, run detection and formatting for that type on the columnRep
 	// then run detection and formatting for that type on the columnRep
 
@@ -32,7 +32,7 @@
 		console.log(`Selected type: ${selectedType}`);
 		// Update column type in state
 		columnTypes[event.detail.headerName] = selectedType;
-	}	
+	}
 
 	// FORMATTING COLUMNS// Number formatting
 	// 🌲️🌲️🌲️🌲️🌲️🌲️🌲️NUMBERS🌲️🌲️🌲️🌲️🌲️🌲️🌲️
@@ -42,18 +42,13 @@
 	// 🌲️🌲️🌲️🌲️🌲️🌲️🌲️DATES🌲️🌲️🌲️🌲️🌲️🌲️🌲️
 
 	// 🌲️🌲️🌲️🌲️🌲️🌲️🌲️GPS🌲️🌲️🌲️🌲️🌲️🌲️🌲️
-	
 </script>
 
 {#if importedData.length > 0}
-<div class="table-container">
+	<div class="table-container">
 		<div class="type-selector-row">
 			{#each importedData as column}
-				<TypeSelectorComponent
-					columnData={getColumnData(column)}
-					currentType={columnTypes[column.headerName] || 'string'}
-					on:typechange={typeEvent}
-				/>
+				<TypeSelectorComponent {column} />
 			{/each}
 		</div>
 		<table>
@@ -68,18 +63,16 @@
 				{#each importedData[0].values as _, rowIndex}
 					<tr>
 						{#each importedData as column, columnIndex}
-						<td>
-							{columnTypes[column.headerName] === 'number' && 
-							typeof column.values[rowIndex] === 'number' ?
-							  numberFormat(column.values[rowIndex] as number) :
-							  column.values[rowIndex] ?? ''
-							}
-						  </td>
+							<td>
+								{columnTypes[column.headerName] === 'number' &&
+								typeof column.values[rowIndex] === 'number'
+									? numberFormat(column.values[rowIndex] as number)
+									: (column.values[rowIndex] ?? '')}
+							</td>
 						{/each}
 					</tr>
 				{/each}
 			</tbody>
 		</table>
 	</div>
-	{/if}
-
+{/if}

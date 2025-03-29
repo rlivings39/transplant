@@ -1,15 +1,7 @@
 /**
  * ColumnRep model implementation for TransPlant
- *
  * This file provides concrete implementations of the ColumnRep interfaces
  * defined in columnTypes.ts, with methods for working with column data.
- *
- * REFACTORING ANNOTATIONS:
- * [NEW] - Part of the new ColumnRep architecture
- * [BRIDGE] - Temporary compatibility functions
- * [DELETE] - Legacy code that will be removed
- * [REPLACE: X] - Will be replaced by function X
- * [INTENTION: X] - Future implementation plans
  */
 
 import type {
