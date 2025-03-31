@@ -23,11 +23,16 @@
 	--button-transition: all 0.3s ease;
 	--header-background: #2f1e4b;
 }
-body, html {
-    background-color: var(--color-black) !important;
+body,
+html {
+	background-color: var(--color-black) !important;
 }
-.container, table, th, td, select {
-    background-color: var(--color-black) !important;
+.container,
+table,
+th,
+td,
+select {
+	background-color: var(--color-black) !important;
 }
 nav a {
 	text-decoration-color: var(--color-purple);
@@ -215,13 +220,13 @@ td {
 	background-color: var(--color-black);
 }
 /* Type selector styling */
-.type-selector-row {
+.format-selector-row {
 	display: inline-flex; // Changed from flex
 	overflow-x: visible; // Changed from auto
 	white-space: nowrap; // Added to prevent wrapping
 	width: auto; // Changed from max-content
-	
-	.type-selector {
+
+	.format-selector {
 		flex: 0 0 var(--column-width, 7rem);
 		padding: 0.25rem;
 		width: var(--column-width, 7rem); // Changed from max-content
@@ -381,7 +386,6 @@ button,
 		opacity: 0.6 !important;
 		transition: opacity 0.3s ease;
 	}
-	
 }
 
 /* Transform Button Styles */
@@ -476,7 +480,6 @@ th span.required-mapped {
 	font-weight: bold;
 }
 
-
 /* Remove global asterisk styling to avoid conflicts */
 th.required-field span:not([class^='type-']):after {
 	content: none; /* Completely remove the global asterisk */
@@ -499,4 +502,3 @@ th.required-field span:not([class^='type-']):after {
 		max-width: 9rem;
 	}
 }
-

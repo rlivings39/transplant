@@ -1,7 +1,7 @@
 <script lang="ts">
 	import type { ColumnRep } from '$lib/types/columnModel';
 	import { BaseColumnModel } from '$lib/types/columnModel';
-	import { createEventDispatcher } from 'svelte';
+	import typeEvent from '$lib/transferComponents/newTableData.svelte';
 
 	const { columnData = [], currentFormat = 'string', currentColumnHeader = '' } = $props<{
 		columnData?: Array<string | number | null>;
@@ -13,22 +13,19 @@
 
 	let detectedFormat = $state(currentFormat);
 
-	const dispatch = createEventDispatcher<{
-		formatchange: {
-			destinationFormat: string;
-			headerName: string;
-		};
-	}>();
-
 	function handleChange(event: Event) {
 		const newFormat = (event.target as HTMLSelectElement).value;
 		console.log('Format changed to:', newFormat);
 		detectedFormat = newFormat;
 
-		dispatch('formatchange', {
-			destinationFormat: newFormat,
-			headerName: currentColumnHeader
+		const customEvent = new CustomEvent('formatchange', {
+			detail: {
+				destinationFormat: newFormat,
+				headerName: currentColumnHeader
+			},
+			bubbles: true
 		});
+		dispatchEvent(customEvent);
 	} // Here's the key addition - dispatch the event
 
 	// 👍️🌲️👍️🌲️👍️🌲️👍️🌲️👍️🌲️NUMBERS🌲️🌲️🌲️🌲️🌲️🌲️🌲️
@@ -118,7 +115,7 @@
 
 	// 🌲️🌲️🌲️🌲️🌲️🌲️🌲️
 </script>
-
+<!-- <div class="format-selector"> -->
 <div class="format-selector">
 	<select bind:value={detectedFormat} onchange={handleChange}>
 		{#each formats as format}

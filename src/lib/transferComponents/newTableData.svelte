@@ -46,7 +46,7 @@
 
 {#if importedData.length > 0}
 	<div class="table-container">
-		<div class="type-selector-row">
+		<div class="format-selector-row">
 			{#each importedData as column}
 				<TypeSelectorComponent
 					columnData={getColumnData(column)}
