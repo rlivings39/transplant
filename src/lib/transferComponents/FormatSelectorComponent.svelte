@@ -3,20 +3,28 @@
 	import { BaseColumnModel } from '$lib/types/columnModel';
 	import typeEvent from '$lib/transferComponents/newTableData.svelte';
 
-	const { columnData = [], currentFormat = 'string', currentColumnHeader = '' } = $props<{
+	const {
+		columnData = [],
+		currentFormat = 'string',
+		currentColumnHeader = '',
+		onformatchange = () => {}
+	} = $props<{
 		columnData?: Array<string | number | null>;
 		currentFormat?: string;
 		currentColumnHeader?: string;
+		onformatchange?: (event: CustomEvent<{ destinationFormat: string; headerName: string }>) => void;
 	}>();
 
 	const formats = ['string', 'number', 'date', 'gps'];
 
-	let detectedFormat = $state(currentFormat);
+	let selectedFormat = $state(currentFormat);
 
+//  TODO: later once I solve select detect thing, change this function to 
+//instead use direcly updating state importedData.columns
 	function handleChange(event: Event) {
 		const newFormat = (event.target as HTMLSelectElement).value;
 		console.log('Format changed to:', newFormat);
-		detectedFormat = newFormat;
+		selectedFormat = newFormat;
 
 		const customEvent = new CustomEvent('formatchange', {
 			detail: {
@@ -25,7 +33,7 @@
 			},
 			bubbles: true
 		});
-		dispatchEvent(customEvent);
+		onformatchange(customEvent);
 	} // Here's the key addition - dispatch the event
 
 	// 👍️🌲️👍️🌲️👍️🌲️👍️🌲️👍️🌲️NUMBERS🌲️🌲️🌲️🌲️🌲️🌲️🌲️
@@ -83,7 +91,7 @@
 	// ☀️️☀️️☀️️☀️️☀️️☀️️☀️️☀️️☀️️☀️️☀️️☀️️EFFECT☀️️☀️️☀️️☀️️☀️️☀️️☀️️☀️️☀️️☀️️☀️️☀️️☀️️☀️️☀️️☀️️☀️️☀️️☀️️
 	$effect(() => {
 		// Reset detected format for new column
-		detectedFormat = 'string';
+		selectedFormat = 'string';
 		// Get first 3 non-empty values
 		const sampleValues = columnData
 			.filter((val: string | number | null) => val !== null && val !== '')
@@ -95,18 +103,18 @@
 
 		// If majority format
 		if (dateCount >= Math.ceil(sampleValues.length / 2)) {
-			if (detectedFormat !== 'date') {
+			if (selectedFormat !== 'date') {
 				// console.log(`Setting format to 'date' (${dateCount}/${sampleValues.length} dates)`);
-				detectedFormat = 'date';
+				selectedFormat = 'date';
 			}
 		} else if (numberCount >= Math.ceil(sampleValues.length / 2)) {
-			if (detectedFormat !== 'number') {
+			if (selectedFormat !== 'number') {
 				// console.log(`Setting format to 'number' (${numberCount}/${sampleValues.length} numbers)`);
-				detectedFormat = 'number';
+				selectedFormat = 'number';
 			}
 		} else {
 			console.log(
-				`No majority format - keeping as '${detectedFormat}' (${numberCount} numbers, ${dateCount} dates)`
+				`No majority format - keeping as '${selectedFormat}' (${numberCount} numbers, ${dateCount} dates)`
 			);
 		}
 	});
@@ -115,9 +123,10 @@
 
 	// 🌲️🌲️🌲️🌲️🌲️🌲️🌲️
 </script>
+
 <!-- <div class="format-selector"> -->
 <div class="format-selector">
-	<select bind:value={detectedFormat} onchange={handleChange}>
+	<select bind:value={selectedFormat} onchange={handleChange}>
 		{#each formats as format}
 			<option value={format}>{format}</option>
 		{/each}

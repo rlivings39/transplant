@@ -1,8 +1,8 @@
 <script lang="ts">
 	import type { ColumnRep } from '$lib/types/columnModel';
 	import TypeSelectorComponent from './FormatSelectorComponent.svelte';
-
-	const { importedData = [] } = $props<{ importedData: ColumnRep[] }>();
+	import { importedData } from '$lib/transferComponents/modelState.svelte';
+	
 	let columnFormats = $state<Record<string, string>>({});
 
 	// Number formatting function
@@ -26,12 +26,16 @@
 	// when a user changed a type selector, run detection and formatting for that type on the columnRep
 	// then run detection and formatting for that type on the columnRep
 
-	// Handle format changes
-	export function formatEvent(event: CustomEvent<{destinationFormat: string, headerName: string}>) {
+	// Whenever select dropdown changes, this updates. Handle format changes
+	export function formatEvent(
+		event: CustomEvent<{ destinationFormat: string; headerName: string }>
+	) {
+		// this is dropdown value user chose.
 		const selectedFormat = event.detail.destinationFormat;
-		console.log(`Selected format: ${selectedFormat}`);
+		console.log(`Called from format event from table: ${selectedFormat}`);
 		// Update column format in state
 		columnFormats[event.detail.headerName] = selectedFormat;
+		console.log('calling column formats', columnFormats);
 	}
 
 	// FORMATTING COLUMNS// Number formatting
@@ -44,30 +48,30 @@
 	// 🌲️🌲️🌲️🌲️🌲️🌲️🌲️GPS🌲️🌲️🌲️🌲️🌲️🌲️🌲️
 </script>
 
-{#if importedData.length > 0}
+{#if importedData.columns.length > 0}
 	<div class="table-container">
 		<div class="format-selector-row">
-			{#each importedData as column}
+			{#each importedData.columns as column}
 				<TypeSelectorComponent
 					columnData={getColumnData(column)}
 					currentFormat={columnFormats[column.headerName] || 'string'}
 					currentColumnHeader={column.headerName}
-					on:formatchange={formatEvent}
+					onformatchange={formatEvent}
 				/>
 			{/each}
 		</div>
 		<table>
 			<thead>
 				<tr>
-					{#each importedData as column}
+					{#each importedData.columns as column}
 						<th>{column.headerName}</th>
 					{/each}
 				</tr>
 			</thead>
 			<tbody>
-				{#each importedData[0].values as _, rowIndex}
+				{#each importedData.columns[0].values as column, rowIndex}
 					<tr>
-						{#each importedData as column, columnIndex}
+						{#each importedData.columns as column, columnIndex}
 							<td>
 								{columnFormats[column.headerName] === 'number' &&
 								typeof column.values[rowIndex] === 'number'

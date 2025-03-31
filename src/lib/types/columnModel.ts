@@ -69,6 +69,7 @@ export class BaseColumnModel implements ColumnDef {
 	mergedFrom?: string[];
 	isGpsSource?: boolean;
 	type: 'string' | 'number' | 'date' | 'gps' = 'string';
+	currentFormat: 'string' | 'number' | 'date' | 'gps' = 'string';
 	selectTypeCoercion?: selectTypeCoercion;
 	cellValidation?: CellValidationState[];
 	dbMapping?: {
@@ -96,6 +97,7 @@ export class BaseColumnModel implements ColumnDef {
 			};
 			this.type = newType;
 			this.isFormatted = false;
+			this.currentFormat = newType;
 		}
 	}
 
@@ -158,6 +160,7 @@ export class NumberColumnModel extends BaseColumnModel implements NumberColumn {
 		precision?: number;
 		useThousandsSeparator?: boolean;
 	};
+	currentFormat: 'string' | 'number' | 'date' | 'gps' = 'number';
 	validation?: {
 		min?: number;
 		max?: number;
@@ -204,6 +207,7 @@ export class DateColumnModel extends BaseColumnModel implements DateColumn {
 	format?: {
 		dateFormat?: string;
 	};
+	currentFormat: 'string' | 'number' | 'date' | 'gps' = 'date';
 
 	constructor(headerName: string, dateFormat?: string) {
 		super(headerName);
@@ -244,6 +248,7 @@ export class GpsColumnModel extends BaseColumnModel implements GpsColumn {
 		gpsFormat?: 'DMS' | 'DD';
 		precision?: number;
 	};
+	currentFormat: 'string' | 'number' | 'date' | 'gps' = 'gps';
 
 	constructor(name: string, gpsFormat: 'DMS' | 'DD' = 'DD', precision: number = 7) {
 		super(name);

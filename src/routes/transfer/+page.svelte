@@ -2,23 +2,22 @@
 	import NewTableData from '$lib/transferComponents/newTableData.svelte';
 	import TransferCSVImporter from '$lib/transferComponents/transferCSVImporter.svelte';
 	import type { ColumnRep } from '$lib/types/columnModel';
-
-	let importedData = $state<ColumnRep[]>([]);
+	import { importedData, setImportedData } from '$lib/transferComponents/modelState.svelte';
 
 	function handleProcessed(csvImportToPage: ColumnRep[]) {
-		importedData = csvImportToPage || [];
+		setImportedData(csvImportToPage || []);
 	}
 </script>
 
 <TransferCSVImporter onprocessed={handleProcessed} />
 
-<NewTableData {importedData} />
+<NewTableData  />
 
-{#if importedData}
+{#if importedData.columns}
 	<h2>Current Column Model State</h2>
 	<pre>
 		{JSON.stringify(
-			importedData.map((col) => ({
+			importedData.columns.map((col) => ({
 				headerName: col.headerName,
 				type: col.type,
 				isToggled: col.isToggled,
