@@ -11,7 +11,7 @@ import type {
 	DateColumn,
 	GpsColumn,
 	GpsCoordinate,
-	selectTypeCoercion,
+	selectFormatCoercion,
 	CellValidationState
 } from './columnTypes';
 
@@ -24,9 +24,9 @@ export interface ColumnDef {
 	isMerged?: boolean; // Whether this column is created by merging other columns
 	mergedFrom?: string[]; // If merged, the source columns that were merged
 	isGpsSource?: boolean; // Whether this column is a source for the universal GPS column
-	// Type coercion tracking
+	// Format coercion tracking
 
-	selectTypeCoercion?: selectTypeCoercion; // Information about type coercion if applicable
+	selectFormatCoercion?: selectFormatCoercion; // Information about type coercion if applicable
 	// Cell-level validation state
 	cellValidation?: CellValidationState[]; // Validation state for individual cells
 	// Database mapping properties (only relevant if isMapped is true)
@@ -70,7 +70,7 @@ export class BaseColumnModel implements ColumnDef {
 	isGpsSource?: boolean;
 	type: 'string' | 'number' | 'date' | 'gps' = 'string';
 	currentFormat: 'string' | 'number' | 'date' | 'gps' = 'string';
-	selectTypeCoercion?: selectTypeCoercion;
+	selectFormatCoercion?: selectFormatCoercion;
 	cellValidation?: CellValidationState[];
 	dbMapping?: {
 		table: string;
@@ -87,11 +87,11 @@ export class BaseColumnModel implements ColumnDef {
 		this.isMapped = false;
 		this.isFormatted = false;
 	}
-	changeType(newType: 'string' | 'number' | 'date' | 'gps', changedBy: 'auto' | 'user' = 'user') {
+	changeFormat(newType: 'string' | 'number' | 'date' | 'gps', changedBy: 'auto' | 'user' = 'user') {
 		if (this.type !== newType) {
-		  this.selectTypeCoercion = {
-			originalType: this.type,
-			coercedType: newType,
+		  this.selectFormatCoercion = {
+			originalFormat: this.type,
+			coercedFormat: newType,
 			timestamp: new Date(),
 			changedBy,
 			userSelected: changedBy === 'user' // Set based on who changed it
@@ -103,17 +103,17 @@ export class BaseColumnModel implements ColumnDef {
 	  }
 
 	// Add a method to check if type was coerced
-	get wasTypeCoerced(): boolean {
+	get wasFormatCoerced(): boolean {
 		return (
-			!!this.selectTypeCoercion &&
-			this.selectTypeCoercion.originalType !== this.selectTypeCoercion.coercedType
+			!!this.selectFormatCoercion &&
+			this.selectFormatCoercion.originalFormat !== this.selectFormatCoercion.coercedFormat
 		);
 	}
 }
 
-interface selectTypeCoercion {
-	originalType: 'string' | 'number' | 'date' | 'gps';
-	coercedType: 'string' | 'number' | 'date' | 'gps';
+interface selectFormatCoercion {
+	originalFormat: 'string' | 'number' | 'date' | 'gps';
+	coercedFormat: 'string' | 'number' | 'date' | 'gps';
 	timestamp: Date;
 	changedBy: 'auto' | 'user';
 	userSelected: boolean; // Add this to track manual selections
