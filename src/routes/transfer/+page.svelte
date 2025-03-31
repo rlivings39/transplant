@@ -16,7 +16,8 @@
 
 {#if importedData}
 	<h2>Current Column Model State</h2>
-	<pre>{JSON.stringify(
+	<pre>
+		{JSON.stringify(
 			importedData.map((col) => ({
 				headerName: col.headerName,
 				type: col.type,
@@ -30,5 +31,6 @@
 			})),
 			null,
 			2
-		)}</pre>
+		)}
+	  </pre>
 {/if}

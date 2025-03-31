@@ -1,9 +1,9 @@
 <script lang="ts">
 	import type { ColumnRep } from '$lib/types/columnModel';
-	import TypeSelectorComponent from './TypeSelectorComponent.svelte';
+	import TypeSelectorComponent from './FormatSelectorComponent.svelte';
 
 	const { importedData = [] } = $props<{ importedData: ColumnRep[] }>();
-	let columnTypes = $state<Record<string, string>>({});
+	let columnFormats = $state<Record<string, string>>({});
 
 	// Number formatting function
 	function numberFormat(value: number): string {
@@ -26,12 +26,12 @@
 	// when a user changed a type selector, run detection and formatting for that type on the columnRep
 	// then run detection and formatting for that type on the columnRep
 
-	// Handl type changes
-	export function typeEvent(event: CustomEvent) {
-		const selectedType = event.detail.type;
-		console.log(`Selected type: ${selectedType}`);
-		// Update column type in state
-		columnTypes[event.detail.headerName] = selectedType;
+	// Handle format changes
+	export function formatEvent(event: CustomEvent<{destinationFormat: string, headerName: string}>) {
+		const selectedFormat = event.detail.destinationFormat;
+		console.log(`Selected format: ${selectedFormat}`);
+		// Update column format in state
+		columnFormats[event.detail.headerName] = selectedFormat;
 	}
 
 	// FORMATTING COLUMNS// Number formatting
@@ -48,7 +48,12 @@
 	<div class="table-container">
 		<div class="type-selector-row">
 			{#each importedData as column}
-				<TypeSelectorComponent {column} />
+				<TypeSelectorComponent
+					columnData={getColumnData(column)}
+					currentFormat={columnFormats[column.headerName] || 'string'}
+					currentColumnHeader={column.headerName}
+					on:formatchange={formatEvent}
+				/>
 			{/each}
 		</div>
 		<table>
@@ -64,7 +69,7 @@
 					<tr>
 						{#each importedData as column, columnIndex}
 							<td>
-								{columnTypes[column.headerName] === 'number' &&
+								{columnFormats[column.headerName] === 'number' &&
 								typeof column.values[rowIndex] === 'number'
 									? numberFormat(column.values[rowIndex] as number)
 									: (column.values[rowIndex] ?? '')}
