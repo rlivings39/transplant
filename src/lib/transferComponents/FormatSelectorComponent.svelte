@@ -12,16 +12,20 @@
 		columnData?: Array<string | number | null>;
 		currentFormat?: string;
 		currentColumnHeader?: string;
-		onformatchange?: (event: CustomEvent<{ destinationFormat: string; headerName: string }>) => void;
+		onformatchange?: (
+			event: CustomEvent<{ destinationFormat: string; headerName: string }>
+		) => void;
 	}>();
 
 	const formats = ['string', 'number', 'date', 'gps'];
 
 	let selectedFormat = $state(currentFormat);
+	let hasUserSelectedFormat = $state(false);
 
-//  TODO: later once I solve select detect thing, change this function to 
-//instead use direcly updating state importedData.columns
+	//  TODO: later once I solve select detect thing, change this function to
+	//instead use direcly updating state importedData.columns
 	function handleChange(event: Event) {
+		hasUserSelectedFormat = true;
 		const newFormat = (event.target as HTMLSelectElement).value;
 		console.log('Format changed to:', newFormat);
 		selectedFormat = newFormat;
@@ -90,6 +94,7 @@
 
 	// ☀️️☀️️☀️️☀️️☀️️☀️️☀️️☀️️☀️️☀️️☀️️☀️️EFFECT☀️️☀️️☀️️☀️️☀️️☀️️☀️️☀️️☀️️☀️️☀️️☀️️☀️️☀️️☀️️☀️️☀️️☀️️☀️️
 	$effect(() => {
+		if (hasUserSelectedFormat) return;
 		// Reset detected format for new column
 		selectedFormat = 'string';
 		// Get first 3 non-empty values

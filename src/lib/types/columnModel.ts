@@ -89,17 +89,18 @@ export class BaseColumnModel implements ColumnDef {
 	}
 	changeType(newType: 'string' | 'number' | 'date' | 'gps', changedBy: 'auto' | 'user' = 'user') {
 		if (this.type !== newType) {
-			this.selectTypeCoercion = {
-				originalType: this.type,
-				coercedType: newType,
-				timestamp: new Date(),
-				changedBy
-			};
-			this.type = newType;
-			this.isFormatted = false;
-			this.currentFormat = newType;
+		  this.selectTypeCoercion = {
+			originalType: this.type,
+			coercedType: newType,
+			timestamp: new Date(),
+			changedBy,
+			userSelected: changedBy === 'user' // Set based on who changed it
+		  };
+		  this.type = newType;
+		  this.isFormatted = false;
+		  this.currentFormat = newType;
 		}
-	}
+	  }
 
 	// Add a method to check if type was coerced
 	get wasTypeCoerced(): boolean {
@@ -115,6 +116,7 @@ interface selectTypeCoercion {
 	coercedType: 'string' | 'number' | 'date' | 'gps';
 	timestamp: Date;
 	changedBy: 'auto' | 'user';
+	userSelected: boolean; // Add this to track manual selections
 }
 /**
  * String column implementation
