@@ -1,4 +1,10 @@
-# sv
+# Transplant App
+
+This app takes in CSV's and reformats them and transforms them then maps them to a database. It's managing reforestation data which contains info about tree crops and land that has been planted. It uses GPS locations and polygons. Though it would be useful for other types of data because you can import lazily formatted CSV's and it cleans them up by regognizing certain data types and reformatting them.
+If you're interested to help please let me know if you have any questions. It's for a good cause, bringing transparency to reforestation and nature based offsets. 
+
+
+## Svelte template readme:
 
 Everything you need to build a Svelte project, powered by [`sv`](https://github.com/sveltejs/cli).
 
