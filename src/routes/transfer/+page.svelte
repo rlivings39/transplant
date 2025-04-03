@@ -12,6 +12,7 @@
 <TransferCSVImporter onprocessed={handleProcessed} />
 
 <NewTableData  />
+<button on:click={() => importedData.columns[0].values[0] = "Vancouver"}>Change State Test</button>
 
 {#if importedData.columns}
 	<h2>Current Column Model State</h2>

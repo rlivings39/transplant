@@ -1,6 +1,6 @@
 <script lang="ts">
 	import type { ColumnRep } from '$lib/types/columnModel';
-	import TypeSelectorComponent from './FormatSelectorComponent.svelte';
+	import FormatSelectorComponent from './FormatSelectorComponent.svelte';
 	import { importedData } from '$lib/transferComponents/modelState.svelte';
 	
 	let columnFormats = $state<Record<string, string>>({});
@@ -34,25 +34,18 @@
 		const selectedFormat = event.detail.destinationFormat;
 		console.log(`Called from format event from table: ${selectedFormat}`);
 		// Update column format in state
+		// might be better to update main model
 		columnFormats[event.detail.headerName] = selectedFormat;
 		console.log('calling column formats', columnFormats);
 	}
 
-	// FORMATTING COLUMNS// Number formatting
-	// 🌲️🌲️🌲️🌲️🌲️🌲️🌲️NUMBERS🌲️🌲️🌲️🌲️🌲️🌲️🌲️
-	// the result of isNumber
-	// referecne rows by "rowIndex"
-
-	// 🌲️🌲️🌲️🌲️🌲️🌲️🌲️DATES🌲️🌲️🌲️🌲️🌲️🌲️🌲️
-
-	// 🌲️🌲️🌲️🌲️🌲️🌲️🌲️GPS🌲️🌲️🌲️🌲️🌲️🌲️🌲️
 </script>
 
 {#if importedData.columns.length > 0}
 	<div class="table-container">
 		<div class="format-selector-row">
 			{#each importedData.columns as column}
-				<TypeSelectorComponent
+				<FormatSelectorComponent
 					columnData={getColumnData(column)}
 					currentFormat={columnFormats[column.headerName] || 'string'}
 					currentColumnHeader={column.headerName}
