@@ -1,4 +1,38 @@
 
+// 🔉️🔉️🔉️🔉️🔉️🔉️🔉️🔉️🔉️🔉️🔉️🔉️🔉️🔉️🔉️🔉️🔉️🔉️🔉️🔉️ This is FORMATTING only
+
+// Make a function here to format all of these type formats
+export function formatValue(value: any, type: string): string {
+	if (type === 'number') {
+
+		return numberFormat(value);
+        // make numberFormat function
+	}
+	if (type === 'date') {
+		return formatDate(value);
+        // make formatDate function
+	}
+	return value;
+}
+
+function numberFormat(value: number): string {
+	return new Intl.NumberFormat('en-US', {
+		style: 'decimal',
+		minimumFractionDigits: 0,
+		maximumFractionDigits: 2
+	}).format(value);
+}
+
+function formatDate(value: string): string {
+	return new Date(value).toLocaleDateString('en-US', {
+		year: 'numeric',
+		month: '2-digit',
+		day: '2-digit'
+	});
+}
+
+// 🔉️🔉️🔉️🔉️🔉️🔉️🔉️🔉️🔉️🔉️🔉️🔉️🔉️🔉️🔉️🔉️🔉️🔉️🔉️🔉️ This is detection only
+
 	// 👍️🌲️👍️🌲️👍️🌲️👍️🌲️👍️🌲️NUMBERS🌲️🌲️🌲️🌲️🌲️🌲️🌲️
 	// Number detection with debug
 	function isNumber(value: any): boolean {
@@ -15,6 +49,7 @@
 		}
 		return false;
 	}
+
 
 	// 🌲️🌲️🌲️🌲️🌲️🌲️🌲️DATES🌲️🌲️🌲️🌲️🌲️🌲️🌲️
 	function isDate(value: any): boolean {
@@ -47,6 +82,7 @@
 				/^\d{1,2}(Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)\d{4}$/i
 			];
 			return DATE_FORMATS.some((format) => format.test(value));
+            // print as JavaScript data string
 		}
 		return false;
 	}

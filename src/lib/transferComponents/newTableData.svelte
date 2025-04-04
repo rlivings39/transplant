@@ -2,7 +2,7 @@
 	import type { ColumnRep } from '$lib/types/columnModel';
 	import FormatSelectorComponent from './FormatSelectorComponent.svelte';
 	import { importedData } from '$lib/transferComponents/modelState.svelte';
-	
+
 	let columnFormats = $state<Record<string, string>>({});
 
 	// Number formatting function
@@ -38,7 +38,6 @@
 		columnFormats[event.detail.headerName] = selectedFormat;
 		console.log('calling column formats', columnFormats);
 	}
-
 </script>
 
 {#if importedData.columns.length > 0}
@@ -67,6 +66,8 @@
 						{#each importedData.columns as column, columnIndex}
 							<td>
 								{columnFormats[column.headerName] === 'number' &&
+								// 3 Apr 2025 9:03 render state rather than raw parced data. 
+								// call formatDate, formatNumber etc. 
 								typeof column.values[rowIndex] === 'number'
 									? numberFormat(column.values[rowIndex] as number)
 									: (column.values[rowIndex] ?? '')}

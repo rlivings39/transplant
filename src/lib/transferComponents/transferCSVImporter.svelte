@@ -4,6 +4,7 @@
 Components should accept callback props - which means you then pass functions as properties to these components
   -->
 <script lang="ts">
+	import { detectFormat } from './newFormatDetection';
 	import Papa from 'papaparse';
 	import type { ColumnRep } from '$lib/types/columnModel';
 	import { BaseColumnModel } from '$lib/types/columnModel';
@@ -80,6 +81,8 @@ Components should accept callback props - which means you then pass functions as
 						values
 					};
 				});
+				//  3 Apr 2025 9:03 AM TO DO: here loop through columnData and call detectFormat for each column
+				// then update currentFormat and type. -> update those types. 
 				// Before the onprocessed call
 				console.log('Dispatching processed data:', columnData);
 				onprocessed?.(columnData);
