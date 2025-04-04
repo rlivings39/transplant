@@ -1,6 +1,6 @@
 import type { ColumnFormat } from "$lib/types/columnModel";
 
-// 🔉️🔉️🔉️🔉️🔉️🔉️🔉️🔉️🔉️🔉️🔉️🔉️🔉️🔉️🔉️🔉️🔉️🔉️🔉️🔉️ This is FORMATTING only
+	// 🔉️🔉️🔉️🔉️🔉️🔉️🔉️🔉️🔉️🔉️🔉️🔉️🔉️🔉️🔉️🔉️🔉️🔉️🔉️🔉️ This is FORMATTING only
 	type FormatT = 'string' | 'number' | 'date' | 'gps';
 	export function formatValue(format: FormatT, value: any): string {
 		if (format === "date") { return formatDate(value); }

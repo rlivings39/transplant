@@ -2,8 +2,12 @@
 	import type { ColumnRep } from '$lib/types/columnModel';
 	import FormatSelectorComponent from './FormatSelectorComponent.svelte';
 	import { importedData } from '$lib/transferComponents/modelState.svelte';
+<<<<<<< HEAD
 	import {formatValue} from "./newFormatDetection.svelte";
 
+=======
+	import {formatValue} from './newFormatDetection.svelte'
+>>>>>>> 9d97b0f (Introduce some reactivity and state modifications.)
 	let columnFormats = $state<Record<string, string>>({});
 
 	// Number formatting function
@@ -68,10 +72,6 @@
 						{#each importedData.columns as column, columnIndex}
 							<td>
 								{formatValue(column.type, column.values[rowIndex])}
-								<!-- {columnFormats[column.headerName] === 'number' &&
-								typeof column.values[rowIndex] === 'number'
-									? numberFormat(column.values[rowIndex] as number)
-									: (column.values[rowIndex] ?? '')} -->
 							</td>
 						{/each}
 					</tr>
