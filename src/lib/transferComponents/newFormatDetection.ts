@@ -1,36 +1,6 @@
+import type { ColumnFormat } from "$lib/types/columnModel";
 
-// 🔉️🔉️🔉️🔉️🔉️🔉️🔉️🔉️🔉️🔉️🔉️🔉️🔉️🔉️🔉️🔉️🔉️🔉️🔉️🔉️ This is FORMATTING only
-
-// Make a function here to format all of these type formats
-export function formatValue(value: any, type: string): string {
-	if (type === 'number') {
-
-		return numberFormat(value);
-        // make numberFormat function
-	}
-	if (type === 'date') {
-		return formatDate(value);
-        // make formatDate function
-	}
-	return value;
-}
-
-function numberFormat(value: number): string {
-	return new Intl.NumberFormat('en-US', {
-		style: 'decimal',
-		minimumFractionDigits: 0,
-		maximumFractionDigits: 2
-	}).format(value);
-}
-
-function formatDate(value: string): string {
-	return new Date(value).toLocaleDateString('en-US', {
-		year: 'numeric',
-		month: '2-digit',
-		day: '2-digit'
-	});
-}
-
+	
 // 🔉️🔉️🔉️🔉️🔉️🔉️🔉️🔉️🔉️🔉️🔉️🔉️🔉️🔉️🔉️🔉️🔉️🔉️🔉️🔉️ This is detection only
 
 	// 👍️🌲️👍️🌲️👍️🌲️👍️🌲️👍️🌲️NUMBERS🌲️🌲️🌲️🌲️🌲️🌲️🌲️
@@ -88,11 +58,10 @@ function formatDate(value: string): string {
 	}
 
 	//  3 Apr 2025  8:55 AM New function
-	export function detectFormat(columnData: Array<string | number | null>, currentColumnHeader: string, selectedFormat: string) {
+	export function detectFormat(columnData: Array<string | number | null>, currentColumnHeader: string): ColumnFormat {
 		console.log('Checking column format for:', currentColumnHeader);
 		// Reset detected format for new column
-		selectedFormat = 'string';
-		// Get first 3 non-empty values
+		let selectedFormat: ColumnFormat = 'string';		// Get first 3 non-empty values
 		const sampleValues = columnData
 			.filter((val: string | number | null) => val !== null && val !== '')
 			.slice(0, 3);
@@ -103,15 +72,9 @@ function formatDate(value: string): string {
 
 		// If majority format
 		if (dateCount >= Math.ceil(sampleValues.length / 2)) {
-			if (selectedFormat !== 'date') {
-				// console.log(`Setting format to 'date' (${dateCount}/${sampleValues.length} dates)`);
-				selectedFormat = 'date';
-			}
+			selectedFormat = 'date';
 		} else if (numberCount >= Math.ceil(sampleValues.length / 2)) {
-			if (selectedFormat !== 'number') {
-				// console.log(`Setting format to 'number' (${numberCount}/${sampleValues.length} numbers)`);
-				selectedFormat = 'number';
-			}
+			selectedFormat = 'number';
 		} else {
 			console.log(
 				`No majority format - keeping as '${selectedFormat}' (${numberCount} numbers, ${dateCount} dates)`
@@ -119,3 +82,40 @@ function formatDate(value: string): string {
 		}
 		return selectedFormat;
 	};
+
+
+// 🔉️🔉️🔉️🔉️🔉️🔉️🔉️🔉️🔉️🔉️🔉️🔉️🔉️🔉️🔉️🔉️🔉️🔉️🔉️🔉️ This is FORMATTING only
+
+function formatDate(value: string): string {
+	return new Date(value).toLocaleDateString('en-US', {
+		year: 'numeric',
+		month: '2-digit',
+		day: '2-digit'
+	});
+}
+
+type FormatT = 'string' | 'number' | 'date' | 'gps';
+	export function formatValue(format: FormatT, value: any): string {
+		if (format === "date") { return formatDate(value); }
+		if (format == "gps") { return formatGps(value); }
+		if (format === "number") { return formatNumber(value); }
+		if (format === "string") { return formatString(value); }
+		return value;
+	}
+
+	function formatGps(value: any): string {
+		return "Gps:" + value;
+	}
+
+	function formatNumber(value: any): string {
+		// return "Number: " + value;
+		return new Intl.NumberFormat('en-US', {
+			style: 'decimal',
+			minimumFractionDigits: 0,
+			maximumFractionDigits: 2
+		}).format(Number(value));
+	}
+
+	function formatString(value: any): string {
+		return "String: " + value;
+	}

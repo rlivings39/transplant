@@ -2,6 +2,7 @@
 	import type { ColumnRep } from '$lib/types/columnModel';
 	import { BaseColumnModel } from '$lib/types/columnModel';
 	import typeEvent from '$lib/transferComponents/newTableData.svelte';
+	import { importedData } from '$lib/transferComponents/modelState.svelte';
 
 	const {
 		columnData = [],
@@ -30,6 +31,14 @@
 		const newFormat = dropdown.value;
 		console.log('Format changed to:', newFormat);
 		selectedFormat = newFormat;
+
+		// Directly update the state
+		const columnIndex = importedData.columns.findIndex(
+			col => col.headerName === currentColumnHeader
+		);
+		if (columnIndex !== -1) {
+			importedData.columns[columnIndex].type = newFormat;
+		}
 
 		const customEvent = new CustomEvent('formatchange', {
 			detail: {

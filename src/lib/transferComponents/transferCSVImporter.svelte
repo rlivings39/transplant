@@ -82,8 +82,12 @@ Components should accept callback props - which means you then pass functions as
 					};
 				});
 				//  3 Apr 2025 9:03 AM TO DO: here loop through columnData and call detectFormat for each column
-				// then update currentFormat and type. -> update those types. 
+				// then update currentFormat and type. -> update those types.
 				// Before the onprocessed call
+				for (let i = 0; i < columnData.length; ++i) {
+					const detectedFormat = detectFormat(columnData[i].values, columnData[i].headerName);
+					columnData[i].currentFormat = detectedFormat;
+				}
 				console.log('Dispatching processed data:', columnData);
 				onprocessed?.(columnData);
 				// Dispatch the transformed data

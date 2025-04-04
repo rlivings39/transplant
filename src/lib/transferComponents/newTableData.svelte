@@ -3,6 +3,8 @@
 	import FormatSelectorComponent from './FormatSelectorComponent.svelte';
 	import { importedData } from '$lib/transferComponents/modelState.svelte';
 
+	import { formatValue } from './newFormatDetection';
+
 	let columnFormats = $state<Record<string, string>>({});
 
 	// Number formatting function
@@ -28,13 +30,16 @@
 
 	// Whenever select dropdown changes, this updates. Handle format changes
 	export function formatEvent(
+		column: ColumnRep,
 		event: CustomEvent<{ destinationFormat: string; headerName: string }>
 	) {
 		// this is dropdown value user chose.
-		const selectedFormat = event.detail.destinationFormat;
+		const selectedFormat = event.detail.destinationFormat as 'string' | 'number' | 'date' | 'gps';
 		console.log(`Called from format event from table: ${selectedFormat}`);
 		// Update column format in state
 		// might be better to update main model
+		column.currentFormat = selectedFormat;
+		column.isFormatted = true;
 		columnFormats[event.detail.headerName] = selectedFormat;
 		console.log('calling column formats', columnFormats);
 	}
@@ -46,9 +51,9 @@
 			{#each importedData.columns as column}
 				<FormatSelectorComponent
 					columnData={getColumnData(column)}
-					currentFormat={columnFormats[column.headerName] || 'string'}
+					currentFormat={column.currentFormat}
 					currentColumnHeader={column.headerName}
-					onformatchange={formatEvent}
+					onformatchange={(event) => formatEvent(column, event)}
 				/>
 			{/each}
 		</div>
@@ -65,12 +70,7 @@
 					<tr>
 						{#each importedData.columns as column, columnIndex}
 							<td>
-								{columnFormats[column.headerName] === 'number' &&
-								// 3 Apr 2025 9:03 render state rather than raw parced data. 
-								// call formatDate, formatNumber etc. 
-								typeof column.values[rowIndex] === 'number'
-									? numberFormat(column.values[rowIndex] as number)
-									: (column.values[rowIndex] ?? '')}
+								{formatValue(column.currentFormat, column.values[rowIndex])}
 							</td>
 						{/each}
 					</tr>
