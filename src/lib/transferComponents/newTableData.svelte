@@ -2,7 +2,8 @@
 	import type { ColumnRep } from '$lib/types/columnModel';
 	import FormatSelectorComponent from './FormatSelectorComponent.svelte';
 	import { importedData } from '$lib/transferComponents/modelState.svelte';
-	
+	import {formatValue} from "./newFormatDetection.svelte";
+
 	let columnFormats = $state<Record<string, string>>({});
 
 	// Number formatting function
@@ -27,14 +28,15 @@
 	// then run detection and formatting for that type on the columnRep
 
 	// Whenever select dropdown changes, this updates. Handle format changes
-	export function formatEvent(
+	export function formatEvent(column: ColumnRep,
 		event: CustomEvent<{ destinationFormat: string; headerName: string }>
 	) {
 		// this is dropdown value user chose.
-		const selectedFormat = event.detail.destinationFormat;
+		const selectedFormat = event.detail.destinationFormat as 'string' | 'number' | 'date' | 'gps';
 		console.log(`Called from format event from table: ${selectedFormat}`);
 		// Update column format in state
 		// might be better to update main model
+		column.type = selectedFormat;
 		columnFormats[event.detail.headerName] = selectedFormat;
 		console.log('calling column formats', columnFormats);
 	}
@@ -47,9 +49,9 @@
 			{#each importedData.columns as column}
 				<FormatSelectorComponent
 					columnData={getColumnData(column)}
-					currentFormat={columnFormats[column.headerName] || 'string'}
+					currentFormat={column.type}
 					currentColumnHeader={column.headerName}
-					onformatchange={formatEvent}
+					onformatchange={(event) => formatEvent(column, event)}
 				/>
 			{/each}
 		</div>
@@ -66,10 +68,11 @@
 					<tr>
 						{#each importedData.columns as column, columnIndex}
 							<td>
-								{columnFormats[column.headerName] === 'number' &&
+								{formatValue(column.type, column.values[rowIndex])}
+								<!-- {columnFormats[column.headerName] === 'number' &&
 								typeof column.values[rowIndex] === 'number'
 									? numberFormat(column.values[rowIndex] as number)
-									: (column.values[rowIndex] ?? '')}
+									: (column.values[rowIndex] ?? '')} -->
 							</td>
 						{/each}
 					</tr>

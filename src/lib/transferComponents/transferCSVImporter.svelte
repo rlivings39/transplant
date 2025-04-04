@@ -1,4 +1,4 @@
-<!-- 
+<!--
   Svelte 5 $dispatch documentation reference:
   https://svelte.dev/docs/svelte/v5-migration-guide#Event-changes-Component-events
 Components should accept callback props - which means you then pass functions as properties to these components
@@ -7,6 +7,7 @@ Components should accept callback props - which means you then pass functions as
 	import Papa from 'papaparse';
 	import type { ColumnRep } from '$lib/types/columnModel';
 	import { BaseColumnModel } from '$lib/types/columnModel';
+	import { detectFormat } from '$lib/transferComponents/newFormatDetection.svelte'
 
 	const { onprocessed } = $props<{
 		onprocessed: (data: ColumnRep[]) => void;
@@ -81,6 +82,10 @@ Components should accept callback props - which means you then pass functions as
 					};
 				});
 				// Before the onprocessed call
+				for (let i = 0; i < columnData.length; ++i) {
+					const detectedFormat = detectFormat(columnData[i].values, columnData[i].headerName);
+					columnData[i].type = detectedFormat;
+				}
 				console.log('Dispatching processed data:', columnData);
 				onprocessed?.(columnData);
 				// Dispatch the transformed data

@@ -40,10 +40,11 @@ export interface ColumnDef {
 	};
 }
 
+export type ColumnFormat = 'string' | 'number' | 'date' | 'gps';
 export interface ColumnRep extends ColumnDef {
 	/** The column name/header from the imported data */
 	headerName: string;
-	type: 'string' | 'number' | 'date' | 'gps';
+	type: ColumnFormat;
 	/** The actual data values for this column */
 	values: Array<string | number | null>;
 	/** Optional validation errors by row index */
@@ -68,8 +69,8 @@ export class BaseColumnModel implements ColumnDef {
 	isMerged?: boolean;
 	mergedFrom?: string[];
 	isGpsSource?: boolean;
-	type: 'string' | 'number' | 'date' | 'gps' = 'string';
-	currentFormat: 'string' | 'number' | 'date' | 'gps' = 'string';
+	type: ColumnFormat = 'string';
+	currentFormat: ColumnFormat = 'string';
 	selectFormatCoercion?: selectFormatCoercion;
 	cellValidation?: CellValidationState[];
 	dbMapping?: {
@@ -87,7 +88,7 @@ export class BaseColumnModel implements ColumnDef {
 		this.isMapped = false;
 		this.isFormatted = false;
 	}
-	changeFormat(newType: 'string' | 'number' | 'date' | 'gps', changedBy: 'auto' | 'user' = 'user') {
+	changeFormat(newType: ColumnFormat, changedBy: 'auto' | 'user' = 'user') {
 		if (this.type !== newType) {
 		  this.selectFormatCoercion = {
 			originalFormat: this.type,
@@ -112,8 +113,8 @@ export class BaseColumnModel implements ColumnDef {
 }
 
 interface selectFormatCoercion {
-	originalFormat: 'string' | 'number' | 'date' | 'gps';
-	coercedFormat: 'string' | 'number' | 'date' | 'gps';
+	originalFormat: ColumnFormat;
+	coercedFormat: ColumnFormat;
 	timestamp: Date;
 	changedBy: 'auto' | 'user';
 	userSelected: boolean; // Add this to track manual selections
@@ -162,7 +163,7 @@ export class NumberColumnModel extends BaseColumnModel implements NumberColumn {
 		precision?: number;
 		useThousandsSeparator?: boolean;
 	};
-	currentFormat: 'string' | 'number' | 'date' | 'gps' = 'number';
+	currentFormat: ColumnFormat = 'number';
 	validation?: {
 		min?: number;
 		max?: number;
@@ -209,7 +210,7 @@ export class DateColumnModel extends BaseColumnModel implements DateColumn {
 	format?: {
 		dateFormat?: string;
 	};
-	currentFormat: 'string' | 'number' | 'date' | 'gps' = 'date';
+	currentFormat: ColumnFormat = 'date';
 
 	constructor(headerName: string, dateFormat?: string) {
 		super(headerName);
@@ -250,7 +251,7 @@ export class GpsColumnModel extends BaseColumnModel implements GpsColumn {
 		gpsFormat?: 'DMS' | 'DD';
 		precision?: number;
 	};
-	currentFormat: 'string' | 'number' | 'date' | 'gps' = 'gps';
+	currentFormat: ColumnFormat = 'gps';
 
 	constructor(name: string, gpsFormat: 'DMS' | 'DD' = 'DD', precision: number = 7) {
 		super(name);
