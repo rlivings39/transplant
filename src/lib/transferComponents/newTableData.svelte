@@ -3,7 +3,7 @@
 	import FormatSelectorComponent from './FormatSelectorComponent.svelte';
 	import { importedData } from '$lib/transferComponents/modelState.svelte';
 
-	import { formatValue } from './newFormatDetection';
+	import { formatValue, matchesFormat } from './newFormatDetection';
 
 	let columnFormats = $state<Record<string, string>>({});
 
@@ -69,7 +69,7 @@
 				{#each importedData.columns[0].values as column, rowIndex}
 					<tr>
 						{#each importedData.columns as column, columnIndex}
-							<td>
+							<td class={matchesFormat(column.values[rowIndex], column.currentFormat) ? '' : 'greyed-out'}>
 								{formatValue(column.currentFormat, column.values[rowIndex])}
 							</td>
 						{/each}
