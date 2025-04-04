@@ -16,66 +16,31 @@
 		}).format(value);
 	}
 
-	// Get column data
-	function getColumnData(column: ColumnRep): Array<string | number | null> {
-		console.log(`Processing column: ${column.headerName}`);
-		// Return the values array directly since it's already part of ColumnRep
-		return column.values ?? [];
-	}
-
 	// speculation with 28 Mar 2025  9:47 AM
 	// function typeEvent
 	// when a user changed a type selector, run detection and formatting for that type on the columnRep
 	// then run detection and formatting for that type on the columnRep
-
-	// Whenever select dropdown changes, this updates. Handle format changes
-	export function formatEvent(
-		column: ColumnRep,
-		event: CustomEvent<{ destinationFormat: string; headerName: string }>
-	) {
-		// this is dropdown value user chose.
-		const selectedFormat = event.detail.destinationFormat as 'string' | 'number' | 'date' | 'gps';
-		console.log(`Called from format event from table: ${selectedFormat}`);
-		// Update column format in state
-		// might be better to update main model
-		column.currentFormat = selectedFormat;
-		column.isFormatted = true;
-		columnFormats[event.detail.headerName] = selectedFormat;
-		console.log('calling column formats', columnFormats);
-	}
 </script>
 
-{#if importedData.columns.length > 0}
-	<div class="table-container">
-		<div class="format-selector-row">
+<table>
+	<thead>
+		<tr>
 			{#each importedData.columns as column}
-				<FormatSelectorComponent
-					columnData={getColumnData(column)}
-					currentFormat={column.currentFormat}
-					currentColumnHeader={column.headerName}
-					onformatchange={(event) => formatEvent(column, event)}
-				/>
+				<th>{column.headerName}</th>
 			{/each}
-		</div>
-		<table>
-			<thead>
-				<tr>
-					{#each importedData.columns as column}
-						<th>{column.headerName}</th>
-					{/each}
-				</tr>
-			</thead>
-			<tbody>
-				{#each importedData.columns[0].values as column, rowIndex}
-					<tr>
-						{#each importedData.columns as column, columnIndex}
-							<td class={matchesFormat(column.values[rowIndex], column.currentFormat) ? '' : 'greyed-out'}>
-								{formatValue(column.currentFormat, column.values[rowIndex])}
-							</td>
-						{/each}
-					</tr>
+		</tr>
+	</thead>
+	<tbody>
+		{#each importedData.columns[0].values as column, rowIndex}
+			<tr>
+				{#each importedData.columns as column, columnIndex}
+					<td
+						class={matchesFormat(column.values[rowIndex], column.currentFormat) ? '' : 'greyed-out'}
+					>
+						{formatValue(column.currentFormat, column.values[rowIndex])}
+					</td>
 				{/each}
-			</tbody>
-		</table>
-	</div>
-{/if}
+			</tr>
+		{/each}
+	</tbody>
+</table>
