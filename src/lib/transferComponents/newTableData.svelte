@@ -40,7 +40,6 @@
 		columnFormats[event.detail.headerName] = selectedFormat;
 		console.log('calling column formats', columnFormats);
 	}
-
 </script>
 
 {#if importedData.columns.length > 0}

@@ -1,5 +1,6 @@
 import type { ColumnFormat } from "$lib/types/columnModel";
 
+// 🔉️🔉️🔉️🔉️🔉️🔉️🔉️🔉️🔉️🔉️🔉️🔉️🔉️🔉️🔉️🔉️🔉️🔉️🔉️🔉️ This is FORMATTING only
 	type FormatT = 'string' | 'number' | 'date' | 'gps';
 	export function formatValue(format: FormatT, value: any): string {
 		if (format === "date") { return formatDate(value); }
@@ -7,10 +8,6 @@ import type { ColumnFormat } from "$lib/types/columnModel";
 		if (format === "number") { return formatNumber(value); }
 		if (format === "string") { return formatString(value); }
 		return value;
-	}
-
-	function formatDate(value: any): string {
-		return "Date: " + value;
 	}
 
 	function formatGps(value: any): string {
@@ -24,6 +21,26 @@ import type { ColumnFormat } from "$lib/types/columnModel";
 	function formatString(value: any): string {
 		return "String: " + value;
 	}
+
+
+
+function numberFormat(value: number): string {
+	return new Intl.NumberFormat('en-US', {
+		style: 'decimal',
+		minimumFractionDigits: 0,
+		maximumFractionDigits: 2
+	}).format(value);
+}
+
+function formatDate(value: string): string {
+	return new Date(value).toLocaleDateString('en-US', {
+		year: 'numeric',
+		month: '2-digit',
+		day: '2-digit'
+	});
+}
+
+// 🔉️🔉️🔉️🔉️🔉️🔉️🔉️🔉️🔉️🔉️🔉️🔉️🔉️🔉️🔉️🔉️🔉️🔉️🔉️🔉️ This is detection only
 
 	// 👍️🌲️👍️🌲️👍️🌲️👍️🌲️👍️🌲️NUMBERS🌲️🌲️🌲️🌲️🌲️🌲️🌲️
 	// Number detection with debug
@@ -41,6 +58,7 @@ import type { ColumnFormat } from "$lib/types/columnModel";
 		}
 		return false;
 	}
+
 
 	// 🌲️🌲️🌲️🌲️🌲️🌲️🌲️DATES🌲️🌲️🌲️🌲️🌲️🌲️🌲️
 	function isDate(value: any): boolean {
@@ -73,6 +91,7 @@ import type { ColumnFormat } from "$lib/types/columnModel";
 				/^\d{1,2}(Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)\d{4}$/i
 			];
 			return DATE_FORMATS.some((format) => format.test(value));
+            // print as JavaScript data string
 		}
 		return false;
 	}
