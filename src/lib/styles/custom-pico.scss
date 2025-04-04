@@ -234,6 +234,20 @@ td {
 	}
 }
 
+.toggle-row {
+	display: inline-flex; // Changed from flex
+	overflow-x: visible; // Changed from auto
+	white-space: nowrap; // Added to prevent wrapping
+	width: auto; // Changed from max-content
+
+	.column-toggle {
+		flex: 0 0 var(--column-width, 7rem);
+		padding: 0.25rem;
+		width: var(--column-width, 7rem); // Changed from max-content
+		min-width: var(--column-width, 7rem); // Changed from max-content
+	}
+
+}
 /* Media query adjustments for mobile */
 @media (max-width: 768px) {
 	.table-container {

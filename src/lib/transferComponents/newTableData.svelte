@@ -2,6 +2,7 @@
 	import type { ColumnRep } from '$lib/types/columnModel';
 	import FormatSelectorComponent from './FormatSelectorComponent.svelte';
 	import { importedData } from '$lib/transferComponents/modelState.svelte';
+	import ToggleComponent from './ToggleComponent.svelte';
 
 	let columnFormats = $state<Record<string, string>>({});
 
@@ -42,6 +43,12 @@
 
 {#if importedData.columns.length > 0}
 	<div class="table-container">
+		<div class="toggle-row">
+			{#each importedData.columns as column}
+				<ToggleComponent columnHeader={column.headerName} onToggle={(Headers, isActive) => column.isToggled = isActive}/>
+			{/each}
+		</div>
+		<br/>
 		<div class="format-selector-row">
 			{#each importedData.columns as column}
 				<FormatSelectorComponent
@@ -66,8 +73,8 @@
 						{#each importedData.columns as column, columnIndex}
 							<td>
 								{columnFormats[column.headerName] === 'number' &&
-								// 3 Apr 2025 9:03 render state rather than raw parced data. 
-								// call formatDate, formatNumber etc. 
+								// 3 Apr 2025 9:03 render state rather than raw parced data.
+								// call formatDate, formatNumber etc.
 								typeof column.values[rowIndex] === 'number'
 									? numberFormat(column.values[rowIndex] as number)
 									: (column.values[rowIndex] ?? '')}
