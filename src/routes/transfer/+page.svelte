@@ -6,6 +6,8 @@
 	import FormatSelectorComponent from '$lib/transferComponents/FormatSelectorComponent.svelte';
 	import ToggleComponent from '$lib/transferComponents/ToggleComponent.svelte';
 
+	let pageIs = $state<'transfer' | 'transplant'>('transfer');
+
 	function handleProcessed(csvImportToPage: ColumnRep[]) {
 		setImportedData(csvImportToPage || []);
 	}
@@ -28,20 +30,47 @@
 		column.currentFormat = selectedFormat;
 		column.isFormatted = true;
 	}
+	// 🌲️🌲️🌳️🌳️🌴️🌲️🌲️🌳️🌳️🌴️🌲️🌲️🌳️🌳️🌴️🌲️🌲️🌳️🌳️🌴️🌲️🌲️🌳️🌳️🌴️🌲️🌲️🌳️🌳️🌴️🌲️🌲️🌳️🌳️🌴️ transplant
+
+	// Make selectors disappear , make new psuedo selectors- appear. Or statement in HTML
+	// make toggles disappear
+	// make table dragable
+	// load db tables.
+
+	function changeView() {
+		// pageIs = pageIs === 'transfer' ? 'transplant' : 'transfer';
+		// if(pageis=transplant, "transfer, "transplant")
+		if (pageIs === 'transplant') {
+			pageIs = 'transfer';
+		} else {
+			pageIs = 'transplant';
+		}
+		console.log('Page view changed to:', pageIs);
+	}
 </script>
 
 <TransferCSVImporter onprocessed={handleProcessed} />
 
+{#if pageIs === 'transfer'}
+	<button onclick={changeView}> Send to TransPlant </button>
+{:else}
+	<button onclick={changeView}> Back to Transfer </button>
+{/if}
+
 {#if importedData.columns.length > 0}
 	<div class="table-container">
-		<div class="format-selector-row">
-			{#each importedData.columns as column}
-				<ToggleComponent columnHeader={column.headerName} onToggle={(columnHeader, isActive) => column.isToggled = isActive} />
-			{/each}
-		</div>
-			
+		{#if pageIs === 'transfer'}
 			<div class="format-selector-row">
 				{#each importedData.columns as column}
+					<ToggleComponent
+						columnHeader={column.headerName}
+						onToggle={(columnHeader, isActive) => (column.isToggled = isActive)}
+					/>
+				{/each}
+			</div>
+		{/if}
+		<div class="format-selector-row">
+			{#each importedData.columns as column}
 				<FormatSelectorComponent
 				columnData={getColumnData(column)}
 				currentFormat={column.currentFormat}
@@ -54,7 +83,6 @@
 		<NewTableData />
 	</div>
 {/if}
-<button onclick={() => (importedData.columns[0].values[0] = 'Vancouver')}>Change State Test</button>
 
 {#if importedData.columns}
 	<h2>Current Column Model State</h2>
