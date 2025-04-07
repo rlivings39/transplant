@@ -39,17 +39,17 @@
 				<ToggleComponent columnHeader={column.headerName} onToggle={(isActive) => column.isToggled = isActive} />
 			{/each}
 		</div>
-
-		<div class="format-selector-row">
-			{#each importedData.columns as column}
+			
+			<div class="format-selector-row">
+				{#each importedData.columns as column}
 				<FormatSelectorComponent
-					columnData={getColumnData(column)}
-					currentFormat={column.currentFormat}
-					currentColumnHeader={column.headerName}
-					onformatchange={(event) => formatEvent(column, event)}
+				columnData={getColumnData(column)}
+				currentFormat={column.currentFormat}
+				currentColumnHeader={column.headerName}
+				onformatchange={(event) => formatEvent(column, event)}
 				/>
-			{/each}
-		</div>
+				{/each}
+			</div>
 
 		<NewTableData />
 	</div>

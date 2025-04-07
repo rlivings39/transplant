@@ -221,16 +221,27 @@ td {
 }
 /* Type selector styling */
 .format-selector-row {
-	display: inline-flex; // Changed from flex
-	overflow-x: visible; // Changed from auto
-	white-space: nowrap; // Added to prevent wrapping
-	width: auto; // Changed from max-content
+	display: flex;
+	justify-content: flex-start;
+	overflow-x: visible;
+	white-space: nowrap;
+	width: 100%;
+
+	/* Apply to all direct children to ensure consistent width */
+	> * {
+		flex: 0 0 var(--column-width, 7rem);
+		padding: 0.25rem;
+		width: var(--column-width, 7rem);
+		min-width: var(--column-width, 7rem);
+		display: flex;
+		justify-content: center;
+	}
 
 	.format-selector {
 		flex: 0 0 var(--column-width, 7rem);
 		padding: 0.25rem;
-		width: var(--column-width, 7rem); // Changed from max-content
-		min-width: var(--column-width, 7rem); // Changed from max-content
+		width: var(--column-width, 7rem);
+		min-width: var(--column-width, 7rem);
 	}
 }
 
