@@ -36,7 +36,7 @@
 	<div class="table-container">
 		<div class="format-selector-row">
 			{#each importedData.columns as column}
-				<ToggleComponent columnHeader={column.headerName} onToggle={(isActive) => column.isToggled = isActive} />
+				<ToggleComponent columnHeader={column.headerName} onToggle={(columnHeader, isActive) => column.isToggled = isActive} />
 			{/each}
 		</div>
 			
@@ -65,6 +65,7 @@
 				type: col.type,
 				currentFormat: col.currentFormat, // Add this
 				isToggled: col.isToggled,
+				isGreyed: col.isGreyed,
 				isMapped: col.isMapped,
 				mappedTo: col.mappedTo,
 				isFormatted: col.isFormatted,

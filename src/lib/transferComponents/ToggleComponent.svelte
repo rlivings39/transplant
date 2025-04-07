@@ -4,6 +4,7 @@
 		onToggle: (columnHeader: string, isActive: boolean) => void;
 	}>();
 
+	// const x:string = 
 	let isActive = $state(true);
 
 	function handleToggle() {

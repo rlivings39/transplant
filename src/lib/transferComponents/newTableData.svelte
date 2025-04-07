@@ -35,7 +35,7 @@
 			<tr>
 				{#each importedData.columns as column, columnIndex}
 					<td
-						class={matchesFormat(column.values[rowIndex], column.currentFormat) ? '' : 'greyed-out'}
+						class={matchesFormat(column.values[rowIndex], column.currentFormat) && column.isToggled ? '' : 'greyed-out'}
 					>
 						{formatValue(column.currentFormat, column.values[rowIndex])}
 					</td>
