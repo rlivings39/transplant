@@ -5,6 +5,7 @@
 	import { importedData, setImportedData } from '$lib/transferComponents/modelState.svelte';
 	import FormatSelectorComponent from '$lib/transferComponents/FormatSelectorComponent.svelte';
 	import ToggleComponent from '$lib/transferComponents/ToggleComponent.svelte';
+	import NewDbTables from '$lib/transferComponents/newDbTables.svelte';
 
 	let pageIs = $state<'transfer' | 'transplant'>('transfer');
 
@@ -83,6 +84,8 @@
 		<NewTableData />
 	</div>
 {/if}
+
+<NewDbTables />
 
 {#if importedData.columns}
 	<h2>Current Column Model State</h2>
