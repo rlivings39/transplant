@@ -21,16 +21,19 @@ import {
 } from 'drizzle-orm/pg-core';
 
 // 👍️🌲️ SHARED COLUMNS
-// Shared columns for audit and tracking
+// Shared columns for audit and tracking - temporarily disabled
 const dbColumnsDef = {
+	// Empty object to prevent 500 errors while these fields are being planned
+	// Original fields commented out for reference
+	/*
 	created_at: timestamp('created_at').defaultNow(),
 	last_edited_at: timestamp('last_edited_at'),
 	edited_by: text('edited_by'),
-	approval_status: text('approval_status').notNull().default('pending'), // Can be: 'pending', 'approved', 'rejected'
+	approval_status: text('approval_status').notNull().default('pending'),
 	approved_at: timestamp('approved_at'),
 	approved_by: text('approved_by'),
 	deleted: boolean('deleted')
-	// notes field removed from dbColumnsDef and added specifically to each table
+	*/
 };
 
 // 👍️🌲️ TABLE DEFINITIONS
