@@ -16,6 +16,7 @@
 		}).format(value);
 	}
 
+	
 	// speculation with 28 Mar 2025  9:47 AM
 	// function typeEvent
 	// when a user changed a type selector, run detection and formatting for that type on the columnRep

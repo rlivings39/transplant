@@ -1,4 +1,6 @@
-<script lang="ts">
+<a href="/transfer">Go to transfer page</a>
+
+<!-- <script lang="ts">
 	import NewTableData from "$lib/transferComponents/newTableData.svelte";
 
 	
@@ -8,4 +10,4 @@
 <NewTableData />
 
 
-<NewTransplantTable />
+<NewTransplantTable /> -->
