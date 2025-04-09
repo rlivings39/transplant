@@ -140,11 +140,19 @@
 	// 🌲️🌲️🌲️🌲️🌲️🌲️🌲️
 </script>
 
-<!-- <div class="format-selector"> -->
 <div class="format-selector">
-	<select bind:value={selectedFormat} onchange={handleChange}>
-		{#each formats as format}
-			<option value={format}>{format}</option>
-		{/each}
+	<select 
+	  bind:value={selectedFormat} 
+	  onchange={handleChange}
+	  style="border-left: 0.2rem solid {
+		selectedFormat === 'string' ? '#9c27b0' : 
+		selectedFormat === 'number' ? '#2196f3' : 
+		selectedFormat === 'date' ? '#ff9800' : 
+		selectedFormat === 'gps' ? '#4caf50' : '#9e9e9e'
+	  }!important;"
+	>
+	  {#each formats as format}
+		<option value={format}>{format}</option>
+	  {/each}
 	</select>
-</div>
+  </div>
