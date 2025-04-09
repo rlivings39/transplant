@@ -64,35 +64,37 @@
 {:else}
 	<button onclick={changeView}> Back to Transfer </button>
 {/if}
-
 {#if importedData.columns.length > 0}
-	<div class="table-container">
-		{#if pageIs === 'transfer'}
-			<div class="format-selector-row">
-				{#each importedData.columns as column}
-					<ToggleComponent
-						columnHeader={column.headerName}
-						onToggle={(columnHeader, isActive) => (column.isToggled = isActive)}
-					/>
-				{/each}
-			</div>
-		{/if}
-		<div class="format-selector-row">
-			{#each importedData.columns as column}
-				<FormatSelectorComponent
-				columnData={getColumnData(column)}
-				currentFormat={column.currentFormat}
-				currentColumnHeader={column.headerName}
-				onformatchange={(event) => formatEvent(column, event)}
-				/>
-				{/each}
-			</div>
+  {#if pageIs === 'transfer'}
+    <div class="table-container">
+      <div class="format-selector-row">
+        {#each importedData.columns as column}
+          <ToggleComponent
+            columnHeader={column.headerName}
+            onToggle={(columnHeader, isActive) => (column.isToggled = isActive)}
+          />
+        {/each}
+      </div>
+      
+      <div class="format-selector-row">
+        {#each importedData.columns as column}
+          <FormatSelectorComponent
+            columnData={getColumnData(column)}
+            currentFormat={column.currentFormat}
+            currentColumnHeader={column.headerName}
+            onformatchange={(event) => formatEvent(column, event)}
+          />
+        {/each}
+      </div>
+    </div>
+  {/if}
 
-		<NewTableData />
-	</div>
+  <NewTableData />
+  
+  {#if pageIs === 'transplant'}
+    <NewDbTables {lands} />
+  {/if}
 {/if}
-
-<NewDbTables {lands} />
 
 {#if importedData.columns}
 	<h2>Current Column Model State</h2>
