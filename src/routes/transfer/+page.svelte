@@ -53,13 +53,13 @@
 	}
 </script>
 
-<div style="display: flex; align-items: center; gap: 0.1rem; margin-bottom: 1rem">
+<div style="display: flex; justify-content: space-between; align-items: center; gap: 0.1rem; margin-bottom: 1rem">
 	<TransferCSVImporter onprocessed={handleProcessed} />
 
 	{#if pageIs === 'transfer'}
-		<button onclick={changeView}> Send to TransPlant </button>
+		<button style="margin-left: auto" onclick={changeView}> Send to TransPlant </button>
 	{:else}
-		<button onclick={changeView}> Back to Transfer </button>
+		<button style="margin-right: auto" onclick={changeView}> Back to Transfer </button>
 	{/if}
 </div>
 
