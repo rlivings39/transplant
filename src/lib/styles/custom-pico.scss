@@ -123,12 +123,31 @@ div.container {
 	overflow-x: auto;
 	margin: 0;
 	padding: 0;
-	/* Enable momentum scrolling on iOS */
 	-webkit-overflow-scrolling: touch;
-	/* Add some space for scrollbar */
 	padding-bottom: 5px;
-	/* Ensure proper positioning context for sticky elements */
 	position: relative;
+}
+
+.table-header {
+	position: sticky;
+	top: 0;
+	z-index: 2;
+	background-color: var(--color-black);
+}
+
+.toggle-row,
+.format-selector-row {
+	display: flex;
+	min-width: fit-content;
+}
+
+.toggle-row > div,
+.format-selector-row > div {
+	width: var(--column-width);
+	min-width: var(--column-width);
+	max-width: var(--column-width);
+	padding: 0.25rem;
+	box-sizing: border-box;
 }
 
 .table-title {
@@ -356,9 +375,9 @@ select {
 			[data-format='date']
 		):not([data-format='DATETIME']):not([data-format='TIMESTAMP']):not([data-format='Gps']):not(
 			[data-format='gps']
-		):not([data-format='Latitude']):not([data-format='latitude']):not([data-format='Longitude']):not(
-			[data-format='longitude']
-		):not([data-format='POINT']):not([data-format='BOOLEAN']) {
+		):not([data-format='Latitude']):not([data-format='latitude']):not(
+			[data-format='Longitude']
+		):not([data-format='longitude']):not([data-format='POINT']):not([data-format='BOOLEAN']) {
 		border-left: 0.2rem solid #9e9e9e; // Grey for other formats
 	}
 }

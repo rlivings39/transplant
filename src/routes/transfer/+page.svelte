@@ -6,13 +6,12 @@
 	import FormatSelectorComponent from '$lib/transferComponents/FormatSelectorComponent.svelte';
 	import ToggleComponent from '$lib/transferComponents/ToggleComponent.svelte';
 	import NewDbTables from '$lib/transferComponents/newDbTables.svelte';
-  
 
-  const { data } = $props();
-  
-  const lands = $derived(data?.lands || []);
-  
-  let pageIs = $state<'transfer' | 'transplant'>('transfer');
+	const { data } = $props();
+
+	const lands = $derived(data?.lands || []);
+
+	let pageIs = $state<'transfer' | 'transplant'>('transfer');
 	function handleProcessed(csvImportToPage: ColumnRep[]) {
 		setImportedData(csvImportToPage || []);
 	}
@@ -36,14 +35,11 @@
 		column.isFormatted = true;
 	}
 	// TRANSPLANT 🌲️🌲️🌳️🌳️🌴️🌲️🌲️🌳️🌳️🌴️🌲️🌲️🌳️🌳️🌴️🌲️🌲️🌳️🌳️🌴️🌲️🌲️🌳️🌳️🌴️🌲️🌲️🌳️🌳️🌴️🌲️🌲️🌳️🌳️🌴️
-	
 
 	// Make selectors disappear , make new psuedo selectors- appear. Or statement in HTML
 	// make toggles disappear
 	// make table dragable
 	// load db tables.
-	
-
 
 	function changeView() {
 		// pageIs = pageIs === 'transfer' ? 'transplant' : 'transfer';
@@ -65,35 +61,37 @@
 	<button onclick={changeView}> Back to Transfer </button>
 {/if}
 {#if importedData.columns.length > 0}
-  <div class="table-container">
-    {#if pageIs === 'transfer'}
-      <div class="format-selector-row">
-        {#each importedData.columns as column}
-          <ToggleComponent
-            columnHeader={column.headerName}
-            onToggle={(columnHeader, isActive) => (column.isToggled = isActive)}
-          />
-        {/each}
-      </div>
-    {/if}
-    
-    <div class="format-selector-row">
-      {#each importedData.columns as column}
-        <FormatSelectorComponent
-          columnData={getColumnData(column)}
-          currentFormat={column.currentFormat}
-          currentColumnHeader={column.headerName}
-          onformatchange={(event) => formatEvent(column, event)}
-        />
-      {/each}
-    </div>
-  </div>
+	<div class="table-container">
+		<div class="table-header">
+			{#if pageIs === 'transfer'}
+				<div class="toggle-row">
+					{#each importedData.columns as column}
+						<ToggleComponent
+							columnHeader={column.headerName}
+							onToggle={(columnHeader, isActive) => (column.isToggled = isActive)}
+						/>
+					{/each}
+				</div>
+			{/if}
 
-  <NewTableData />
-  
-  {#if pageIs === 'transplant'}
-    <NewDbTables {lands} />
-  {/if}
+			<div class="format-selector-row">
+				{#each importedData.columns as column}
+					<FormatSelectorComponent
+						columnData={getColumnData(column)}
+						currentFormat={column.currentFormat}
+						currentColumnHeader={column.headerName}
+						onformatchange={(event) => formatEvent(column, event)}
+					/>
+				{/each}
+			</div>
+		</div>
+
+		<NewTableData />
+	</div>
+
+	{#if pageIs === 'transplant'}
+		<NewDbTables {lands} />
+	{/if}
 {/if}
 
 {#if importedData.columns}
