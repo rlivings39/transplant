@@ -6,7 +6,7 @@
 
 :root {
 	--pico-font-family: 'Roboto Mono', Consolas, Monaco, 'Courier New', monospace;
-	--pico-background-color: var(--color-black) !important;
+	--pico-background-color: var(--color-black) ;
 	--color-purple: #8028de;
 	--color-light-grey: #343434;
 	// --color-grey: #212121;
@@ -25,14 +25,14 @@
 }
 body,
 html {
-	background-color: var(--color-black) !important;
+	background-color: var(--color-black) ;
 }
 .container,
 table,
 th,
 td,
 select {
-	background-color: var(--color-black) !important;
+	background-color: var(--color-black) ;
 }
 nav a {
 	text-decoration-color: var(--color-purple);
@@ -48,11 +48,11 @@ h1 {
 
 th {
 	font-size: 0.6rem;
-	overflow: hidden !important;
+	overflow: hidden ;
 }
 
 table {
-	border: 0.04rem solid var(--color-light-grey) !important; // LEAVE THIS ONE ALSO. Chris 4 Mar 2025
+	border: 0.04rem solid var(--color-light-grey) ; // LEAVE THIS ONE ALSO. Chris 4 Mar 2025
 	font-family: 'Roboto Mono', monospace;
 	font-size: 0.5rem;
 	line-height: 1;
@@ -64,7 +64,7 @@ table {
 
 /* Table Header Styles */
 thead {
-	position: sticky !important;
+	position: sticky ;
 	z-index: 1;
 	background-color: var(--pico-background-color);
 
@@ -140,7 +140,7 @@ div.container {
 	justify-content: center;
 }
 
-.toggle-row > div input[type="checkbox"] {
+.toggle-row > div input[type='checkbox'] {
 	margin: 0 auto;
 }
 
@@ -149,7 +149,7 @@ div.container {
 	justify-content: center;
 }
 
-.format-selector-row > div input[type="checkbox"] {
+.format-selector-row > div input[type='checkbox'] {
 	margin: 0 auto;
 }
 
@@ -158,7 +158,6 @@ div.container {
 	display: flex;
 	min-width: fit-content;
 }
-
 
 .toggle-row > div,
 .format-selector-row > div {
@@ -193,7 +192,7 @@ div.container {
 
 /* First Column Sticky */
 td:first-child {
-	position: sticky !important;
+	position: sticky ;
 	left: 0;
 	z-index: 1;
 	background-color: var(--pico-background-color);
@@ -201,19 +200,19 @@ td:first-child {
 
 /* First header sticky */
 th:first-child {
-	position: sticky !important;
+	position: sticky ;
 	left: 0;
 	top: 0;
-	z-index: 999 !important;
-	background-color: var(--header-background) !important;
+	z-index: 999 ;
+	background-color: var(--header-background) ;
 }
 
 /* All headers sticky at top */
 thead th {
-	position: sticky !important;
+	position: sticky ;
 	top: 0;
-	z-index: 998 !important;
-	background-color: var(--header-background) !important;
+	z-index: 998 ;
+	background-color: var(--header-background) ;
 }
 
 /* Target the table headers directly to fill the entire cell */
@@ -297,107 +296,31 @@ td {
 }
 
 td:first-child {
-	position: sticky !important;
+	position: sticky ;
 	left: 0;
-	z-index: 2 !important;
-	background-color: var(--pico-background-color) !important;
+	z-index: 2 ;
+	background-color: var(--pico-background-color) ;
 }
 
 select {
 	/* Reset Pico CSS variables that affect borders */
-	--pico-border-color: var(--color-light-grey) !important;
-	--pico-border-width: 0.05rem !important;
-	--pico-form-element-border-color: var(--color-light-grey) !important;
+	--pico-border-color: var(--color-light-grey) ;
+	--pico-border-width: 0.05rem ;
+	--pico-form-element-border-color: var(--color-light-grey) ;
 	background-color: var(--color-grey);
-	border-width: 0.05rem !important;
-	border-style: solid !important;
-	border-color: var(--color-light-grey) !important;
-	border: 0.05rem solid var(--color-light-grey) !important;
+	border-width: 0.05rem ;
+	border-style: solid ;
+	border-color: var(--color-light-grey) ;
+	border: 0.05rem solid var(--color-light-grey) ;
 	margin-bottom: -0.1rem;
 	font-size: 0.5rem;
 	/* cSpell:disable-next-line */
 	background-image: url("data:image/svg+xml;charset=UTF-8,%3csvs xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='white' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
-	padding: 0.2rem 1.5rem 0.2rem 0.4rem !important;
+	padding: 0.2rem 1.5rem 0.2rem 0.4rem ;
 	color: var(--color-white);
 	cursor: pointer;
 	&:hover {
 		background-color: var(--color-light-grey);
-	}
-}
-
-.format-pseudo-select {
-	display: block;
-	background-color: var(--color-grey);
-	border: 0.05rem solid var(--color-light-grey); // format Select
-	border-radius: 0.25rem;
-	padding: 0.2rem 1.5rem 0.3rem 0.4rem !important;
-	font-size: 0.6rem;
-	margin-bottom: 0.4rem;
-	text-align: left;
-	width: 100%;
-	box-sizing: border-box;
-	color: var(--color-white);
-	cursor: default;
-	user-select: text !important;
-	-webkit-user-select: text !important;
-	-moz-user-select: text !important;
-	-ms-user-select: text !important;
-	cursor: text !important;
-	background-position: right 0.1rem center;
-	background-repeat: no-repeat;
-	background-size: 1rem auto;
-
-	// format-specific styling
-	&[data-format='String'],
-	&[data-format='string'],
-	&[data-format='VARCHAR'],
-	&[data-format='TEXT'] {
-		border-left: 0.2rem solid #9c27b0; // Purple for String
-	}
-
-	&[data-format='Number'],
-	&[data-format='number'],
-	&[data-format='INTEGER'],
-	&[data-format='FLOAT'],
-	&[data-format='DECIMAL'],
-	&[data-format='NUMERIC'] {
-		border-left: 0.2rem solid #2196f3; // Blue for Number
-	}
-
-	&[data-format='Date'],
-	&[data-format='date'],
-	&[data-format='DATETIME'],
-	&[data-format='TIMESTAMP'] {
-		border-left: 0.2rem solid #ff9800; // Orange for Date
-	}
-
-	&[data-format='Gps'],
-	&[data-format='gps'],
-	&[data-format='Latitude'],
-	&[data-format='latitude'],
-	&[data-format='Longitude'],
-	&[data-format='longitude'],
-	&[data-format='POINT'] {
-		border-left: 0.2rem solid #4caf50; // Green for GPS coordinates
-	}
-
-	&[data-format='BOOLEAN'] {
-		border-left: 0.2rem solid #f44336; // Red for Boolean
-	}
-
-	// Default for any other format
-	&:not([data-format='String']):not([data-format='string']):not([data-format='VARCHAR']):not(
-			[data-format='TEXT']
-		):not([data-format='Number']):not([data-format='number']):not([data-format='INTEGER']):not(
-			[data-format='FLOAT']
-		):not([data-format='DECIMAL']):not([data-format='NUMERIC']):not([data-format='Date']):not(
-			[data-format='date']
-		):not([data-format='DATETIME']):not([data-format='TIMESTAMP']):not([data-format='Gps']):not(
-			[data-format='gps']
-		):not([data-format='Latitude']):not([data-format='latitude']):not(
-			[data-format='Longitude']
-		):not([data-format='longitude']):not([data-format='POINT']):not([data-format='BOOLEAN']) {
-		border-left: 0.2rem solid #9e9e9e; // Grey for other formats
 	}
 }
 
@@ -408,11 +331,11 @@ select {
 	text-overflow: ellipsis;
 	text-align: left;
 	margin-top: 0.25rem;
-	user-select: text !important;
-	-webkit-user-select: text !important;
-	-moz-user-select: text !important;
-	-ms-user-select: text !important;
-	cursor: text !important;
+	user-select: text ;
+	-webkit-user-select: text ;
+	-moz-user-select: text ;
+	-ms-user-select: text ;
+	cursor: text ;
 }
 
 .number-cell {
@@ -432,7 +355,7 @@ button,
 	width: auto;
 	cursor: pointer;
 	&:hover {
-		opacity: 0.6 !important;
+		opacity: 0.6 ;
 		transition: opacity 0.3s ease;
 	}
 }
@@ -487,12 +410,12 @@ button,
 /* Drag and drop cursor styling */
 [draggable='true'],
 [draggable='true'] * {
-	cursor: grab !important;
+	cursor: grab ;
 }
 
 [draggable='true']:active,
 [draggable='true']:active * {
-	cursor: grabbing !important;
+	cursor: grabbing ;
 }
 
 /* Make all cells in the source table appear draggable */
