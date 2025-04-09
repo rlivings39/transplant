@@ -53,7 +53,9 @@
 	}
 </script>
 
-<div style="display: flex; justify-content: space-between; align-items: center; gap: 0.1rem; margin-bottom: 1rem">
+<div
+	style="display: flex; justify-content: space-between; align-items: center; gap: 0.1rem; margin-bottom: 1rem"
+>
 	<TransferCSVImporter onprocessed={handleProcessed} />
 
 	{#if pageIs === 'transfer'}
@@ -89,7 +91,7 @@
 			</div>
 		</div>
 
-		<NewTableData />
+		<NewTableData {pageIs} />
 	</div>
 
 	{#if pageIs === 'transplant'}

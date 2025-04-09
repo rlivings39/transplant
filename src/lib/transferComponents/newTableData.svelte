@@ -5,6 +5,12 @@
 
 	import { formatValue, matchesFormat } from './newFormatDetection';
 
+	// Accept pageIs as a prop
+	const { pageIs = 'transfer' } = $props<{ pageIs?: 'transfer' | 'transplant' }>();
+
+	// Derive if we're in transplant mode
+	let isTransplant = $derived(pageIs === 'transplant');
+
 	let columnFormats = $state<Record<string, string>>({});
 
 	// Number formatting function
@@ -16,7 +22,6 @@
 		}).format(value);
 	}
 
-	
 	// speculation with 28 Mar 2025  9:47 AM
 	// function typeEvent
 	// when a user changed a type selector, run detection and formatting for that type on the columnRep
@@ -26,17 +31,19 @@
 <table>
 	<thead>
 		<tr>
-			{#each importedData.columns as column}
+			{#each importedData.columns.filter((c) => (isTransplant ? c.isToggled : true)) as column}
 				<th>{column.headerName}</th>
 			{/each}
 		</tr>
 	</thead>
 	<tbody>
-		{#each importedData.columns[0].values as column, rowIndex}
+		{#each importedData.columns[0].values as _, rowIndex}
 			<tr>
-				{#each importedData.columns as column, columnIndex}
+				{#each importedData.columns.filter((c) => (isTransplant ? c.isToggled : true)) as column}
 					<td
-						class={matchesFormat(column.values[rowIndex], column.currentFormat) && column.isToggled ? '' : 'greyed-out'}
+						class={matchesFormat(column.values[rowIndex], column.currentFormat) && column.isToggled
+							? ''
+							: 'greyed-out'}
 					>
 						{formatValue(column.currentFormat, column.values[rowIndex])}
 					</td>
