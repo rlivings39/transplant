@@ -53,13 +53,16 @@
 	}
 </script>
 
-<TransferCSVImporter onprocessed={handleProcessed} />
+<div style="display: flex; align-items: center; gap: 0.1rem; margin-bottom: 1rem">
+	<TransferCSVImporter onprocessed={handleProcessed} />
 
-{#if pageIs === 'transfer'}
-	<button onclick={changeView}> Send to TransPlant </button>
-{:else}
-	<button onclick={changeView}> Back to Transfer </button>
-{/if}
+	{#if pageIs === 'transfer'}
+		<button onclick={changeView}> Send to TransPlant </button>
+	{:else}
+		<button onclick={changeView}> Back to Transfer </button>
+	{/if}
+</div>
+
 {#if importedData.columns.length > 0}
 	<div class="table-container">
 		<div class="table-header">
