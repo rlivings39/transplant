@@ -65,8 +65,8 @@
 	<button onclick={changeView}> Back to Transfer </button>
 {/if}
 {#if importedData.columns.length > 0}
-  {#if pageIs === 'transfer'}
-    <div class="table-container">
+  <div class="table-container">
+    {#if pageIs === 'transfer'}
       <div class="format-selector-row">
         {#each importedData.columns as column}
           <ToggleComponent
@@ -75,19 +75,19 @@
           />
         {/each}
       </div>
-      
-      <div class="format-selector-row">
-        {#each importedData.columns as column}
-          <FormatSelectorComponent
-            columnData={getColumnData(column)}
-            currentFormat={column.currentFormat}
-            currentColumnHeader={column.headerName}
-            onformatchange={(event) => formatEvent(column, event)}
-          />
-        {/each}
-      </div>
+    {/if}
+    
+    <div class="format-selector-row">
+      {#each importedData.columns as column}
+        <FormatSelectorComponent
+          columnData={getColumnData(column)}
+          currentFormat={column.currentFormat}
+          currentColumnHeader={column.headerName}
+          onformatchange={(event) => formatEvent(column, event)}
+        />
+      {/each}
     </div>
-  {/if}
+  </div>
 
   <NewTableData />
   
