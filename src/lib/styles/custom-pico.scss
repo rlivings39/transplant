@@ -135,11 +135,30 @@ div.container {
 	background-color: var(--color-black);
 }
 
+.toggle-row > div {
+	display: flex;
+	justify-content: center;
+}
+
+.toggle-row > div input[type="checkbox"] {
+	margin: 0 auto;
+}
+
+.format-selector-row > div {
+	display: flex;
+	justify-content: center;
+}
+
+.format-selector-row > div input[type="checkbox"] {
+	margin: 0 auto;
+}
+
 .toggle-row,
 .format-selector-row {
 	display: flex;
 	min-width: fit-content;
 }
+
 
 .toggle-row > div,
 .format-selector-row > div {
