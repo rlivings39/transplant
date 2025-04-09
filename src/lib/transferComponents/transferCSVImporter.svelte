@@ -105,7 +105,9 @@ Components should accept callback props - which means you then pass functions as
 	}
 </script>
 
-<input type="file" accept=".csv" onchange={handleFileSelect} disabled={isLoading} />
+<div class="file-input-container">
+	<input type="file" accept=".csv" onchange={handleFileSelect} disabled={isLoading} />
+</div>
 
 {#if error}
 	<p class="error">{error}</p>

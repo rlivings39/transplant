@@ -116,6 +116,12 @@ thead {
 	}
 }
 
+/* Override file input font */
+input[type="file"] {
+	font-family: 'Roboto Mono', monospace;
+	font-size: 0.6rem;
+}
+
 /* Override container styles with high specificity */
 body .container,
 html body .container,
