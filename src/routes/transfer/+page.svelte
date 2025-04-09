@@ -6,9 +6,13 @@
 	import FormatSelectorComponent from '$lib/transferComponents/FormatSelectorComponent.svelte';
 	import ToggleComponent from '$lib/transferComponents/ToggleComponent.svelte';
 	import NewDbTables from '$lib/transferComponents/newDbTables.svelte';
+  
 
-	let pageIs = $state<'transfer' | 'transplant'>('transfer');
-
+  const { data } = $props();
+  
+  const lands = $derived(data?.lands || []);
+  
+  let pageIs = $state<'transfer' | 'transplant'>('transfer');
 	function handleProcessed(csvImportToPage: ColumnRep[]) {
 		setImportedData(csvImportToPage || []);
 	}
@@ -31,12 +35,15 @@
 		column.currentFormat = selectedFormat;
 		column.isFormatted = true;
 	}
-	// 🌲️🌲️🌳️🌳️🌴️🌲️🌲️🌳️🌳️🌴️🌲️🌲️🌳️🌳️🌴️🌲️🌲️🌳️🌳️🌴️🌲️🌲️🌳️🌳️🌴️🌲️🌲️🌳️🌳️🌴️🌲️🌲️🌳️🌳️🌴️ transplant
+	// TRANSPLANT 🌲️🌲️🌳️🌳️🌴️🌲️🌲️🌳️🌳️🌴️🌲️🌲️🌳️🌳️🌴️🌲️🌲️🌳️🌳️🌴️🌲️🌲️🌳️🌳️🌴️🌲️🌲️🌳️🌳️🌴️🌲️🌲️🌳️🌳️🌴️
+	
 
 	// Make selectors disappear , make new psuedo selectors- appear. Or statement in HTML
 	// make toggles disappear
 	// make table dragable
 	// load db tables.
+	
+
 
 	function changeView() {
 		// pageIs = pageIs === 'transfer' ? 'transplant' : 'transfer';
@@ -85,7 +92,7 @@
 	</div>
 {/if}
 
-<NewDbTables />
+<NewDbTables {lands} />
 
 {#if importedData.columns}
 	<h2>Current Column Model State</h2>
