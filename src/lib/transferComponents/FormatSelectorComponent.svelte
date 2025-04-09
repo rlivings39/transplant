@@ -144,12 +144,12 @@
 	<select 
 	  bind:value={selectedFormat} 
 	  onchange={handleChange}
-	  style="border-left: 0.2rem solid {
-		selectedFormat === 'string' ? '#9c27b0' : 
-		selectedFormat === 'number' ? '#2196f3' : 
-		selectedFormat === 'date' ? '#ff9800' : 
-		selectedFormat === 'gps' ? '#4caf50' : '#9e9e9e'
-	  }!important;"
+	  style="background-color: {
+		selectedFormat === 'string' ? 'rgba(156, 39, 176, 0.2)' : // leave in rgba format for opacity syntax. 
+		selectedFormat === 'number' ? 'rgba(33, 150, 243, 0.2)' : 
+		selectedFormat === 'date' ? 'rgba(255, 152, 0, 0.2)' : 
+		selectedFormat === 'gps' ? 'rgba(76, 175, 80, 0.2)' : 'rgba(158, 158, 158, 0.2)'
+	  }"
 	>
 	  {#each formats as format}
 		<option value={format}>{format}</option>

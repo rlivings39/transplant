@@ -46,10 +46,23 @@ h1 {
 	color: var(--color-white);
 }
 
+
+
 th {
 	font-size: 0.6rem;
+	padding-left: 0.2rem !important;
+	padding-right: 0.2rem !important;
 	overflow: hidden ;
 }
+
+button {
+	border: 0.04rem solid var(--color-light-grey) ;
+	box-sizing: border-box; // Ensures border doesn't affect button dimensions
+  }
+select {
+	border: 0.04rem solid var(--color-light-grey) ;
+	box-sizing: border-box; // Ensures border doesn't affect button dimensions
+  }
 
 table {
 	border: 0.04rem solid var(--color-light-grey) ; // LEAVE THIS ONE ALSO. Chris 4 Mar 2025
@@ -67,6 +80,7 @@ thead {
 	position: sticky ;
 	z-index: 1;
 	background-color: var(--pico-background-color);
+	
 
 	tr.header-text {
 		position: sticky;
@@ -78,6 +92,7 @@ thead {
 			// font-size: 0.9rem;
 			vertical-align: bottom;
 			text-align: left;
+		
 
 			&:first-child {
 				position: sticky;
