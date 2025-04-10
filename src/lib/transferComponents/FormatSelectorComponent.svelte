@@ -1,7 +1,5 @@
 <script lang="ts">
-	import type { ColumnRep } from '$lib/types/columnModel';
-	import { BaseColumnModel } from '$lib/types/columnModel';
-	import typeEvent from '$lib/transferComponents/newTableData.svelte';
+	
 	import { importedData } from '$lib/transferComponents/modelState.svelte';
 
 	const {
