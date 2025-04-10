@@ -16,11 +16,13 @@ Components should accept callback props - which means you then pass functions as
 	let file = $state<File | null>(null);
 	let error = $state<string | null>(null);
 	let isLoading = $state(false);
+	let fileName = $state<string>('');
 
 	async function handleFileSelect(event: Event) {
 		console.log('File select event triggered');
 		const input = event.target as HTMLInputElement;
 		file = input.files?.[0] ?? null;
+		fileName = file?.name || '';
 
 		if (!file) {
 			console.log('No file selected');
@@ -112,9 +114,25 @@ Components should accept callback props - which means you then pass functions as
 </script>
 
 <div class="file-input-container">
-	<input type="file" accept=".csv" onchange={handleFileSelect} disabled={isLoading} />
+	<button
+		onclick={() => {
+			const fileInput = document.getElementById('hidden-file-input');
+			if (fileInput) fileInput.click();
+		}}
+		disabled={isLoading}
+	>
+		Load CSV
+	</button>
+	<span style="color: grey">{fileName}</span>
+	<input
+		id="hidden-file-input"
+		type="file"
+		accept=".csv"
+		onchange={handleFileSelect}
+		disabled={isLoading}
+		hidden
+	/>
 </div>
-
 {#if error}
 	<p class="error">{error}</p>
 {/if}
