@@ -35,20 +35,21 @@
 				<th>
 					<div class="column-header">
 						<FormatSelectorComponent
-						columnData={column.values}
-						currentFormat={column.currentFormat}
-						currentColumnHeader={column.headerName}
-						onformatchange={(event) => {
-							// Update column format directly
-							const selectedFormat = event.detail.destinationFormat;
-							column.currentFormat = selectedFormat;
-							column.isFormatted = true;
-						}}
+							columnData={column.values}
+							currentFormat={column.currentFormat}
+							currentColumnHeader={column.headerName}
+							onformatchange={(event) => {
+								// Update column format directly
+								const selectedFormat = event.detail.destinationFormat;
+								column.currentFormat = selectedFormat;
+								column.isFormatted = true;
+							}}
 							{isTransplant}
 							isToggled={column.isToggled}
-							/>
-							<div class="header-name">{column.headerName}</div>
+						/>
+						<div style="height: 0.5rem"></div>
 					</div>
+					<div class="header-name">{column.headerName}</div>
 				</th>
 			{/each}
 		</tr>
