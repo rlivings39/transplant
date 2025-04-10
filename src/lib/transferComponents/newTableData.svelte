@@ -45,7 +45,11 @@
 							? ''
 							: 'greyed-out'}
 					>
-						{formatValue(column.currentFormat, column.values[rowIndex])}
+						{#if isTransplant && (!matchesFormat(column.values[rowIndex], column.currentFormat) || !column.isToggled)}
+							<!-- Empty cell when greyed in transplant mode -->
+						{:else}
+							{formatValue(column.currentFormat, column.values[rowIndex])}
+						{/if}
 					</td>
 				{/each}
 			</tr>
