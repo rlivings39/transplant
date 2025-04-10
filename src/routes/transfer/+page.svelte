@@ -95,6 +95,7 @@
 						currentColumnHeader={column.headerName}
 						onformatchange={(event) => formatEvent(column, event)}
 						isTransplant={pageIs === 'transplant'}
+						isToggled={column.isToggled}
 					/>
 				{/each}
 			</div>

@@ -1,5 +1,4 @@
 <script lang="ts">
-	
 	import { importedData } from '$lib/transferComponents/modelState.svelte';
 
 	const {
@@ -7,7 +6,8 @@
 		currentFormat = 'string',
 		currentColumnHeader = '',
 		onformatchange = () => {},
-		isTransplant = false
+		isTransplant = false,
+		isToggled = true
 	} = $props<{
 		columnData?: Array<string | number | null>;
 		currentFormat?: string;
@@ -16,6 +16,7 @@
 			event: CustomEvent<{ destinationFormat: string; headerName: string }>
 		) => void;
 		isTransplant?: boolean;
+		isToggled?: boolean;
 	}>();
 
 	const formats = ['string', 'number', 'date', 'gps'];
@@ -140,23 +141,28 @@
 	// 🌲️🌲️🌲️🌲️🌲️🌲️🌲️
 </script>
 
-<div class="format-selector">
-	<select
-		bind:value={selectedFormat}
-		onchange={handleChange}
-		disabled={isTransplant}
-		style="background-color: {selectedFormat === 'string'
-			? 'rgba(156, 39, 176, 0.2)' // leave in rgba format for opacity syntax.
-			: selectedFormat === 'number'
-				? 'rgba(33, 150, 243, 0.2)'
-				: selectedFormat === 'date'
-					? 'rgba(255, 152, 0, 0.2)'
-					: selectedFormat === 'gps'
-						? 'rgba(76, 175, 80, 0.2)'
-						: 'rgba(158, 158, 158, 0.2)'}"
-	>
-		{#each formats as format}
-			<option value={format}>{format}</option>
-		{/each}
-	</select>
+<div
+	class="format-selector"
+	style={!isToggled && isTransplant ? 'width: 0; padding: 0; margin: 0; overflow: hidden;' : ''}
+>
+	{#if isToggled || !isTransplant}
+		<select
+			bind:value={selectedFormat}
+			onchange={handleChange}
+			disabled={isTransplant}
+			style="background-color: {selectedFormat === 'string'
+				? 'rgba(156, 39, 176, 0.2)' // leave in rgba format for opacity syntax.
+				: selectedFormat === 'number'
+					? 'rgba(33, 150, 243, 0.2)'
+					: selectedFormat === 'date'
+						? 'rgba(255, 152, 0, 0.2)'
+						: selectedFormat === 'gps'
+							? 'rgba(76, 175, 80, 0.2)'
+							: 'rgba(158, 158, 158, 0.2)'}"
+		>
+			{#each formats as format}
+				<option value={format}>{format}</option>
+			{/each}
+		</select>
+	{/if}
 </div>

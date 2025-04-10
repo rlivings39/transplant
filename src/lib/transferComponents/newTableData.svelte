@@ -32,7 +32,24 @@
 	<thead>
 		<tr>
 			{#each importedData.columns.filter((c) => (isTransplant ? c.isToggled : true)) as column}
-				<th>{column.headerName}</th>
+				<th>
+					<div class="column-header">
+						<div class="header-name">{column.headerName}</div>
+						<FormatSelectorComponent
+							columnData={column.values}
+							currentFormat={column.currentFormat}
+							currentColumnHeader={column.headerName}
+							onformatchange={(event) => {
+								// Update column format directly
+								const selectedFormat = event.detail.destinationFormat;
+								column.currentFormat = selectedFormat;
+								column.isFormatted = true;
+							}}
+							{isTransplant}
+							isToggled={column.isToggled}
+						/>
+					</div>
+				</th>
 			{/each}
 		</tr>
 	</thead>
@@ -56,3 +73,15 @@
 		{/each}
 	</tbody>
 </table>
+
+<style>
+	.column-header {
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+	}
+
+	.header-name {
+		margin-bottom: 0.5rem;
+	}
+</style>
