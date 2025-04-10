@@ -69,7 +69,7 @@
 	{#if pageIs === 'transfer'}
 		<button style="margin-left: auto" onclick={changeView}> Send to TransPlant </button>
 	{:else}
-		<button style="margin-right: auto" onclick={changeView}> Back to Transfer </button>
+		<button style="margin-left: auto" onclick={changeView}> Back to Transfer </button>
 	{/if}
 </div>
 
@@ -87,18 +87,6 @@
 				</div>
 			{/if}
 
-			<div class="format-selector-row">
-				{#each importedData.columns as column}
-					<FormatSelectorComponent
-						columnData={getColumnData(column)}
-						currentFormat={column.currentFormat}
-						currentColumnHeader={column.headerName}
-						onformatchange={(event) => formatEvent(column, event)}
-						isTransplant={pageIs === 'transplant'}
-						isToggled={column.isToggled}
-					/>
-				{/each}
-			</div>
 		</div>
 
 		<NewTableData {pageIs} />
