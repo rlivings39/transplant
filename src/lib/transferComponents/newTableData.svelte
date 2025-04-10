@@ -34,20 +34,20 @@
 			{#each importedData.columns.filter((c) => (isTransplant ? c.isToggled : true)) as column}
 				<th>
 					<div class="column-header">
-						<div class="header-name">{column.headerName}</div>
 						<FormatSelectorComponent
-							columnData={column.values}
-							currentFormat={column.currentFormat}
-							currentColumnHeader={column.headerName}
-							onformatchange={(event) => {
-								// Update column format directly
-								const selectedFormat = event.detail.destinationFormat;
-								column.currentFormat = selectedFormat;
-								column.isFormatted = true;
-							}}
+						columnData={column.values}
+						currentFormat={column.currentFormat}
+						currentColumnHeader={column.headerName}
+						onformatchange={(event) => {
+							// Update column format directly
+							const selectedFormat = event.detail.destinationFormat;
+							column.currentFormat = selectedFormat;
+							column.isFormatted = true;
+						}}
 							{isTransplant}
 							isToggled={column.isToggled}
-						/>
+							/>
+							<div class="header-name">{column.headerName}</div>
 					</div>
 				</th>
 			{/each}
