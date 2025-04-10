@@ -42,14 +42,22 @@
 	// load db tables.
 
 	function changeView() {
-		// pageIs = pageIs === 'transfer' ? 'transplant' : 'transfer';
-		// if(pageis=transplant, "transfer, "transplant")
 		if (pageIs === 'transplant') {
 			pageIs = 'transfer';
 		} else {
 			pageIs = 'transplant';
 		}
 		console.log('Page view changed to:', pageIs);
+	}
+
+	// Listen for reset to transfer mode event
+	if (typeof window !== 'undefined') {
+		window.addEventListener('resetToTransferMode', () => {
+			if (pageIs === 'transplant') {
+				pageIs = 'transfer';
+				console.log('Reset to transfer mode from CSV import');
+			}
+		});
 	}
 </script>
 

@@ -28,6 +28,12 @@ Components should accept callback props - which means you then pass functions as
 			return;
 		}
 
+		// Reset to transfer mode when loading new CSV
+		if (typeof window !== 'undefined') {
+			const event = new CustomEvent('resetToTransferMode');
+			window.dispatchEvent(event);
+		}
+
 		console.log('Selected file:', file.name, file.type, file.size + ' bytes');
 
 		if (file.type !== 'text/csv') {
