@@ -86,6 +86,7 @@
 						currentFormat={column.currentFormat}
 						currentColumnHeader={column.headerName}
 						onformatchange={(event) => formatEvent(column, event)}
+						isTransplant={pageIs === 'transplant'}
 					/>
 				{/each}
 			</div>

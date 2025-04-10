@@ -8,7 +8,8 @@
 		columnData = [],
 		currentFormat = 'string',
 		currentColumnHeader = '',
-		onformatchange = () => {}
+		onformatchange = () => {},
+		isTransplant = false
 	} = $props<{
 		columnData?: Array<string | number | null>;
 		currentFormat?: string;
@@ -16,6 +17,7 @@
 		onformatchange?: (
 			event: CustomEvent<{ destinationFormat: string; headerName: string }>
 		) => void;
+		isTransplant?: boolean;
 	}>();
 
 	const formats = ['string', 'number', 'date', 'gps'];
@@ -34,7 +36,7 @@
 
 		// Directly update the state
 		const columnIndex = importedData.columns.findIndex(
-			col => col.headerName === currentColumnHeader
+			(col) => col.headerName === currentColumnHeader
 		);
 		if (columnIndex !== -1) {
 			importedData.columns[columnIndex].type = newFormat;
@@ -141,18 +143,22 @@
 </script>
 
 <div class="format-selector">
-	<select 
-	  bind:value={selectedFormat} 
-	  onchange={handleChange}
-	  style="background-color: {
-		selectedFormat === 'string' ? 'rgba(156, 39, 176, 0.2)' : // leave in rgba format for opacity syntax. 
-		selectedFormat === 'number' ? 'rgba(33, 150, 243, 0.2)' : 
-		selectedFormat === 'date' ? 'rgba(255, 152, 0, 0.2)' : 
-		selectedFormat === 'gps' ? 'rgba(76, 175, 80, 0.2)' : 'rgba(158, 158, 158, 0.2)'
-	  }"
+	<select
+		bind:value={selectedFormat}
+		onchange={handleChange}
+		disabled={isTransplant}
+		style="background-color: {selectedFormat === 'string'
+			? 'rgba(156, 39, 176, 0.2)' // leave in rgba format for opacity syntax.
+			: selectedFormat === 'number'
+				? 'rgba(33, 150, 243, 0.2)'
+				: selectedFormat === 'date'
+					? 'rgba(255, 152, 0, 0.2)'
+					: selectedFormat === 'gps'
+						? 'rgba(76, 175, 80, 0.2)'
+						: 'rgba(158, 158, 158, 0.2)'}"
 	>
-	  {#each formats as format}
-		<option value={format}>{format}</option>
-	  {/each}
+		{#each formats as format}
+			<option value={format}>{format}</option>
+		{/each}
 	</select>
-  </div>
+</div>
