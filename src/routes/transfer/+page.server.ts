@@ -1,7 +1,9 @@
 import { db } from '$lib/server/db';
-import { land } from '$lib/server/db/schema';
+import { land, planting } from '$lib/server/db/schema';
 
 export async function load() {
-  const lands = await db.select().from(land);
-  return { lands };
+  const landsDbTable = await db.select().from(land);
+  const plantingDbTable = await db.select().from(planting);
+  // const cropDbTable = await db.select().from(crop);
+  return { landsDbTable, plantingDbTable };
 }

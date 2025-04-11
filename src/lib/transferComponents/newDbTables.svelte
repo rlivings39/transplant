@@ -1,8 +1,10 @@
 <script lang="ts">
-  const { lands } = $props<{
-    lands: any[];
+  const { landsDbTable, plantingDbTable, cropDbTable } = $props<{
+    landsDbTable: any[];
+    plantingDbTable: any[];
+    cropDbTable: any[];
   }>();
-  const columns = Object.keys(lands[0] || {});
+  const columns = Object.keys(landsDbTable[0] || {});
   </script>
   
   <table>
@@ -14,7 +16,7 @@
       </tr>
     </thead>
     <tbody>
-      {#each lands as row}
+      {#each landsDbTable as row}
         <tr>
           {#each columns as column}
             <td>{row[column]}</td>

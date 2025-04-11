@@ -106,7 +106,7 @@ CREATE TABLE "Organizations" (
 	"contact_phone" text,
 	"address" text,
 	"website" text,
-	"notes" text,
+	"organization_notes" text,
 	"created_at" timestamp with time zone DEFAULT now(),
 	"last_edited_at" timestamp with time zone DEFAULT now(),
 	"edited_by" uuid,

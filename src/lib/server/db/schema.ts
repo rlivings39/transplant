@@ -1,175 +1,361 @@
-/**
- * Database Schema Definition
- *
- * This file defines the database schema using Drizzle ORM.
- * It matches the Supabase structure exactly to ensure compatibility.
- * Each table includes timestamps, audit fields, and proper relationships.
- */
-
-import { type DbColumnsDef } from './dbTypes';
-import { type PgTable } from 'drizzle-orm/pg-core';
+// Chris 11 Apr 2025 -  drizzle has some errors when you run pull. "any" thing and """" double quote porblem.
 
 import {
 	pgTable,
-	serial,
+	foreignKey,
+	pgPolicy,
+	uuid,
 	text,
 	timestamp,
 	boolean,
+	type AnyPgColumn,
+	index,
 	numeric,
-	json,
-	integer
+	bigint,
+	jsonb,
+	integer,
+	date,
+	doublePrecision,
+	pgEnum
 } from 'drizzle-orm/pg-core';
+import { sql } from 'drizzle-orm';
 
-// 👍️🌲️ SHARED COLUMNS
-// Shared columns for audit and tracking - temporarily disabled
-const dbColumnsDef = {
-	// Empty object to prevent 500 errors while these fields are being planned
-	// Original fields commented out for reference
-	/*
-	created_at: timestamp('created_at').defaultNow(),
-	last_edited_at: timestamp('last_edited_at'),
-	edited_by: text('edited_by'),
-	approval_status: text('approval_status').notNull().default('pending'),
-	approved_at: timestamp('approved_at'),
-	approved_by: text('approved_by'),
-	deleted: boolean('deleted')
-	*/
-};
+export const preparation = pgEnum('Preparation', [
+	'raw',
+	'mechanical',
+	'chemical',
+	'burned',
+	'grass seed',
+	'landscaped'
+]);
 
-// 👍️🌲️ TABLE DEFINITIONS
+export const projects = pgTable(
+	'Projects',
+	{
+		projectId: uuid('project_id').primaryKey().notNull(),
+		projectName: text('project_name'),
+		projectNotes: text('project_notes'),
+		createdAt: timestamp('created_at', { withTimezone: true, mode: 'string' }).defaultNow(),
+		lastEditedAt: timestamp('last_edited_at', { withTimezone: true, mode: 'string' }).defaultNow(),
+		editedBy: uuid('edited_by'),
+		deleted: boolean().default(false),
+		csvobjId: uuid('csvobj_id')
+	},
+	(table) => [
+		foreignKey({
+			columns: [table.csvobjId],
+			foreignColumns: [csvobj.csvobjId],
+			name: 'fk_projects_csvobj'
+		}).onDelete('set null'),
+		pgPolicy('select_policy', { as: 'permissive', for: 'select', to: ['public'], using: sql`true` })
+	]
+);
 
-/**
- * Planting Table
- * Central table tracking what crops are planted where
- * Forms many-to-many relationship between Land and Crop
- */
-export const planting = pgTable('planting', {
-	id: text('id').primaryKey(),
-	land_id: text('land_id').references(() => land.land_id),
-	crop_id: text('crop_id').references(() => crop.crop_id),
-	planted: numeric('planted'),
-	planting_date: timestamp('planting_date'),
-	notes: text('notes'), // Keeping original notes field for planting table
-	...dbColumnsDef
+export const land = pgTable(
+	'Land',
+	{
+		landId: uuid('land_id').primaryKey().notNull(),
+		landName: text('land_name'),
+		projectId: uuid('project_id'),
+		hectares: numeric(),
+		landHolder: text('land_holder'),
+		polygonId: uuid('polygon_id'),
+		gpsLat: numeric('gps_lat'),
+		gpsLon: numeric('gps_lon'),
+		landNotes: text('land_notes'),
+		createdAt: timestamp('created_at', { withTimezone: true, mode: 'string' }).defaultNow(),
+		lastEditedAt: timestamp('last_edited_at', { withTimezone: true, mode: 'string' }).defaultNow(),
+		editedBy: uuid('edited_by'),
+		deleted: boolean().default(false),
+		preparation: preparation(),
+		// You can use { mode: "bigint" } if numbers are exceeding js number limitations
+		preparationId: bigint('preparation_id', { mode: 'number' }),
+		csvobjId: uuid('csvobj_id')
+	},
+	(table): any => [
+		index('idx_land_project_id').using('btree', table.projectId.asc().nullsLast().op('uuid_ops')),
+		foreignKey({
+			columns: [table.polygonId],
+			foreignColumns: [polygons.polygonId],
+			name: 'Land_polygon_id_fkey'
+		}),
+		foreignKey({
+			columns: [table.projectId],
+			foreignColumns: [projects.projectId],
+			name: 'Land_project_id_fkey'
+		}),
+		foreignKey({
+			columns: [table.csvobjId],
+			foreignColumns: [csvobj.csvobjId],
+			name: 'fk_land_csvobj'
+		}).onDelete('set null'),
+		foreignKey({
+			columns: [table.preparationId],
+			foreignColumns: [preparationTypes.preparationId],
+			name: 'fk_preparation'
+		}),
+		foreignKey({
+			columns: [table.projectId],
+			foreignColumns: [projects.projectId],
+			name: 'land_project_id_fkey'
+		}),
+		pgPolicy('select_policy', { as: 'permissive', for: 'select', to: ['public'], using: sql`true` })
+	]
+);
+
+export const stakeholders = pgTable(
+	'Stakeholders',
+	{
+		stakeholderId: uuid('stakeholder_id')
+			.default(sql`uuid_generate_v4()`)
+			.primaryKey()
+			.notNull(),
+		projectId: uuid('project_id'),
+		organizationId: uuid('organization_id'),
+		stakeholderTypeId: uuid('stakeholder_type_id'),
+		contributionAmount: numeric('contribution_amount'),
+		stakeNotes: text('stake_notes'),
+		createdAt: timestamp('created_at', { withTimezone: true, mode: 'string' }).defaultNow(),
+		lastEditedAt: timestamp('last_edited_at', { withTimezone: true, mode: 'string' }).defaultNow(),
+		deleted: boolean().default(false)
+	},
+	(table) => [
+		foreignKey({
+			columns: [table.organizationId],
+			foreignColumns: [organizations.organizationId],
+			name: 'Stakeholders_organization_id_fkey'
+		}),
+		foreignKey({
+			columns: [table.projectId],
+			foreignColumns: [projects.projectId],
+			name: 'Stakeholders_project_id_fkey'
+		}),
+		foreignKey({
+			columns: [table.stakeholderTypeId],
+			foreignColumns: [stakeholderTypes.stakeholderTypeId],
+			name: 'Stakeholders_stakeholder_type_id_fkey'
+		}),
+		pgPolicy('select_policy', { as: 'permissive', for: 'select', to: ['public'], using: sql`true` })
+	]
+);
+
+export const stakeholderTypes = pgTable(
+	'StakeholderTypes',
+	{
+		stakeholderTypeId: uuid('stakeholder_type_id').primaryKey().notNull(),
+		stakeholderTypeName: text('stakeholder_type_name'),
+		createdAt: timestamp('created_at', { withTimezone: true, mode: 'string' }).defaultNow(),
+		lastEditedAt: timestamp('last_edited_at', { withTimezone: true, mode: 'string' }).defaultNow(),
+		deleted: boolean().default(false)
+	},
+	(table) => [
+		pgPolicy('select_policy', { as: 'permissive', for: 'select', to: ['public'], using: sql`true` })
+	]
+);
+
+export const polygons = pgTable(
+	'Polygons',
+	{
+		polygonId: uuid('polygon_id').primaryKey().notNull(),
+		geojson: jsonb(),
+		polyNotes: text('poly_notes'),
+		createdAt: timestamp('created_at', { withTimezone: true, mode: 'string' }).defaultNow(),
+		lastEditedAt: timestamp('last_edited_at', { withTimezone: true, mode: 'string' }).defaultNow(),
+		deleted: boolean().default(false),
+		landId: uuid('land_id'),
+		csvobjId: uuid('csvobj_id')
+	},
+	(table) => [
+		index('idx_polygons_land_id').using('btree', table.landId.asc().nullsLast().op('uuid_ops')),
+		foreignKey({
+			columns: [table.csvobjId],
+			foreignColumns: [csvobj.csvobjId],
+			name: 'fk_polygons_csvobj'
+		}).onDelete('set null'),
+		foreignKey({
+			columns: [table.landId],
+			foreignColumns: [land.landId],
+			name: 'polygons_land_id_fkey'
+		}),
+		pgPolicy('select_policy', { as: 'permissive', for: 'select', to: ['public'], using: sql`true` })
+	]
+);
+
+export const planting = pgTable(
+	'Planting',
+	{
+		id: uuid()
+			.default(sql`uuid_generate_v4()`)
+			.primaryKey()
+			.notNull(),
+		landId: uuid('land_id'),
+		planted: integer(),
+		plantingDate: date('planting_date'),
+		createdAt: timestamp('created_at', { withTimezone: true, mode: 'string' }).defaultNow(),
+		lastEditedAt: timestamp('last_edited_at', { withTimezone: true, mode: 'string' }).defaultNow(),
+		deleted: boolean().default(false),
+		cropId: uuid('crop_id'),
+		plantingNotes: text('planting_notes')
+	},
+	(table) => [
+		index('idx_planting_crop_id').using('btree', table.cropId.asc().nullsLast().op('uuid_ops')),
+		foreignKey({
+			columns: [table.landId],
+			foreignColumns: [land.landId],
+			name: 'Planting_land_id_fkey'
+		}),
+		foreignKey({
+			columns: [table.cropId],
+			foreignColumns: [crop.cropId],
+			name: 'planting_crop_id_fkey'
+		}),
+		pgPolicy('Allow all selects', {
+			as: 'permissive',
+			for: 'select',
+			to: ['public'],
+			using: sql`true`
+		})
+	]
+);
+
+export const crop = pgTable(
+	'Crop',
+	{
+		cropId: uuid('crop_id').primaryKey().notNull(),
+		cropName: text('crop_name'),
+		speciesId: uuid('species_id'),
+		seedInfo: text('seed_info'),
+		cropStock: text('crop_stock'),
+		createdAt: timestamp('created_at', { withTimezone: true, mode: 'string' }).defaultNow(),
+		lastEditedAt: timestamp('last_edited_at', { withTimezone: true, mode: 'string' }).defaultNow(),
+		editedBy: uuid('edited_by'),
+		deleted: boolean().default(false),
+		projectId: uuid('project_id'),
+		organizationId: uuid('organization_id'),
+		cropNotes: text('crop_notes'),
+		csvobjId: uuid('csvobj_id')
+	},
+	(table) => [
+		index('idx_crop_organization_id').using(
+			'btree',
+			table.organizationId.asc().nullsLast().op('uuid_ops')
+		),
+		index('idx_crop_project_id').using('btree', table.projectId.asc().nullsLast().op('uuid_ops')),
+		foreignKey({
+			columns: [table.speciesId],
+			foreignColumns: [species.speciesId],
+			name: 'Trees_species_id_fkey'
+		}),
+		foreignKey({
+			columns: [table.organizationId],
+			foreignColumns: [organizations.organizationId],
+			name: 'crop_organization_id_fkey'
+		}),
+		foreignKey({
+			columns: [table.projectId],
+			foreignColumns: [projects.projectId],
+			name: 'crop_project_id_fkey'
+		}),
+		foreignKey({
+			columns: [table.csvobjId],
+			foreignColumns: [csvobj.csvobjId],
+			name: 'fk_crop_csvobj'
+		}).onDelete('set null'),
+		pgPolicy('Allow all selects', {
+			as: 'permissive',
+			for: 'select',
+			to: ['public'],
+			using: sql`true`
+		})
+	]
+);
+
+export const organizations = pgTable(
+	'Organizations',
+	{
+		organizationId: uuid('organization_id').primaryKey().notNull(),
+		organizationName: text('organization_name'),
+		contactName: text('contact_name'),
+		contactEmail: text('contact_email'),
+		contactPhone: text('contact_phone'),
+		address: text(),
+		website: text(),
+		organizationNotes: text('organization_notes'),
+		createdAt: timestamp('created_at', { withTimezone: true, mode: 'string' }).defaultNow(),
+		lastEditedAt: timestamp('last_edited_at', { withTimezone: true, mode: 'string' }).defaultNow(),
+		editedBy: uuid('edited_by'),
+		deleted: boolean().default(false),
+		isNursery: boolean('is_nursery').default(false),
+		gpsLat: doublePrecision('gps_lat'),
+		gpsLon: doublePrecision('gps_lon')
+	},
+	(table) => [
+		pgPolicy('select_policy', { as: 'permissive', for: 'select', to: ['public'], using: sql`true` })
+	]
+);
+
+export const preparationTypes = pgTable(
+	'PreparationTypes',
+	{
+		notes: text(),
+		createdAt: timestamp('created_at', { withTimezone: true, mode: 'string' }).defaultNow(),
+		lastEditedAt: timestamp('last_edited_at', { withTimezone: true, mode: 'string' }).defaultNow(),
+		deleted: boolean().default(false),
+		// You can use { mode: "bigint" } if numbers are exceeding js number limitations
+		preparationId: bigint('preparation_id', { mode: 'number' })
+			.primaryKey()
+			.generatedAlwaysAsIdentity({
+				name: 'PreparationTypes_preparation_id_seq',
+				startWith: 1,
+				increment: 1,
+				minValue: 1,
+				maxValue: 9223372036854775807
+			})
+	},
+	(table) => [
+		pgPolicy('select_policy', { as: 'permissive', for: 'select', to: ['public'], using: sql`true` })
+	]
+);
+
+export const species = pgTable(
+	'Species',
+	{
+		speciesId: uuid('species_id').primaryKey().notNull(),
+		commonName: text('common_name'),
+		scientificName: text('scientific_name'),
+		type: text(),
+		family: text(),
+		reference: text(),
+		createdAt: timestamp('created_at', { withTimezone: true, mode: 'string' }).defaultNow(),
+		lastEditedAt: timestamp('last_edited_at', { withTimezone: true, mode: 'string' }).defaultNow(),
+		editedBy: uuid('edited_by'),
+		deleted: boolean().default(false)
+	},
+	(table) => [
+		pgPolicy('select_policy', { as: 'permissive', for: 'select', to: ['public'], using: sql`true` })
+	]
+);
+
+export const csvobj = pgTable('csvobj', {
+	csvobjId: uuid('csvobj_id').defaultRandom().primaryKey().notNull(),
+	jsonData: jsonb('json_data').notNull(),
+	createdAt: timestamp('created_at', { mode: 'string' }).defaultNow()
 });
 
-/**
- * Land Table
- * Represents a parcel of land where crops can be planted
- * Key relationships:
- * - preparation_id → PreparationTypes
- * - polygon_id → Polygons
- * - project_id → Projects
- */
-export const land: PgTable = pgTable('Land', {
-	land_id: text('land_id').primaryKey(),
-	land_name: text('land_name').notNull(),
-	hectares: numeric('hectares'),
-	land_holder: text('land_holder'),
-	gps_lat: numeric('gps_lat'),
-	gps_lon: numeric('gps_lon'),
-	polygon_id: text('polygon_id').references(() => polygons.polygon_id),
-	preparation_id: integer('preparation_id').references(() => preparationTypes.preparation_id),
-	project_id: text('project_id').references(() => projects.project_id),
-	land_notes: text('land_notes'), // Renamed from notes to land_notes
-	...dbColumnsDef
-});
-
-/**
- * Crop Table
- * Defines plantable crops and their characteristics
- * Key relationships:
- * - species_id → Species
- * - organization_id → Organizations
- * - project_id → Projects
- */
-
-export const crop = pgTable('crop', {
-	crop_id: text('crop_id').primaryKey(),
-	crop_name: text('crop_name').notNull(),
-	species_id: text('species_id').references(() => species.species_id),
-	organization_id: text('organization_id').references(() => organizations.organization_id),
-	project_id: text('project_id').references(() => projects.project_id),
-	crop_stock: integer('crop_stock'),
-	seedlot: text('seedlot'),
-	seedzone: text('seedzone'),
-	crop_notes: text('crop_notes'), // Renamed from notes to crop_notes
-	...dbColumnsDef
-});
-
-/**
- * Species Table
- * Scientific classification of crops
- * Referenced by Crop table
- */
-export const species = pgTable('species', {
-	species_id: text('species_id').primaryKey(),
-	scientific_name: text('scientific_name'),
-	common_name: text('common_name'),
-	family: text('family'),
-	type: text('type'),
-	reference: text('reference'),
-	notes: text('notes'), // Keeping original notes field for species table
-	...dbColumnsDef
-});
-
-/**
- * Organizations Table
- * Tracks nurseries and other organizations involved
- * Can be linked to crops and referenced as stakeholders
- */
-export const organizations = pgTable('Organizations', {
-	organization_id: text('organization_id').primaryKey(),
-	organization_name: text('organization_name'),
-	contact_name: text('contact_name'),
-	contact_email: text('contact_email'),
-	contact_phone: text('contact_phone'),
-	address: text('address'),
-	website: text('website'),
-	is_nursery: boolean('is_nursery'),
-	gps_lat: numeric('gps_lat'),
-	gps_lon: numeric('gps_lon'),
-	notes: text('notes'), // Keeping original notes field for organizations table
-	...dbColumnsDef
-});
-
-/**
- * Polygons Table
- * Stores geographical data for land parcels
- * Linked to Land table
- */
-export const polygons: PgTable = pgTable('Polygons', {
-	polygon_id: text('polygon_id').primaryKey(),
-	land_id: text('land_id').references(() => land.land_id),
-	geojson: json('geojson'),
-	poly_notes: text('poly_notes'), // Renamed from notes to poly_notes
-	...dbColumnsDef
-});
-
-/**
- * PreparationTypes Table
- * Lookup table for land preparation methods
- */
-export const preparationTypes = pgTable('PreparationTypes', {
-	preparation_id: serial('preparation_id').primaryKey(),
-	name: text('name').notNull(),
-	description: text('description'),
-	notes: text('notes'), // Keeping original notes field for preparationTypes table
-	...dbColumnsDef
-});
-
-/**
- * Projects Table
- * Groups related plantings and tracks project metadata
- */
-export const projects = pgTable('Projects', {
-	project_id: text('project_id').primaryKey(),
-	project_name: text('project_name'),
-	project_notes: text('project_notes'), // Renamed from notes to project_notes
-	...dbColumnsDef
-});
-
-export const user = pgTable('user', {
-	id: serial('id').primaryKey(),
-	age: integer('age')
-});
+export const metadata = pgTable(
+	'metadata',
+	{
+		metadataId: uuid('metadata_id').defaultRandom().primaryKey().notNull(),
+		csvobjId: uuid('csvobj_id').notNull(),
+		csvKey: text('csv_key').notNull(),
+		dbKey: text('db_key').notNull(),
+		createdAt: timestamp('created_at', { mode: 'string' }).defaultNow()
+	},
+	(table) => [
+		foreignKey({
+			columns: [table.csvobjId],
+			foreignColumns: [csvobj.csvobjId],
+			name: 'metadata_csvobj_id_fkey'
+		}).onDelete('cascade')
+	]
+);

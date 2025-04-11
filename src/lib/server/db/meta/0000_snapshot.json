@@ -971,8 +971,8 @@
           "primaryKey": false,
           "notNull": false
         },
-        "notes": {
-          "name": "notes",
+        "organization_notes": {
+          "name": "organization_notes",
           "type": "text",
           "primaryKey": false,
           "notNull": false

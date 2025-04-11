@@ -6,10 +6,13 @@
 	import FormatSelectorComponent from '$lib/transferComponents/FormatSelectorComponent.svelte';
 	import ToggleComponent from '$lib/transferComponents/ToggleComponent.svelte';
 	import NewDbTables from '$lib/transferComponents/newDbTables.svelte';
+	
 
 	const { data } = $props();
 
-	const lands = $derived(data?.lands || []);
+	const landsDbTable = $derived(data?.landsDbTable || []);
+	const plantingDbTable = $derived(data?.plantingDbTable || []);
+	const cropDbTable = $derived(data?.cropDbTable || []);
 
 	let pageIs = $state<'transfer' | 'transplant'>('transfer');
 	function handleProcessed(csvImportToPage: ColumnRep[]) {
@@ -93,7 +96,7 @@
 	</div>
 
 	{#if pageIs === 'transplant'}
-		<NewDbTables {lands} />
+		<NewDbTables {landsDbTable} {plantingDbTable} {cropDbTable} />
 	{/if}
 {/if}
 
