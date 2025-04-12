@@ -1,27 +1,84 @@
 <script lang="ts">
-  const { landsDbTable, plantingDbTable, cropDbTable } = $props<{
-    landsDbTable: any[];
-    plantingDbTable: any[];
-    cropDbTable: any[];
-  }>();
-  const columns = Object.keys(landsDbTable[0] || {});
-  </script>
-  
-  <table>
-    <thead>
-      <tr>
-        {#each columns as column}
-          <th>{column}</th>
-        {/each}
-      </tr>
-    </thead>
-    <tbody>
-      {#each landsDbTable as row}
-        <tr>
-          {#each columns as column}
-            <td>{row[column]}</td>
-          {/each}
-        </tr>
+	const { landUserTable, plantingUserTable, cropUserTable } = $props<{
+		landUserTable: any[];
+		plantingUserTable: any[];
+		cropUserTable: any[];
+	}>();
+	const columns = Object.keys(landUserTable[0] || {});
+	const plantingColumns = Object.keys(plantingUserTable[0] || {});
+	const cropColumns = Object.keys(cropUserTable[0] || {});
+</script>
+
+<table>
+	<thead>
+		<tr>
+			{#each columns as column}
+				<th>{column}</th>
+			{/each}
+		</tr>
+	</thead>
+	<tbody>
+		{#each landUserTable as row}
+			<tr>
+				{#each columns as column}
+					<td>{row[column]}</td>
+				{/each}
+			</tr>
+		{/each}
+	</tbody>
+</table>
+
+<table>
+	<thead>
+		<tr>
+			{#each plantingColumns as column}
+				<th>{column}</th>
+			{/each}
+		</tr>
+	</thead>
+	<tbody>
+			<tr>
+				{#each plantingColumns as column}
+					<td></td>
+				{/each}
+			</tr>
+			<tr>
+				{#each plantingColumns as column}
+					<td></td>
+				{/each}
+			</tr>
+			<tr>
+				{#each plantingColumns as column}
+					<td></td>
+				{/each}
+			</tr>
+	
+	</tbody>
+</table>
+
+<table>
+	<thead>
+		<tr>
+			{#each cropColumns as column}
+				<th>{column}</th>
+			{/each}
+		</tr>
+	</thead>
+	<tbody>
+		<tr>
+      {#each cropColumns as column}
+        <td></td>
       {/each}
-    </tbody>
-  </table>
+    </tr>
+    <tr>
+      {#each cropColumns as column}
+        <td></td>
+      {/each}
+    </tr>
+    <tr>
+      {#each cropColumns as column}
+        <td></td>
+      {/each}
+    </tr>
+	</tbody>
+</table>
