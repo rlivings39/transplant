@@ -21,7 +21,17 @@
 		{#each landUserTable as row}
 			<tr>
 				{#each columns as column}
-					<td>{row[column]}</td>
+					<td></td>
+				{/each}
+			</tr>
+			<tr>
+				{#each columns as column}
+					<td></td>
+				{/each}
+			</tr>
+			<tr>
+				{#each columns as column}
+					<td></td>
 				{/each}
 			</tr>
 		{/each}
@@ -37,22 +47,21 @@
 		</tr>
 	</thead>
 	<tbody>
-			<tr>
-				{#each plantingColumns as column}
-					<td></td>
-				{/each}
-			</tr>
-			<tr>
-				{#each plantingColumns as column}
-					<td></td>
-				{/each}
-			</tr>
-			<tr>
-				{#each plantingColumns as column}
-					<td></td>
-				{/each}
-			</tr>
-	
+		<tr>
+			{#each plantingColumns as column}
+				<td></td>
+			{/each}
+		</tr>
+		<tr>
+			{#each plantingColumns as column}
+				<td></td>
+			{/each}
+		</tr>
+		<tr>
+			{#each plantingColumns as column}
+				<td></td>
+			{/each}
+		</tr>
 	</tbody>
 </table>
 
@@ -66,19 +75,19 @@
 	</thead>
 	<tbody>
 		<tr>
-      {#each cropColumns as column}
-        <td></td>
-      {/each}
-    </tr>
-    <tr>
-      {#each cropColumns as column}
-        <td></td>
-      {/each}
-    </tr>
-    <tr>
-      {#each cropColumns as column}
-        <td></td>
-      {/each}
-    </tr>
+			{#each cropColumns as column}
+				<td></td>
+			{/each}
+		</tr>
+		<tr>
+			{#each cropColumns as column}
+				<td></td>
+			{/each}
+		</tr>
+		<tr>
+			{#each cropColumns as column}
+				<td></td>
+			{/each}
+		</tr>
 	</tbody>
 </table>
