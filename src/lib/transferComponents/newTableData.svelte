@@ -5,13 +5,16 @@
 
 	import { formatValue, matchesFormat } from './newFormatDetection';
 
+	// Add this constant
+	const max_transplant_rows = 3;
+
 	// Accept pageIs as a prop
 	const { pageIs = 'transfer' } = $props<{ pageIs?: 'transfer' | 'transplant' }>();
 
 	// Derive if we're in transplant mode
 	let isTransplant = $derived(pageIs === 'transplant');
 
-	let columnFormats = $state<Record<string, string>>({});
+
 
 	// Number formatting function
 	function numberFormat(value: number): string {
@@ -55,7 +58,7 @@
 		</tr>
 	</thead>
 	<tbody>
-		{#each importedData.columns[0].values as _, rowIndex}
+		{#each importedData.columns[0].values.slice(0, isTransplant ? max_transplant_rows : undefined) as _, rowIndex}
 			<tr>
 				{#each importedData.columns.filter((c) => (isTransplant ? c.isToggled : true)) as column}
 					<td
