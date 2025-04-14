@@ -9,6 +9,35 @@
 	const cropColumns = Object.keys(cropUserTable[0] || {});
 </script>
 
+<h3>Planting Table</h3>
+<table>
+	<thead>
+		<tr>
+			{#each plantingColumns as column}
+				<th>{column}</th>
+			{/each}
+		</tr>
+	</thead>
+	<tbody>
+		<tr>
+			{#each plantingColumns as column}
+				<td></td>
+			{/each}
+		</tr>
+		<tr>
+			{#each plantingColumns as column}
+				<td></td>
+			{/each}
+		</tr>
+		<tr>
+			{#each plantingColumns as column}
+				<td></td>
+			{/each}
+		</tr>
+	</tbody>
+</table>
+
+<h3>Land Table</h3>
 <table>
 	<thead>
 		<tr>
@@ -38,33 +67,7 @@
 	</tbody>
 </table>
 
-<table>
-	<thead>
-		<tr>
-			{#each plantingColumns as column}
-				<th>{column}</th>
-			{/each}
-		</tr>
-	</thead>
-	<tbody>
-		<tr>
-			{#each plantingColumns as column}
-				<td></td>
-			{/each}
-		</tr>
-		<tr>
-			{#each plantingColumns as column}
-				<td></td>
-			{/each}
-		</tr>
-		<tr>
-			{#each plantingColumns as column}
-				<td></td>
-			{/each}
-		</tr>
-	</tbody>
-</table>
-
+<h3>Crop Table</h3>
 <table>
 	<thead>
 		<tr>
