@@ -51,6 +51,7 @@
 		onformatchange(customEvent);
 	} // Here's the key addition - dispatch the event
 
+
 	// // 👍️🌲️👍️🌲️👍️🌲️👍️🌲️👍️🌲️NUMBERS🌲️🌲️🌲️🌲️🌲️🌲️🌲️
 	// // Number detection with debug
 	// function isNumber(value: any): boolean {

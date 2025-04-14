@@ -1,14 +1,17 @@
 <script lang="ts">
-	const { landUserTable, plantingUserTable, cropUserTable } = $props<{
+	const { landUserTable, plantingUserTable, cropUserTable, dbFormat } = $props<{
 		landUserTable: any[];
 		plantingUserTable: any[];
 		cropUserTable: any[];
+		dbFormat: 'string' | 'number' | 'date' | 'gps';
 	}>();
 	const columns = Object.keys(landUserTable[0] || {});
 	const plantingColumns = Object.keys(plantingUserTable[0] || {});
 	const cropColumns = Object.keys(cropUserTable[0] || {});
+
 </script>
 
+<h1 style="color: red;">{dbFormat}</h1>
 <h3>Planting Table</h3>
 <table>
 	<thead>
@@ -50,7 +53,7 @@
 		{#each landUserTable as row}
 			<tr>
 				{#each columns as column}
-					<td></td>
+					<td>{row[column]}</td>
 				{/each}
 			</tr>
 			<tr>
