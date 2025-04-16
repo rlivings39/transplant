@@ -5,7 +5,7 @@
 		cropUserTable: any[];
 		dbFormat: 'string' | 'number' | 'date' | 'gps';
 	}>();
-	const columns = Object.keys(landUserTable[0] || {});
+	const landColumns = Object.keys(landUserTable[0] || {});
 	const plantingColumns = Object.keys(plantingUserTable[0] || {});
 	const cropColumns = Object.keys(cropUserTable[0] || {});
 
@@ -44,29 +44,29 @@
 <table>
 	<thead>
 		<tr>
-			{#each columns as column}
+			{#each landColumns as column}
 				<th>{column}</th>
 			{/each}
 		</tr>
 	</thead>
 	<tbody>
-		{#each landUserTable as row}
+		<!-- {#each landUserTable as column} -->
 			<tr>
-				{#each columns as column}
-					<td>{row[column]}</td>
-				{/each}
-			</tr>
-			<tr>
-				{#each columns as column}
+				{#each landColumns as column}
 					<td></td>
 				{/each}
 			</tr>
 			<tr>
-				{#each columns as column}
+				{#each landColumns as column}
 					<td></td>
 				{/each}
 			</tr>
-		{/each}
+			<tr>
+				{#each landColumns as column}
+					<td></td>
+				{/each}
+			</tr>
+		<!-- {/each} -->
 	</tbody>
 </table>
 
