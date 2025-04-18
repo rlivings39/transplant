@@ -14,8 +14,6 @@
 	// Derive if we're in transplant mode
 	let isTransplant = $derived(pageIs === 'transplant');
 
-
-
 	// Number formatting function
 	function numberFormat(value: number): string {
 		return new Intl.NumberFormat('en-US', {
@@ -25,21 +23,20 @@
 		}).format(value);
 	}
 
-// 🌲️🌲️🌳️🌳️🌴️ drag drop thing 🌲️🌲️🌳️🌳️🌴️
-// later we need to make the whole column draggable, not just the header 16 Apr 2025  7:56 AM
-	
-function dragstartHandler(ev: DragEvent) {
+	// 🌲️🌲️🌳️🌳️🌴️ drag drop thing 🌲️🌲️🌳️🌳️🌴️
+	// later we need to make the whole column draggable, not just the header 16 Apr 2025  7:56 AM
+
+	function dragstartHandler(ev: DragEvent) {
 		if (!ev.dataTransfer) return; // Add this guard
 		ev.dataTransfer.setData('text', (ev.target as HTMLElement).id);
 	}
-
 </script>
 
 <table>
 	<thead>
 		<tr>
-			{#each importedData.columns.filter((c) => (isTransplant ? c.isToggled : true)) as column}
-				<th>
+			{#each importedData.columns.filter((c) => (isTransplant ? c.isToggled : true)) as column, index}
+				<th data-header-name={column.headerName} data-column-index={index}>
 					<div class="column-header">
 						<FormatSelectorComponent
 							columnData={column.values}
@@ -56,7 +53,14 @@ function dragstartHandler(ev: DragEvent) {
 						/>
 						<div style="height: 0.5rem"></div>
 					</div>
-					<div class="header-name" id={column.headerName} draggable={true} ondragstart={dragstartHandler}>{column.headerName}</div>
+					<div
+						class="header-name"
+						id={column.headerName}
+						draggable={true}
+						ondragstart={dragstartHandler}
+					>
+						{column.headerName}
+					</div>
 				</th>
 			{/each}
 		</tr>
@@ -64,11 +68,13 @@ function dragstartHandler(ev: DragEvent) {
 	<tbody>
 		{#each importedData.columns[0].values.slice(0, isTransplant ? max_transplant_rows : undefined) as _, rowIndex}
 			<tr>
-				{#each importedData.columns.filter((c) => (isTransplant ? c.isToggled : true)) as column}
+				{#each importedData.columns.filter((c) => (isTransplant ? c.isToggled : true)) as column, index}
 					<td
 						class={matchesFormat(column.values[rowIndex], column.currentFormat) && column.isToggled
 							? ''
 							: 'greyed-out'}
+						data-header-name={column.headerName}
+						data-column-index={index}
 					>
 						{#if isTransplant && (!matchesFormat(column.values[rowIndex], column.currentFormat) || !column.isToggled)}
 							<!-- Empty cell when greyed in transplant mode -->
