@@ -1,8 +1,8 @@
 <script lang="ts">
 	// import { createEventDispatcher } from 'svelte';
 	import type { ColumnRep } from '$lib/types/columnModel';
-	import ToggleOff from '.././transformComponents/toggleOff.svelte';
-	import GpsColumn from '.././transformComponents/GpsColumn.svelte';
+	import ToggleOff from '../../../archive/transformComponents/toggleOff.svelte';
+	import GpsColumn from '../../../archive/transformComponents/GpsColumn.svelte';
 
 	const { columnRep = $bindable() } = $props<{
 		columnRep: ColumnRep[];

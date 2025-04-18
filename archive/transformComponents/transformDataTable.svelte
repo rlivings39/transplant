@@ -1,7 +1,7 @@
 <script lang="ts">
 	// import ToggleOff from '../transformComponents/toggleOff.svelte';
-	import ToggleOn from '../transformComponents/toggleOn.svelte';
-	import GpsColumn from '../transformComponents/GpsColumn.svelte';
+	import ToggleOn from './toggleOn.svelte';
+	import GpsColumn from './GpsColumn.svelte';
 	import type { ColumnRep } from '$lib/types/columnModel';
 
 	const {
