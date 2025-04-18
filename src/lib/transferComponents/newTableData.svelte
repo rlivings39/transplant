@@ -25,10 +25,14 @@
 		}).format(value);
 	}
 
-	// speculation with 28 Mar 2025  9:47 AM
-	// function typeEvent
-	// when a user changed a type selector, run detection and formatting for that type on the columnRep
-	// then run detection and formatting for that type on the columnRep
+// 🌲️🌲️🌳️🌳️🌴️ drag drop thing 🌲️🌲️🌳️🌳️🌴️
+// later we need to make the whole column draggable, not just the header 16 Apr 2025  7:56 AM
+	
+function dragstartHandler(ev: DragEvent) {
+		if (!ev.dataTransfer) return; // Add this guard
+		ev.dataTransfer.setData('text', (ev.target as HTMLElement).id);
+	}
+
 </script>
 
 <table>
@@ -52,7 +56,7 @@
 						/>
 						<div style="height: 0.5rem"></div>
 					</div>
-					<div class="header-name">{column.headerName}</div>
+					<div class="header-name" id={column.headerName} draggable={true} ondragstart={dragstartHandler}>{column.headerName}</div>
 				</th>
 			{/each}
 		</tr>

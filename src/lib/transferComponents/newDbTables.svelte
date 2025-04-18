@@ -9,6 +9,18 @@
 	const plantingColumns = Object.keys(plantingUserTable[0] || {});
 	const cropColumns = Object.keys(cropUserTable[0] || {});
 
+	// 🌲️🌲️🌳️🌳️🌴️ DRAG DROP THING 🌲️🌲️🌳️🌳️🌴️
+
+	function dragoverHandler(ev: DragEvent) {
+		ev.preventDefault();
+	}
+
+	function dropHandler(ev: DragEvent) {
+		if (!ev.dataTransfer || !ev.target) return;
+		ev.preventDefault();
+		const data = ev.dataTransfer.getData('text');
+		(ev.target as HTMLElement).appendChild(document.getElementById(data) as HTMLElement);
+	}
 </script>
 
 <h1 style="color: red;">{dbFormat}</h1>
@@ -17,7 +29,7 @@
 	<thead>
 		<tr>
 			{#each plantingColumns as column}
-				<th>{column}</th>
+				<th ondragover={dragoverHandler} ondrop={dropHandler}>{column}</th>
 			{/each}
 		</tr>
 	</thead>
@@ -51,21 +63,21 @@
 	</thead>
 	<tbody>
 		<!-- {#each landUserTable as column} -->
-			<tr>
-				{#each landColumns as column}
-					<td></td>
-				{/each}
-			</tr>
-			<tr>
-				{#each landColumns as column}
-					<td></td>
-				{/each}
-			</tr>
-			<tr>
-				{#each landColumns as column}
-					<td></td>
-				{/each}
-			</tr>
+		<tr>
+			{#each landColumns as column}
+				<td></td>
+			{/each}
+		</tr>
+		<tr>
+			{#each landColumns as column}
+				<td></td>
+			{/each}
+		</tr>
+		<tr>
+			{#each landColumns as column}
+				<td></td>
+			{/each}
+		</tr>
 		<!-- {/each} -->
 	</tbody>
 </table>
