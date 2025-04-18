@@ -12,7 +12,7 @@
 	// 🌲️🌲️🌳️🌳️🌴️ DRAG DROP THING 🌲️🌲️🌳️🌳️🌴️
 	// write a function to say when a user clicks a cell, figure out what column it's in.
 	// we need columns to be one unit that's draggable 
-	// change the visual repre
+	// change the visual representation of the column
 	// user drags column data to a db table.
 	// when they drop data on the db table it needs to:
 	     // in state it populate on that attribute on the db table.

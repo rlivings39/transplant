@@ -27,16 +27,50 @@
 	// later we need to make the whole column draggable, not just the header 16 Apr 2025  7:56 AM
 
 	function dragstartHandler(ev: DragEvent) {
-		if (!ev.dataTransfer) return; // Add this guard
-		ev.dataTransfer.setData('text', (ev.target as HTMLElement).id);
+		if (!ev.dataTransfer) return;
+
+		const target = ev.target as HTMLElement;
+		const columnIndex = Number(target.dataset.columnIndex);
+		const columnName = target.dataset.headerName ?? '';
+
+		// Add class to all cells in this column
+		document
+			.querySelectorAll(`[data-column-index="${columnIndex}"]`)
+			.forEach((el) => el.classList.add('dragging'));
+
+		// Create a drag image showing the header and first few rows
+		const dragPreview = document.createElement('div');
+		dragPreview.className = 'drag-preview';
+		dragPreview.innerHTML = `
+			<div class="preview-header">${columnName}</div>
+			${importedData.columns[columnIndex]?.values.slice(0, 3)
+				.map((val) => `<div class="preview-row">${val}</div>`)
+				.join('')}
+		`;
+		document.body.appendChild(dragPreview);
+		ev.dataTransfer.setDragImage(dragPreview, 0, 0);
+		ev.dataTransfer.setData('text', columnName);
+	}
+
+	function dragEndHandler() {
+		// Remove dragging class from all cells
+		document.querySelectorAll('.dragging').forEach((el) => el.classList.remove('dragging'));
+		// Clean up drag preview
+		document.querySelector('.drag-preview')?.remove();
 	}
 </script>
 
 <table>
 	<thead>
 		<tr>
-			{#each importedData.columns.filter((c) => (isTransplant ? c.isToggled : true)) as column, index}
-				<th data-header-name={column.headerName} data-column-index={index}>
+			{#each importedData.columns.filter( (c) => (isTransplant ? c.isToggled : true) ) as column, index}
+				<th
+					data-header-name={column.headerName}
+					data-column-index={index}
+					draggable={true}
+					ondragstart={dragstartHandler}
+					ondragend={dragEndHandler}
+				>
 					<div class="column-header">
 						<FormatSelectorComponent
 							columnData={column.values}
@@ -53,12 +87,7 @@
 						/>
 						<div style="height: 0.5rem"></div>
 					</div>
-					<div
-						class="header-name"
-						id={column.headerName}
-						draggable={true}
-						ondragstart={dragstartHandler}
-					>
+					<div class="header-name" id={column.headerName}>
 						{column.headerName}
 					</div>
 				</th>
@@ -68,13 +97,16 @@
 	<tbody>
 		{#each importedData.columns[0].values.slice(0, isTransplant ? max_transplant_rows : undefined) as _, rowIndex}
 			<tr>
-				{#each importedData.columns.filter((c) => (isTransplant ? c.isToggled : true)) as column, index}
+				{#each importedData.columns.filter( (c) => (isTransplant ? c.isToggled : true) ) as column, index}
 					<td
 						class={matchesFormat(column.values[rowIndex], column.currentFormat) && column.isToggled
 							? ''
 							: 'greyed-out'}
 						data-header-name={column.headerName}
 						data-column-index={index}
+						draggable={true}
+						ondragstart={dragstartHandler}
+						ondragend={dragEndHandler}
 					>
 						{#if isTransplant && (!matchesFormat(column.values[rowIndex], column.currentFormat) || !column.isToggled)}
 							<!-- Empty cell when greyed in transplant mode -->
@@ -88,14 +120,3 @@
 	</tbody>
 </table>
 
-<style>
-	.column-header {
-		display: flex;
-		flex-direction: column;
-		align-items: center;
-	}
-
-	.header-name {
-		margin-bottom: 0.5rem;
-	}
-</style>
