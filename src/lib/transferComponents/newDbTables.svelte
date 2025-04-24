@@ -48,15 +48,27 @@
 	}
  	
 	// 18 Apr 2025 9:02 AM  Get state from top table and update local $state here.
-	function dropHandler(ev: DragEvent) {
+	function dropHandler(ev: DragEvent, dbDropTable: TableColumn[]) {
 		if (!ev.dataTransfer || !ev.target) return;
 		ev.preventDefault();
 		const draggedColumnIndex = Number(ev.dataTransfer.getData('text'));
 		const targetColumnIndex = Number((ev.target as HTMLElement).dataset.columnIndex);
-		plantingTable[targetColumnIndex].values = importedData.columns[draggedColumnIndex].values;
+		dbDropTable[targetColumnIndex].values = importedData.columns[draggedColumnIndex].values;
+		importedData.columns[draggedColumnIndex].isMapped = true;
 		// (ev.target as HTMLElement).textContent = 'dropped';
 	}
 
+function plantingDropHandler(ev: DragEvent) {
+	dropHandler(ev, plantingTable);
+}
+
+function landDropHandler(ev: DragEvent) {
+	dropHandler(ev, landTable);
+}
+
+function cropDropHandler(ev: DragEvent) {
+	dropHandler(ev, cropTable);
+}
 
 </script>
 
@@ -69,7 +81,7 @@
 				<th data-header-name={column.name}
 				 data-column-index={index} 
 				 ondragover={dragoverHandler} 
-				 ondrop={dropHandler}>{column.name}</th>
+				 ondrop={plantingDropHandler}>{column.name}</th>
 			{/each}
 		</tr>
 	</thead>
@@ -77,7 +89,7 @@
 		{#each plantingTable[0].values as _, rowIndex}
 			<tr>
 				{#each plantingTable as column, index}
-					<td data-header-name={column.name} data-column-index={index} ondragover={dragoverHandler} ondrop={dropHandler}>{column.values[rowIndex]}</td>
+					<td data-header-name={column.name} data-column-index={index} ondragover={dragoverHandler} ondrop={plantingDropHandler}>{column.values[rowIndex]}</td>
 				{/each}
 			</tr>
 		{/each}
@@ -89,28 +101,24 @@
 	<thead>
 		<tr>
 			{#each landTable as column, index}
-				<th data-header-name={column.name} data-column-index={index} ondragover={dragoverHandler} ondrop={dropHandler}>{column.name}</th>
+				<th data-header-name={column.name}
+				 data-column-index={index} 
+				 ondragover={dragoverHandler} 
+				 ondrop={landDropHandler}>{column.name}</th>
 			{/each}
 		</tr>
 	</thead>
 	<tbody>
-		<!-- {#each landUserTable as column} -->
+		{#each landTable[0].values as _, rowIndex}
 		<tr>
-			{#each landColumns as column, index}
-				<td data-header-name={column} data-column-index={index} ondragover={dragoverHandler} ondrop={dropHandler}></td>
+			{#each landTable as column, index}
+				<td data-header-name={column.name} 
+					data-column-index={index} 
+					ondragover={dragoverHandler} 
+					ondrop={landDropHandler}>{column.values[rowIndex]}</td>
 			{/each}
 		</tr>
-		<tr>
-			{#each landColumns as column, index}
-				<td data-header-name={column} data-column-index={index} ondragover={dragoverHandler} ondrop={dropHandler}></td>
-			{/each}
-		</tr>
-		<tr>
-			{#each landColumns as column, index}
-				<td data-header-name={column} data-column-index={index} ondragover={dragoverHandler} ondrop={dropHandler}></td>
-			{/each}
-		</tr>
-		<!-- {/each} -->
+		{/each}
 	</tbody>
 </table>
 
@@ -118,26 +126,24 @@
 <table>
 	<thead>
 		<tr>
-			{#each cropColumns as column, index}
-				<th data-header-name={column} data-column-index={index} ondragover={dragoverHandler} ondrop={dropHandler}>{column}</th>
+			{#each cropTable as column, index}
+				<th data-header-name={column.name} 
+					data-column-index={index} 
+					ondragover={dragoverHandler} 
+					ondrop={cropDropHandler}>{column.name}</th>
 			{/each}
 		</tr>
 	</thead>
 	<tbody>
+		{#each cropTable[0].values as _, rowIndex}
 		<tr>
-			{#each cropColumns as column, index}
-				<td data-header-name={column} data-column-index={index} ondragover={dragoverHandler} ondrop={dropHandler}></td>
+			{#each cropTable as column, index}
+				<td data-header-name={column.name} 
+					data-column-index={index} 
+					ondragover={dragoverHandler} 
+					ondrop={cropDropHandler}>{column.values[rowIndex]}</td>
 			{/each}
 		</tr>
-		<tr>
-			{#each cropColumns as column, index}
-				<td data-header-name={column} data-column-index={index} ondragover={dragoverHandler} ondrop={dropHandler}></td>
-			{/each}
-		</tr>
-		<tr>
-			{#each cropColumns as column, index}
-				<td data-header-name={column} data-column-index={index} ondragover={dragoverHandler} ondrop={dropHandler}></td>
-			{/each}
-		</tr>
+		{/each}
 	</tbody>
 </table>
