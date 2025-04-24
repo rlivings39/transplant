@@ -49,7 +49,7 @@
 		`;
 		document.body.appendChild(dragPreview);
 		ev.dataTransfer.setDragImage(dragPreview, 0, 0);
-		ev.dataTransfer.setData('text', columnName);
+		ev.dataTransfer.setData('text', columnIndex.toString());
 	}
 
 	function dragEndHandler() {

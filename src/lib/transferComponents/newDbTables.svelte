@@ -29,10 +29,10 @@
 	
 
 	// 🌲️🌲️🌳️🌳️🌴️ DRAG DROP THING 🌲️🌲️🌳️🌳️🌴️
-	// write a function to say when a user clicks a cell, figure out what column it's in.
-	// we need columns to be one unit that's draggable 
-	// change the visual representation of the column
-	// user drags column data to a db table.
+	// DONEwrite a function to say when a user clicks a cell, figure out what column it's in.
+	// DONEwe need columns to be one unit that's draggable 
+	// DONEchange the visual representation of the column
+	// DONEuser drags column data to a db table.
 	// when they drop data on the db table it needs to:
 	     // in state it populate on that attribute on the db table.
 		 // in the view it must also populate on that attribute on the db table.
@@ -51,20 +51,25 @@
 	function dropHandler(ev: DragEvent) {
 		if (!ev.dataTransfer || !ev.target) return;
 		ev.preventDefault();
-		const data = ev.dataTransfer.getData('text');
-		(ev.target as HTMLElement).appendChild(document.getElementById(data) as HTMLElement);
+		const draggedColumnIndex = Number(ev.dataTransfer.getData('text'));
+		const targetColumnIndex = Number((ev.target as HTMLElement).dataset.columnIndex);
+		plantingTable[targetColumnIndex].values = importedData.columns[draggedColumnIndex].values;
+		// (ev.target as HTMLElement).textContent = 'dropped';
 	}
 
 
 </script>
 
-<h1 style="color: red;">{dbFormat}</h1>
+
 <h3>Planting Table</h3>
 <table>
 	<thead>
 		<tr>
 			{#each plantingTable as column, index}
-				<th data-header-name={column.name} data-column-index={index} ondragover={dragoverHandler} ondrop={dropHandler}>{column.name}</th>
+				<th data-header-name={column.name}
+				 data-column-index={index} 
+				 ondragover={dragoverHandler} 
+				 ondrop={dropHandler}>{column.name}</th>
 			{/each}
 		</tr>
 	</thead>
