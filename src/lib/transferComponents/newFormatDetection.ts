@@ -115,9 +115,9 @@ function formatDate(value: string): string {
 }
 
 type FormatT = 'string' | 'number' | 'date' | 'gps';
-export function formatValue(format: FormatT, value: any): string {
+export function formatValue(format: FormatT, value: any): string | null {
 	if (!matchesFormat(value, format)) {
-		return value;
+		return null;
 	}
 	if (format === 'date') {
 		return formatDate(value);

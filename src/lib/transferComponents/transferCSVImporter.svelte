@@ -4,10 +4,11 @@
 Components should accept callback props - which means you then pass functions as properties to these components
   -->
 <script lang="ts">
-	import { detectFormat } from './newFormatDetection';
+	import { detectFormat, formatValue } from './newFormatDetection';
 	import Papa from 'papaparse';
 	import type { ColumnRep } from '$lib/types/columnModel';
 	import { BaseColumnModel } from '$lib/types/columnModel';
+	import { formatGreyedStatus } from './modelState.svelte';
 
 	const { onprocessed } = $props<{
 		onprocessed: (data: ColumnRep[]) => void;
@@ -91,16 +92,12 @@ Components should accept callback props - which means you then pass functions as
 						formattedValues: Array(values.length).fill(null)
 					};
 				});
-				//  3 Apr 2025 9:03 AM TO DO: here loop through columnData and call detectFormat for each column
-				// then update currentFormat and type. -> update those types.
-				// Before the onprocessed call
+			// CHECKS FORMATTING AND GREYED 25 Apr 2025  9:19 AM
 				for (let i = 0; i < columnData.length; ++i) {
 					const detectedFormat = detectFormat(columnData[i].values, columnData[i].headerName);
-					columnData[i].currentFormat = detectedFormat;
+					formatGreyedStatus(columnData, i, detectedFormat);
 				}
 				console.log('Dispatching processed data:', columnData);
-				onprocessed?.(columnData);
-				// Dispatch the transformed data
 				onprocessed?.(columnData);
 			}
 

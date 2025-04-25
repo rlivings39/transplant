@@ -1,5 +1,6 @@
 <script lang="ts">
-	import { importedData } from '$lib/transferComponents/modelState.svelte';
+	import { formatGreyedStatus, importedData } from '$lib/transferComponents/modelState.svelte';
+	import type { ColumnFormat } from '$lib/types/columnModel';
 
 	const {
 		columnData = [],
@@ -38,7 +39,8 @@
 			(col) => col.headerName === currentColumnHeader
 		);
 		if (columnIndex !== -1) {
-			importedData.columns[columnIndex].type = newFormat;
+			importedData.columns[columnIndex].type = newFormat as ColumnFormat;
+			formatGreyedStatus(importedData.columns, columnIndex, newFormat as ColumnFormat);
 		}
 
 		const customEvent = new CustomEvent('formatchange', {

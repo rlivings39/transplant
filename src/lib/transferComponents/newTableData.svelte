@@ -107,10 +107,11 @@
 						ondragstart={dragstartHandler}
 						ondragend={dragEndHandler}
 					>
-						{#if isTransplant && (!matchesFormat(column.values[rowIndex], column.currentFormat) || !column.isToggled)}
+						{#if isTransplant && (column.isGreyed[rowIndex] || !column.isToggled)}
+
 							<!-- Empty cell when greyed in transplant mode -->
 						{:else}
-							{formatValue(column.currentFormat, column.values[rowIndex])}
+							{column.formattedValues[rowIndex]}
 						{/if}
 					</td>
 				{/each}
