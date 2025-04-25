@@ -67,7 +67,7 @@ export interface ColumnRep extends ColumnDef {
 export class BaseColumnModel implements ColumnDef {
 	headerName: string;
 	isToggled: boolean;
-	isGreyed: boolean;
+	isGreyed: Array<boolean>;
 	isMapped: boolean;
 	mappedTo?: string;
 	isFormatted: boolean;
@@ -90,7 +90,7 @@ export class BaseColumnModel implements ColumnDef {
 	constructor(headerName: string) {
 		this.headerName = headerName;
 		this.isToggled = true;
-		this.isGreyed = false;
+		this.isGreyed = [false];
 		this.isMapped = false;
 		this.isFormatted = false;
 	}

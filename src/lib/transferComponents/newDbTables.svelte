@@ -2,11 +2,10 @@
 	import { importedData } from '$lib/transferComponents/modelState.svelte';
 	import { formatValue, matchesFormat } from './newFormatDetection';
 
-	const { landUserTable, plantingUserTable, cropUserTable, dbFormat } = $props<{
+	const { landUserTable, plantingUserTable, cropUserTable } = $props<{
 		landUserTable: any[];
 		plantingUserTable: any[];
 		cropUserTable: any[];
-		dbFormat: 'string' | 'number' | 'date' | 'gps';
 	}>();
 
 	const landColumns = Object.keys(landUserTable[0] || {});

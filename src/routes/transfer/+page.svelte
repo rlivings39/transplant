@@ -96,7 +96,7 @@
 	</div>
 
 	{#if pageIs === 'transplant'}
-		<NewDbTables {landUserTable} {plantingUserTable} {cropUserTable} {dbFormat}/>
+		<NewDbTables {landUserTable} {plantingUserTable} {cropUserTable} />
 	{/if}
 {/if}
 
@@ -109,7 +109,8 @@
 				type: col.type,
 				currentFormat: col.currentFormat, // Add this
 				isToggled: col.isToggled,
-				isGreyed: col.isGreyed,
+				isGreyed: col.isGreyed.slice(0, 3),
+				formattedValues: col.formattedValues.slice(0, 3),
 				isMapped: col.isMapped,
 				mappedTo: col.mappedTo,
 				isFormatted: col.isFormatted,

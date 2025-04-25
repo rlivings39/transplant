@@ -86,7 +86,9 @@ Components should accept callback props - which means you then pass functions as
 					return {
 						...columnModel,
 						type: 'string', // Default type
-						values
+						values,
+						isGreyed: Array(values.length).fill(false),
+						formattedValues: Array(values.length).fill(null)
 					};
 				});
 				//  3 Apr 2025 9:03 AM TO DO: here loop through columnData and call detectFormat for each column
