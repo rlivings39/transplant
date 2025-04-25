@@ -24,6 +24,7 @@ export interface ColumnDef {
 	isMerged?: boolean; // Whether this column is created by merging other columns
 	mergedFrom?: string[]; // If merged, the source columns that were merged
 	isGpsSource?: boolean; // Whether this column is a source for the universal GPS column
+
 	// Format coercion tracking
 
 	selectFormatCoercion?: selectFormatCoercion; // Information about type coercion if applicable
@@ -48,6 +49,8 @@ export interface ColumnRep extends ColumnDef {
 
 	/** The actual data values for this column */
 	values: Array<string | number | null>;
+	formattedValues: Array<string | number | null | undefined>;
+
 	/** Optional validation errors by row index */
 	validationErrors?: Set<number>;
 	component?: any; // Add component property

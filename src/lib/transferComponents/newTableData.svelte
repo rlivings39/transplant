@@ -2,7 +2,6 @@
 	import type { ColumnRep } from '$lib/types/columnModel';
 	import FormatSelectorComponent from './FormatSelectorComponent.svelte';
 	import { importedData } from '$lib/transferComponents/modelState.svelte';
-
 	import { formatValue, matchesFormat } from './newFormatDetection';
 
 	// Add this constant
