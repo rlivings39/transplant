@@ -1,5 +1,7 @@
 <script lang="ts">
 	import { importedData } from '$lib/transferComponents/modelState.svelte';
+	import { formatValue, matchesFormat } from './newFormatDetection';
+
 	const { landUserTable, plantingUserTable, cropUserTable, dbFormat } = $props<{
 		landUserTable: any[];
 		plantingUserTable: any[];
@@ -79,17 +81,22 @@ function cropDropHandler(ev: DragEvent) {
 		<tr>
 			{#each plantingTable as column, index}
 				<th data-header-name={column.name}
-				 data-column-index={index} 
-				 ondragover={dragoverHandler} 
-				 ondrop={plantingDropHandler}>{column.name}</th>
+					data-column-index={index} 
+					ondragover={dragoverHandler} 
+					ondrop={plantingDropHandler}>{column.name}</th>
 			{/each}
 		</tr>
 	</thead>
 	<tbody>
 		{#each plantingTable[0].values as _, rowIndex}
-			<tr>
+			<tr >
 				{#each plantingTable as column, index}
-					<td data-header-name={column.name} data-column-index={index} ondragover={dragoverHandler} ondrop={plantingDropHandler}>{column.values[rowIndex]}</td>
+					<td data-header-name={column.name} 
+						data-column-index={index} 
+						ondragover={dragoverHandler} 
+						ondrop={plantingDropHandler} > 
+						{formatValue(column.currentFormat, column.values[rowIndex])} {column.values[rowIndex]} 
+					</td>
 				{/each}
 			</tr>
 		{/each}
@@ -102,9 +109,9 @@ function cropDropHandler(ev: DragEvent) {
 		<tr>
 			{#each landTable as column, index}
 				<th data-header-name={column.name}
-				 data-column-index={index} 
-				 ondragover={dragoverHandler} 
-				 ondrop={landDropHandler}>{column.name}</th>
+					data-column-index={index} 
+					ondragover={dragoverHandler} 
+					ondrop={landDropHandler}>{column.name}</th>
 			{/each}
 		</tr>
 	</thead>
