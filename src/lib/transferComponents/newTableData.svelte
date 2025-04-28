@@ -77,7 +77,7 @@ Key Changes:
 				<th
 					data-header-name={column.headerName}
 					data-column-index={index}
-					draggable={true}
+					draggable={!column.isMapped}
 					ondragstart={dragstartHandler}
 					ondragend={dragEndHandler}
 				>
@@ -112,7 +112,7 @@ Key Changes:
 				class:greyed-out={isTransplant ? column.isMapped : !(column.isToggled && !column.isGreyed[rowIndex])}
 				data-header-name={column.headerName}
 				data-column-index={index}
-				draggable={true}
+				draggable={!column.isMapped}
 				ondragstart={dragstartHandler}
 				ondragend={dragEndHandler}
 			>

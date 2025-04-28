@@ -12,6 +12,14 @@
 	const plantingColumns = Object.keys(plantingUserTable[0] || {});
 	const cropColumns = Object.keys(cropUserTable[0] || {});
 
+	function clearDbColumn(dbTable: TableColumn[], index: number) {
+		dbTable[index].values = ['', '', ''];
+		importedData.columns[dbTable[index].modelRepColumnIndex].isMapped = false;
+		importedData.columns[dbTable[index].modelRepColumnIndex].mappedTo = undefined;
+		dbTable[index].modelRepColumnIndex = -1;
+		console.log("clicked")
+	}
+
 	interface TableColumn {
 		name: string;
 		values: unknown[]; // Changed from never[] to unknown[]
@@ -81,8 +89,10 @@
 					data-header-name={column.name}
 					data-column-index={index}
 					ondragover={dragoverHandler}
-					ondrop={plantingDropHandler}>{column.name}</th
-				>
+					ondrop={plantingDropHandler}
+					>{column.name}
+					<span onclick={() => clearDbColumn(plantingTable, index)} class="material-symbols-outlined">cancel</span>
+				</th>
 			{/each}
 		</tr>
 	</thead>
@@ -96,11 +106,11 @@
 						ondragover={dragoverHandler}
 						ondrop={plantingDropHandler}
 					>
-					{#if column.modelRepColumnIndex !== -1}
-					{importedData.columns[column.modelRepColumnIndex].formattedValues[rowIndex]}
-				{:else}
-					{''}
-				{/if}
+						{#if column.modelRepColumnIndex !== -1}
+							{importedData.columns[column.modelRepColumnIndex].formattedValues[rowIndex]}
+						{:else}
+							{''}
+						{/if}
 					</td>
 				{/each}
 			</tr>
@@ -132,11 +142,11 @@
 						ondragover={dragoverHandler}
 						ondrop={landDropHandler}
 					>
-					{#if column.modelRepColumnIndex !== -1}
-					{importedData.columns[column.modelRepColumnIndex].formattedValues[rowIndex]}
-					{:else}
-						{''}
-					{/if}
+						{#if column.modelRepColumnIndex !== -1}
+							{importedData.columns[column.modelRepColumnIndex].formattedValues[rowIndex]}
+						{:else}
+							{''}
+						{/if}
 					</td>
 				{/each}
 			</tr>
@@ -160,22 +170,22 @@
 	</thead>
 	<tbody>
 		{#each importedData.columns[0].values.slice(0, 3) as _, rowIndex}
-		<tr>
-			{#each cropTable as column, index}
-				<td
-					data-header-name={column.name}
-					data-column-index={index}
-					ondragover={dragoverHandler}
-					ondrop={cropDropHandler}
-				>
-				{#if column.modelRepColumnIndex !== -1}
-				{importedData.columns[column.modelRepColumnIndex].formattedValues[rowIndex]}
-			{:else}
-				{''}
-			{/if}
-				</td>
-			{/each}
-		</tr>
-	{/each}
+			<tr>
+				{#each cropTable as column, index}
+					<td
+						data-header-name={column.name}
+						data-column-index={index}
+						ondragover={dragoverHandler}
+						ondrop={cropDropHandler}
+					>
+						{#if column.modelRepColumnIndex !== -1}
+							{importedData.columns[column.modelRepColumnIndex].formattedValues[rowIndex]}
+						{:else}
+							{''}
+						{/if}
+					</td>
+				{/each}
+			</tr>
+		{/each}
 	</tbody>
 </table>
