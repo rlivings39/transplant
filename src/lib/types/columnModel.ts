@@ -49,6 +49,7 @@ export interface ColumnRep extends ColumnDef {
 
 	/** The actual data values for this column */
 	values: Array<string | number | null>;
+	// NEW second array of formatted values 28 Apr 2025  7:06 AM
 	formattedValues: Array<string | number | null | undefined>;
 
 	/** Optional validation errors by row index */

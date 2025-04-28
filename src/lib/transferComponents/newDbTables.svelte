@@ -15,6 +15,7 @@
 	interface TableColumn {
 		name: string;
 		values: unknown[]; // Changed from never[] to unknown[]
+		modelRepColumnIndex: number;
 	}
 
 	let plantingTable = $state<TableColumn[]>(createColumnState(plantingColumns));
@@ -24,7 +25,8 @@
 	function createColumnState(columns: string[]) {
 		return columns.map((column) => ({
 			name: column,
-			values: ['', '', '']
+			values: ['', '', ''],
+			modelRepColumnIndex: -1
 		}));
 	}
 
@@ -33,8 +35,8 @@
 	// DONEwe need columns to be one unit that's draggable
 	// DONEchange the visual representation of the column
 	// DONEuser drags column data to a db table.
-	// when they drop data on the db table it needs to:
-	// in state it populate on that attribute on the db table.
+	// DONEwhen they drop data on the db table it needs to:
+	// DONEin state it populate on that attribute on the db table.
 	// in the view it must also populate on that attribute on the db table.
 	// we need stat to update on "mapping" property
 	// It also need to be normalized trees and land dont repeat
@@ -52,7 +54,7 @@
 		ev.preventDefault();
 		const draggedColumnIndex = Number(ev.dataTransfer.getData('text'));
 		const targetColumnIndex = Number((ev.target as HTMLElement).dataset.columnIndex);
-		dbDropTable[targetColumnIndex].values = importedData.columns[draggedColumnIndex].values;
+		dbDropTable[targetColumnIndex].modelRepColumnIndex = draggedColumnIndex;
 		importedData.columns[draggedColumnIndex].isMapped = true;
 		// (ev.target as HTMLElement).textContent = 'dropped';
 	}
@@ -85,7 +87,7 @@
 		</tr>
 	</thead>
 	<tbody>
-		{#each plantingTable[0].values as _, rowIndex}
+		{#each importedData.columns[0].values.slice(0, 3) as _, rowIndex}
 			<tr>
 				{#each plantingTable as column, index}
 					<td
@@ -94,7 +96,11 @@
 						ondragover={dragoverHandler}
 						ondrop={plantingDropHandler}
 					>
-						{column.values[rowIndex]}
+					{#if column.modelRepColumnIndex !== -1}
+					{importedData.columns[column.modelRepColumnIndex].formattedValues[rowIndex]}
+				{:else}
+					{''}
+				{/if}
 					</td>
 				{/each}
 			</tr>
@@ -117,15 +123,21 @@
 		</tr>
 	</thead>
 	<tbody>
-		{#each landTable[0].values as _, rowIndex}
+		{#each importedData.columns[0].values.slice(0, 3) as _, rowIndex}
 			<tr>
 				{#each landTable as column, index}
 					<td
 						data-header-name={column.name}
 						data-column-index={index}
 						ondragover={dragoverHandler}
-						ondrop={landDropHandler}>{column.values[rowIndex]}</td
+						ondrop={landDropHandler}
 					>
+					{#if column.modelRepColumnIndex !== -1}
+					{importedData.columns[column.modelRepColumnIndex].formattedValues[rowIndex]}
+					{:else}
+						{''}
+					{/if}
+					</td>
 				{/each}
 			</tr>
 		{/each}
@@ -147,17 +159,23 @@
 		</tr>
 	</thead>
 	<tbody>
-		{#each cropTable[0].values as _, rowIndex}
-			<tr>
-				{#each cropTable as column, index}
-					<td
-						data-header-name={column.name}
-						data-column-index={index}
-						ondragover={dragoverHandler}
-						ondrop={cropDropHandler}>{column.values[rowIndex]}</td
-					>
-				{/each}
-			</tr>
-		{/each}
+		{#each importedData.columns[0].values.slice(0, 3) as _, rowIndex}
+		<tr>
+			{#each cropTable as column, index}
+				<td
+					data-header-name={column.name}
+					data-column-index={index}
+					ondragover={dragoverHandler}
+					ondrop={cropDropHandler}
+				>
+				{#if column.modelRepColumnIndex !== -1}
+				{importedData.columns[column.modelRepColumnIndex].formattedValues[rowIndex]}
+			{:else}
+				{''}
+			{/if}
+				</td>
+			{/each}
+		</tr>
+	{/each}
 	</tbody>
 </table>

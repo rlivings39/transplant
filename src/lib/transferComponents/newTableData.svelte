@@ -109,7 +109,7 @@ Key Changes:
 			<tr>
 				{#each importedData.columns.filter( (c) => (isTransplant ? c.isToggled : true) ) as column, index}
 					<td
-						class={matchesFormat(column.values[rowIndex], column.currentFormat) && column.isToggled
+						class={ column.isToggled && !column.isGreyed[rowIndex] 
 							? ''
 							: 'greyed-out'}
 						data-header-name={column.headerName}
@@ -122,7 +122,7 @@ Key Changes:
 
 							<!-- Empty cell when greyed in transplant mode -->
 						{:else}
-							{column.formattedValues[rowIndex]}
+							{column.formattedValues[rowIndex] === null ? column.values[rowIndex] : column.formattedValues[rowIndex]}
 						{/if}
 					</td>
 				{/each}
