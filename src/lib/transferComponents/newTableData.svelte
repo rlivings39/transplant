@@ -108,16 +108,14 @@ Key Changes:
 		{#each importedData.columns[0].values.slice(0, isTransplant ? max_transplant_rows : undefined) as _, rowIndex}
 			<tr>
 				{#each importedData.columns.filter( (c) => (isTransplant ? c.isToggled : true) ) as column, index}
-					<td
-						class={ column.isToggled && !column.isGreyed[rowIndex] 
-							? ''
-							: 'greyed-out'}
-						data-header-name={column.headerName}
-						data-column-index={index}
-						draggable={true}
-						ondragstart={dragstartHandler}
-						ondragend={dragEndHandler}
-					>
+				<td
+				class:greyed-out={isTransplant ? column.isMapped : !(column.isToggled && !column.isGreyed[rowIndex])}
+				data-header-name={column.headerName}
+				data-column-index={index}
+				draggable={true}
+				ondragstart={dragstartHandler}
+				ondragend={dragEndHandler}
+			>
 						{#if isTransplant && (column.isGreyed[rowIndex] || !column.isToggled)}
 
 							<!-- Empty cell when greyed in transplant mode -->

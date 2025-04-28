@@ -56,7 +56,7 @@
 		const targetColumnIndex = Number((ev.target as HTMLElement).dataset.columnIndex);
 		dbDropTable[targetColumnIndex].modelRepColumnIndex = draggedColumnIndex;
 		importedData.columns[draggedColumnIndex].isMapped = true;
-		// (ev.target as HTMLElement).textContent = 'dropped';
+		importedData.columns[draggedColumnIndex].mappedTo = `${dbDropTable[targetColumnIndex].name}`;
 	}
 
 	function plantingDropHandler(ev: DragEvent) {
