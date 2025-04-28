@@ -8,11 +8,11 @@ if (!env.DATABASE_URL) {
 }
 
 // No encodeURI, no manual SSL config
-const client = postgres(env.DATABASE_URL, {
+const client = env.DEBUG ? null : postgres(env.DATABASE_URL, {
 	prepare: false,
 	ssl: {
 		rejectUnauthorized: false
 	}
 });
 
-export const db = drizzle(client, { schema });
+export const db = env.DEBUG ? null : drizzle(client as postgres.Sql, { schema });

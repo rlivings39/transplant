@@ -1,4 +1,4 @@
-<!-- 
+<!--
 Key Changes:
 1. Added max_transplant_rows constant (line 7) to limit preview rows
 2. Added pageIs prop (line 10) to differentiate between transfer/transplant modes
@@ -40,6 +40,7 @@ Key Changes:
 		if (!ev.dataTransfer) return;
 
 		const target = ev.target as HTMLElement;
+		if (!target.draggable) return;
 		const columnIndex = Number(target.dataset.columnIndex);
 		const columnName = target.dataset.headerName ?? '';
 

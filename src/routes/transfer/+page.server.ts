@@ -3,17 +3,25 @@ import { land, planting, crop } from '$lib/server/db/schema';
 import type { PgTableWithColumns } from 'drizzle-orm/pg-core';
 
 export async function load() {
-	const landsDbTable = await db.select().from(land).limit(1);
-	const plantingDbTable = await db.select().from(planting).limit(1);
-	const cropDbTable = await db.select().from(crop).limit(1
-		
-	);
-	// console.log(land.gpsLat.columnType);
-	const dbFormat = dbFormatSelector(land);
-	const plantingDbFormat = dbFormatSelector(planting);
-	const cropDbFormat = dbFormatSelector(crop);
-	console.log('dbFormat', dbFormat);
-	return { landsDbTable, plantingDbTable, cropDbTable, dbFormat };
+	if (db) {
+		const landsDbTable = await db.select().from(land).limit(1);
+		const plantingDbTable = await db.select().from(planting).limit(1);
+		const cropDbTable = await db.select().from(crop).limit(1
+
+		);
+		// console.log(land.gpsLat.columnType);
+		const dbFormat = dbFormatSelector(land);
+		const plantingDbFormat = dbFormatSelector(planting);
+		const cropDbFormat = dbFormatSelector(crop);
+		console.log('dbFormat', dbFormat);
+		return { landsDbTable, plantingDbTable, cropDbTable, dbFormat };
+	} else {
+		const exEntry = {column_1: 1, column_2: 2};
+		const exData = [exEntry, exEntry, exEntry];
+		const exFormat = {column_1: 'number', colunn_2: 'string'};
+		return {landsDbTable: exData, plantingDbTable: exData, cropDbTable: exData, dbFormat: exFormat};
+	}
+
 }
 
 interface ColumnDescription {

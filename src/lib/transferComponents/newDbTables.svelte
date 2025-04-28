@@ -90,8 +90,11 @@
 					data-column-index={index}
 					ondragover={dragoverHandler}
 					ondrop={plantingDropHandler}
-					>{column.name}
-					<span onclick={() => clearDbColumn(plantingTable, index)} class="material-symbols-outlined">cancel</span>
+					>
+					<div class="flex-space-between">
+						{column.name}
+						<button class="empty-button" onclick={() => clearDbColumn(plantingTable, index)}><span class="material-symbols-outlined">cancel</span></button>
+					</div>
 				</th>
 			{/each}
 		</tr>

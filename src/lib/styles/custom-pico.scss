@@ -23,6 +23,18 @@
 	--button-transition: all 0.3s ease;
 	--header-background: #2f1e4b;
 }
+// Simple button that takes up less space
+.empty-button {
+	padding: 0;
+	margin: 0;
+	line-height: 0;
+}
+
+// A flex box that spaces out a row of children
+.flex-space-between {
+	display: flex;
+	justify-content: space-between;
+}
 body,
 html {
 	background-color: var(--color-black);
@@ -445,9 +457,9 @@ button {
 }
 
 /* Make all cells in the source table appear draggable */
-.table-container table tbody td {
-	cursor: grab;
-}
+// .table-container table tbody td {
+// 	cursor: grab;
+// }
 
 /* Style for drop targets */
 .compatible-target {
